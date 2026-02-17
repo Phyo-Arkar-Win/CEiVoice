@@ -9,7 +9,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use('/api/health', healthCheckRoutes);
+app.get('/', (req, res) => {
+    res.send('Hello, World!');
+});
+
+// app.use('/api/health', healthCheckRoutes);
 // app.use('/api/AI', ollamaRoutes);
 
 export default app;
