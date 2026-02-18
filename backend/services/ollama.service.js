@@ -1,5 +1,5 @@
-import axios from 'axios';
-import { Ollama } from 'ollama';
+//import axios from 'axios';
+//import { Ollama } from 'ollama';
 
 export const generateDraftTicket = async (req, res) => {
     try {
