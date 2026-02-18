@@ -7,7 +7,7 @@ import app from "./app.js";
 const PORT = process.env.PORT;
 
 // Connect to MongoDB
-// connectDB();
+connectDB();
 
 app.listen(PORT, () => {
     console.log(`Server up and running on port ${PORT}`);
