@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { Ollama } from 'ollama';
+import Ticket from '../models/ticket.js';
 
 export const generateDraftTicket = async (req, res) => {
     try {
@@ -29,16 +30,15 @@ export const generateDraftTicket = async (req, res) => {
 
         const parsed = JSON.parse(response.response);
 
-        // Issue Message
-        console.log("\nRequest Message: ", message);
-
-        console.log("\nOllama Raw Response: ", response.response);
-
-        console.log("\nOllama Response")
-        console.log("Title: ", parsed.title);
-        console.log("Summary: ", parsed.summary);
-        console.log("Category: ", parsed.category);
-        console.log("Resolution Path: ", parsed.resolution_path);
+        await Ticket.create({
+            email: "test@test.com",
+            user_issue: message,
+            title: parsed.title,
+            summary: parsed.summary,
+            category: parsed.category,
+            resolution_path: parsed.resolution_path,
+            original_message: message
+        });
 
         res.json(parsed);
 
