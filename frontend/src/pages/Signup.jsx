@@ -2,9 +2,9 @@ import React, { useState } from 'react'
 import Navbar from '../components/Navbar'
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode'
-import axios from 'axios';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import api from "../api/axios"
 
 export default function Signup() {
 
@@ -21,7 +21,7 @@ export default function Signup() {
     e.preventDefault();
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/signup`, {
+      const response = await api.post("/signup", {
         username,
         email,
         password,
@@ -41,7 +41,7 @@ export default function Signup() {
   // GOOGLE SIGNUP
   const handleGoogleLoginSuccess = async (credentialResponse) => {
     try {
-      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/login/google`, {
+      const response = await api.post("/login/google", {
         token: credentialResponse.credential
       });
 
@@ -51,7 +51,7 @@ export default function Signup() {
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
-      alert(`Welcome, ${user.name}!`);
+      // alert(`Welcome, ${user.name}!`);
       navigate("/");
 
     } catch (error) {
@@ -115,7 +115,7 @@ export default function Signup() {
                   onClick={() => setShowPassword(!showPassword)}
                   className='absolute right-3 top-10 cursor-pointer'
                 >
-                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                  {showPassword ? <FaEye/>:<FaEyeSlash /> }
                 </button>
               </div>
 
@@ -134,7 +134,7 @@ export default function Signup() {
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className='absolute right-3 top-10 cursor-pointer'
                 >
-                  {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                  {showConfirmPassword ? <FaEye /> : <FaEyeSlash /> }
                 </button>
               </div>
 
