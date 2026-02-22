@@ -1,28 +1,41 @@
-import React from 'react'
+import React, { useState } from 'react'
 import Navbar from '../components/Navbar'
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode'
-import { useState } from 'react';
 import axios from 'axios';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
 export default function Signup() {
 
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const navigate = useNavigate();
 
-  const handleSignup = (e) => {
+  const handleManualSignup = async (e) => {
     e.preventDefault();
-    // IMPLEMENT BACKEND TONNNNYYYYY
 
-    alert('Signup successful! Please log in.');
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/signup`, {
+        username,
+        email,
+        password,
+        confirmPassword
+      });
 
-    setTimeout(() => {
+      console.log("Signup response:", response.data);
+      alert('Signup successful! Please log in.');
       navigate('/login');
-    }, 1000);
+    } 
+    catch (error) {
+      console.error("Signup failed:", error);
+      alert(error.response?.data?.message || "Signup failed. Please try again.");
+    }
   }
 
   // GOOGLE SIGNUP
@@ -62,47 +75,76 @@ export default function Signup() {
               Sign Up
             </h2>
 
-            <div className="mb-3">
-              <label className="block mb-1">Username</label>
-              <input
-                type="username"
-                className="w-full bg-gray-300 rounded-lg p-2 outline-none"
-              />
-            </div>
+            <form onSubmit={handleManualSignup}>
+              {/* Username */}
+              <div className="mb-3">
+                <label className="block mb-1">Username</label>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full bg-gray-300 rounded-lg p-2 outline-none"
+                  required
+                />
+              </div>
 
-            {/* Email */}
-            <div className="mb-4">
-              <label className="block mb-1">Email</label>
-              <input
-                type="email"
-                className="w-full bg-gray-300 rounded-lg p-2 outline-none"
-              />
-            </div>
+              {/* Email */}
+              <div className="mb-4">
+                <label className="block mb-1">Email</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full bg-gray-300 rounded-lg p-2 outline-none"
+                  required
+                />
+              </div>
 
-            {/* Password */}
-            <div className="mb-4 relative">
-              <label className="block mb-1">Password</label>
-              <input
-                type={showPassword ? "text" : "password"}
-                className="w-full bg-gray-300 rounded-lg p-2 pr-10 outline-none"
-              />
-              <button onClick={() => setShowPassword(!showPassword)} className='absolute right-3 top-10 cursor-pointer'>{showPassword ? <FaEyeSlash /> : <FaEye />}</button>
+              {/* Password */}
+              <div className="mb-4 relative">
+                <label className="block mb-1">Password</label>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full bg-gray-300 rounded-lg p-2 pr-10 outline-none"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className='absolute right-3 top-10 cursor-pointer'
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
 
-            </div>
+              {/*Re-enter Password */}
+              <div className="mb-6 relative">
+                <label className="block mb-1">Re-enter Password</label>
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full bg-gray-300 rounded-lg p-2 pr-10 outline-none"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className='absolute right-3 top-10 cursor-pointer'
+                >
+                  {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
 
-            {/*Re-enter Password */}
-            <div className="mb-6 relative">
-              <label className="block mb-1">Re-enter Password</label>
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                className="w-full bg-gray-300 rounded-lg p-2 pr-10 outline-none"
-              />
-              <button onClick={() => setShowConfirmPassword(!showConfirmPassword)} className='absolute right-3 top-10 cursor-pointer'>{showConfirmPassword ? <FaEyeSlash /> : <FaEye />}</button>
-            </div>
-
-            {/* SignUp Button */}
-            <form onSubmit={handleSignup} className="w-full mt-0.5 bg-[rgb(227,82,5)] hover:bg-[rgb(180,65,4)] cursor-pointer text-white flex justify-center py-3 rounded-2xl font-medium mb-4">
-              Sign Up
+              {/* SignUp Button */}
+              <button
+                type="submit"
+                className="w-full mt-0.5 bg-[rgb(227,82,5)] hover:bg-[rgb(180,65,4)] cursor-pointer text-white flex justify-center py-3 rounded-2xl font-medium mb-4"
+              >
+                Sign Up
+              </button>
             </form>
 
             {/* Divider */}

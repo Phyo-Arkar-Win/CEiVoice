@@ -7,7 +7,7 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const signup = async (req, res) => {
 
-    const { email, password, confirmPassword } = req.body;
+    const { email, password, username } = req.body;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -16,9 +16,7 @@ const signup = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const name = email.split("@")[0];
-
-    const newUser = await User.create({ email, password: hashedPassword, name });
+    const newUser = await User.create({ email, password: hashedPassword, name: username });
     res.status(201).json({ message: "User created successfully.", user: newUser });
 
 }
@@ -36,14 +34,13 @@ const login = async (req, res) => {
     if (!correctPassword) {
         return res.status(400).json({ message: "Invalid email or password." });
     }
-    res.status(200).json({ message: "Login successful.", user });
 
     const token = jwt.sign(
         { userId: user._id },
         process.env.JWT_SECRET, { expiresIn: "3h" }
     );
 
-    res.json({ token });
+    res.status(200).json({ message: "Login successful.", user, token });
 }
 
 const googleLogin = async (req, res) => {
@@ -62,7 +59,7 @@ const googleLogin = async (req, res) => {
         if (!user) {
             user = await User.create({
                 email,
-                name,
+                name: email.split('@')[0],
             });
         }
 

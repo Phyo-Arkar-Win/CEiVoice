@@ -7,9 +7,9 @@ export default function Navbar({title}) {
 
     const handleClick = () => {
       if (title === "Sign up") {
-        navigate('/register');
+        navigate('/signup');
       } else if (title === "Log in") {
-        navigate("/Login")
+        navigate("/login")
       }
     }
   return (

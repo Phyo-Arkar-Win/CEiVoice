@@ -1,13 +1,13 @@
 const validateSignup = (req, res, next) => {
-    const { email, password, confirmPassword } = req.body;
+    const { email, password, confirmPassword, username } = req.body;
 
-    if (!email || !password || !confirmPassword) {
+    if (!email || !password || !confirmPassword || !username) {
         return res.status(400).json({ message: "Enter all required fields." });
     }
     if (password !== confirmPassword) {
         return res.status(400).json({ message: "Passwords do not match." });
     }
-    next();   
+    next();
 }
 
 export default validateSignup;
