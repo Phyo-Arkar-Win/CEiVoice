@@ -6,9 +6,12 @@ export default function Navbar({title}) {
     const navigate = useNavigate();
 
     const handleClick = () => {
+      if (title === "Sign up") {
         navigate('/register');
+      } else if (title === "Log in") {
+        navigate("/Login")
+      }
     }
-
   return (
     <>
     <div className="navbar w-full flex justify-between items-center bg-[rgb(255,255,255)] px-4 py-3 border border-b-2 border-[rgb(227,82,5)]">
