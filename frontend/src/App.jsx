@@ -3,6 +3,9 @@ import { Routes, Route, BrowserRouter } from 'react-router-dom';
 
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import SubmitReq from './pages/SubmitReq';
+import Tracking from './pages/Tracking';
+import Dashboard from './pages/Dashboard';
 // import Signup from './pages/Signup';
 
 const App = () => {
@@ -12,7 +15,10 @@ const App = () => {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/" element={<></>} />
+          
+          <Route path="/dashboard" element={<Dashboard/>} />
+          <Route path="/submitrequest" element={<SubmitReq/>} />
+          <Route path="/tracking" element={<Tracking/>} />
 
           {/* <Route path='/register' element={<Signup />} /> */}
         </Routes>

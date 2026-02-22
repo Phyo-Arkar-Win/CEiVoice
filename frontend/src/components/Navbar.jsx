@@ -25,7 +25,7 @@ export default function Navbar({title}) {
       CEiVoice
     </h1>
   </div>
-    <div className='flex text-'>
+    <div className='flex text-white'>
         <button onClick={handleClick} className='bg-red-500 hover:bg-red-600 px-3 py-2 text-white rounded-xl cursor-pointer'>{title}</button>
     </div>
 
