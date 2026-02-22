@@ -1,15 +1,3 @@
-<<<<<<< HEAD
-import { useState } from 'react'
-
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <h1 class="text-3xl font-bold underline">
-        Hello world!
-      </h1>
-=======
 import React from 'react';
 import { Routes, Route, BrowserRouter } from 'react-router-dom';
 
@@ -27,13 +15,8 @@ const App = () => {
         {/* <Route path='/register' element={<Signup />} /> */}
     </Routes>
     </BrowserRouter>
->>>>>>> 9870920 (SUPAnig)
     </>
   )
 }
 
-<<<<<<< HEAD
-export default App
-=======
 export default App;
->>>>>>> 9870920 (SUPAnig)
