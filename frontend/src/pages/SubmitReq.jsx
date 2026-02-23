@@ -1,8 +1,16 @@
-import React from "react"
+import React, { useEffect, useState } from "react"
 import UserNavbar from "../components/userNavbar"
 
 
 export default function SubmitReq() {
+    const [email, setEmail ] = useState("")
+
+    useEffect(()=>{
+        const user = JSON.parse(localStorage.getItem('user'))
+        if (user) {
+            setEmail(user.email)
+        }
+    })
 
     return(
         <>
@@ -21,7 +29,8 @@ export default function SubmitReq() {
             {/* Content grows */}
             <div className="flex-1 ml-50 mr-50 ">
                 <h3 className="text-2xl font-semibold mb-2">Email</h3>
-                <p className="mb-6 text-gray-700 text-xl">linhheinhtet@gmail.com</p>
+                <p className="mb-6 text-gray-700 text-xl" 
+                >{email}</p>
 
                 <h3 className="text-2xl font-semibold mb-2">Issue</h3>
                 <textarea

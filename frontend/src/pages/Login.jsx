@@ -29,7 +29,7 @@ export default function Login() {
       localStorage.setItem("user", JSON.stringify(user));
 
       // alert(`Welcome, ${user.name}!`);
-      navigate("/");
+      navigate("/dashboard");
     }
 
     catch (error) {
@@ -52,7 +52,7 @@ export default function Login() {
       localStorage.setItem("user", JSON.stringify(user));
 
       // alert(`Welcome, ${user.name}!`);
-      navigate("/");
+      navigate("/dashboard");
 
     } catch (error) {
       console.error("Google login failed at backend:", error);
