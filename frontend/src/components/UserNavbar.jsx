@@ -79,7 +79,7 @@ export default function UserNavbar() {
 
     <div className="flex items-center cursor-pointer">
       <IoIosLogOut onClick={handleLogout} className="text-xl" />
-      <button onClick={handleLogout} className="ml-2">
+      <button onClick={handleLogout} className="ml-2 cursor-pointer">
         Logout
       </button>
     </div>

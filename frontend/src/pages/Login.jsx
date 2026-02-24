@@ -13,7 +13,7 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  // MANUAL LOGIN
+  // LOGIN
   const handleManualLogin = async (e) => {
     e.preventDefault();
     try {
