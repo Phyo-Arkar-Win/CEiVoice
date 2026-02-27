@@ -6,6 +6,7 @@ import Signup from './pages/Signup';
 import SubmitReq from './pages/SubmitReq';
 import Tracking from './pages/Tracking';
 import Dashboard from './pages/Dashboard';
+import TrackTicket from './pages/TrackingTicketNL';
 // import Signup from './pages/Signup';
 
 const App = () => {
@@ -13,18 +14,21 @@ const App = () => {
         <>
             <BrowserRouter>
                 <Routes>
-                    <Route path='/login' element={<Login />} />
-                    <Route path='/signup' element={<Signup />} />
 
-                    <Route path='/dashboard' element={<Dashboard />} />
-                    <Route path='/submit' element={<SubmitReq />} />
-                    <Route path='/track' element={<Tracking />} />
+
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/signup" element={<Signup />} />
+
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/submit" element={<SubmitReq />} />
+                    <Route path="/track" element={<Tracking />} />
+                    <Route path="/trackticket" element={<TrackTicket />} />
 
                     {/* <Route path='/register' element={<Signup />} /> */}
                 </Routes>
             </BrowserRouter>
         </>
-    );
-};
+    )
+}
 
 export default App;
