@@ -1,7 +1,7 @@
 import { Ollama } from 'ollama';
 import Ticket from '../models/ticket.js';
 
-const generateDraftTicket = async (email, issue) => {
+const generateDraftTicket = async (email, issue, user) => {
     const prompt = "You are supposed to analyze the user's request message, automatically generating a draft ticket complete with a " +
         "suggested title, category, summary, and resolution path, which will allow administrators and support staff to focus on " +
         "resolution rather than categorization and assignment. Return to me in valid JSON format. Escape apostrophes properly. Ensure valid JSON format" +
@@ -32,7 +32,8 @@ const generateDraftTicket = async (email, issue) => {
         summary: parsed.summary,
         category: parsed.category,
         resolution_path: parsed.resolution_path,
-        original_message: issue
+        original_message: issue,
+        creator : user
     });
 
 
