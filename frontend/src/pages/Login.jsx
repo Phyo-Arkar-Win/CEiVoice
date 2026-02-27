@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Navbar from "../components/Navbar";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
-import axios from "axios";
+import api from "../api/axios";
 import { useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
@@ -16,8 +16,8 @@ export default function Login() {
   const handleManualLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/login`,
+      const response = await api.post(
+        "/login",
         {
           email,
           password,
@@ -31,7 +31,7 @@ export default function Login() {
       localStorage.setItem("user", JSON.stringify(user));
 
       alert(`Welcome, ${user.name}!`);
-      navigate("/");
+      navigate("/dashboard");
     } catch (error) {
       console.error("Login failed:", error);
       alert(
@@ -44,8 +44,8 @@ export default function Login() {
   // GOOGLE LOGIN
   const handleGoogleLoginSuccess = async (credentialResponse) => {
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/login/google`,
+      const response = await api.post(
+        "/login/google",
         {
           token: credentialResponse.credential,
         },
@@ -58,7 +58,7 @@ export default function Login() {
       localStorage.setItem("user", JSON.stringify(user));
 
       alert(`Welcome, ${user.name}!`);
-      navigate("/");
+      navigate("/dashboard");
     } catch (error) {
       console.error("Google login failed at backend:", error);
       alert("Google login failed. Please try again.");

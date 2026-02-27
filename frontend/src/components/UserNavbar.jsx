@@ -47,7 +47,7 @@ export default function UserNavbar() {
             </NavLink>
 
             <NavLink
-              to="/submitrequest"
+              to="/submit"
               className={({ isActive }) =>
                 isActive ? "text-orange-500" : "text-black"
               }
@@ -56,7 +56,7 @@ export default function UserNavbar() {
             </NavLink>
 
             <NavLink
-              to="/tracking"
+              to="/track"
               className={({ isActive }) =>
                 isActive ? "text-orange-500" : "text-black"
               }
