@@ -27,7 +27,6 @@ export default function UserNavbar() {
       <>
       <div className="w-full flex justify-between items-center bg-white px-6 py-3 border-b-2 border-orange-500">
 
-  {/* LEFT SIDE */}
   <div className="flex items-center gap-4">
 
     <img 
@@ -40,7 +39,6 @@ export default function UserNavbar() {
       CEiVoice
     </h1>
 
-    {/* Navigation Links */}
     <div className="hidden md:flex items-center gap-8 ml-8 text-lg font-semibold">
 
       <NavLink to="/dashboard"
@@ -67,7 +65,6 @@ export default function UserNavbar() {
     </div>
   </div>
 
-  {/* RIGHT SIDE name/logout */}
   <div className="flex items-center gap-6 text-sm md:text-base">
 
     <div className="flex flex-col items-center">
