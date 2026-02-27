@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { generateDraftTicket } from '../services/ollama.service.js';
+import generateDraftTicket from '../services/ollama.service.js';
 
 const router = Router();
 
