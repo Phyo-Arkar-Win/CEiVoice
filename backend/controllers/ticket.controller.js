@@ -62,4 +62,19 @@ const newToDraft = async (req, res) => {
     }
 };
 
-export default { getDraftTickets, submitDraftTicket, newToDraft };
+const viewTicketAsGuest = async (req, res) => {
+    const { email, ticketId } = req.body;
+    try {
+        const ticket = await Ticket.findById(ticketId);
+        if (ticket.email !== email) {
+            return res.status(403).json({ message: 'Incorrect Email or Ticket ID' });
+        }
+        res.status(200).json({ id: ticket.id, status: ticket.status, title: ticket.title, issue: ticket.issue });
+    } catch (error) {
+        res.status(500).json({
+            message: `Error viewing ticket: ${error.message}`,
+        });
+    }
+};
+
+export default { getDraftTickets, submitDraftTicket, newToDraft, viewTicketAsGuest };

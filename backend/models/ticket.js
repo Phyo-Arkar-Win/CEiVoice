@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const ticketSchema = new mongoose.Schema(
     {
         email: { type: String, required: true },
-        user_issue: { type: String, required: true },
+        issue: { type: String, required: true },
         title: { type: String, required: true },
         summary: { type: String, required: true },
         category: { type: String, required: true },
