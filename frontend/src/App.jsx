@@ -9,22 +9,22 @@ import Dashboard from './pages/Dashboard';
 // import Signup from './pages/Signup';
 
 const App = () => {
-  return (
-    <>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          
-          <Route path="/dashboard" element={<Dashboard/>} />
-          <Route path="/submitrequest" element={<SubmitReq/>} />
-          <Route path="/tracking" element={<Tracking/>} />
+    return (
+        <>
+            <BrowserRouter>
+                <Routes>
+                    <Route path='/login' element={<Login />} />
+                    <Route path='/signup' element={<Signup />} />
 
-          {/* <Route path='/register' element={<Signup />} /> */}
-        </Routes>
-      </BrowserRouter>
-    </>
-  )
-}
+                    <Route path='/dashboard' element={<Dashboard />} />
+                    <Route path='/submit' element={<SubmitReq />} />
+                    <Route path='/tracking' element={<Tracking />} />
+
+                    {/* <Route path='/register' element={<Signup />} /> */}
+                </Routes>
+            </BrowserRouter>
+        </>
+    );
+};
 
 export default App;
