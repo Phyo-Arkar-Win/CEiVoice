@@ -7,7 +7,7 @@ const handleIssueSubmission = async (req, res) => {
         return res.status(400).json({ error: "Missing message in request body" });
     }
     try {
-        await generateDraftTicket(issue);
+        await generateDraftTicket(email, issue);
         await sendEmail(email, issue);
         res.status(200).json({ message: "Email sent successfully" });
     } catch (error) {

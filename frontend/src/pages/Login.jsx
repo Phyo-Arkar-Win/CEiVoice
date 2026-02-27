@@ -30,7 +30,7 @@ export default function Login() {
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
-      alert(`Welcome, ${user.name}!`);
+      // alert(`Welcome, ${user.name}!`);
       navigate("/dashboard");
     } catch (error) {
       console.error("Login failed:", error);
@@ -57,7 +57,7 @@ export default function Login() {
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
-      alert(`Welcome, ${user.name}!`);
+      // alert(`Welcome, ${user.name}!`);
       navigate("/dashboard");
     } catch (error) {
       console.error("Google login failed at backend:", error);

@@ -1,6 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-
 import ollamaRoutes from './routes/ollama.routes.js';
 import healthCheckRoutes from './routes/healthCheck.routes.js';
 import loginRoutes from './routes/login.routes.js';
