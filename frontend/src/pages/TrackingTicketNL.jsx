@@ -11,7 +11,7 @@ export default function TrackTicket() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState("idle");
   const [ticket, setTicket] = useState(null);
-  
+  const [error, setError] = useState("")
 
   const onSearch = async (e) => {
     e.preventDefault();
@@ -91,7 +91,7 @@ export default function TrackTicket() {
 
           <button
             type="submit"
-            className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-xl"
+            className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-xl cursor-pointer"
           >
             {status === "loading" ? "Searching..." : "Search"}
           </button>
