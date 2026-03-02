@@ -5,11 +5,12 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import TrackTicket from './pages/TrackingTicketNL';
 
+import Dashboard from './pages/User/Dashboard';
 import SubmitReq from './pages/User/SubmitReq';
 import Tracking from './pages/User/Tracking';
-import Dashboard from './pages/User/Dashboard';
+import Confirmation from "./pages/User/Confirmation"
+
 import Admin_Dashboard from './pages/Admin/Admin_Dashboard';
-// import Signup from './pages/Signup';
 
 const App = () => {
     return (
@@ -17,18 +18,20 @@ const App = () => {
             <BrowserRouter>
                 <Routes>
 
-
+                    {/* AUTHENTICATION */}
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<Signup />} />
+                    <Route path="/trackticket" element={<TrackTicket />} />
 
+                    {/* User Route */}
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/submit" element={<SubmitReq />} />
                     <Route path="/track" element={<Tracking />} />
-                    <Route path="/trackticket" element={<TrackTicket />} />
+                    <Route path="/confirmation" element={<Confirmation />} />
 
+                    {/* Admin Route */}
                     <Route path='/admin_dashboard' element={<Admin_Dashboard/>}/>
 
-                    {/* <Route path='/register' element={<Signup />} /> */}
                 </Routes>
             </BrowserRouter>
         </>

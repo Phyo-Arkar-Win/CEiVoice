@@ -9,9 +9,9 @@ const handleIssueSubmission = async (req, res) => {
         return res.status(400).json({ error: "Missing message in request body" });
     }
     try {
-        await generateDraftTicket(email, issue, user);
+        const ticket = await generateDraftTicket(email, issue, user);
         await sendEmail(email, issue);
-        res.status(200).json({ message: "Email sent successfully" });
+        res.status(200).json(ticket,{ message: "Email sent successfully" });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

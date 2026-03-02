@@ -1,6 +1,5 @@
 import { useState } from "react";
 import api from "../api/axios";
-import ceiLogo from "../assets/cei.png";
 import noSearchImg from "../assets/no_search.png";
 import error_img from "../assets/error_img.png";
 import Navbar from "../components/Navbar";
@@ -120,6 +119,8 @@ export default function TrackTicket() {
               <p><strong>Category:</strong> {ticket.category}</p>
               <p><strong>Priority:</strong> {ticket.priority}</p>
               <p><strong>Last Updated:</strong> {ticket.updatedAt}</p>
+              <p><strong>Issue:</strong> {ticket.issue}</p>
+              
             </div>
           )}
 
