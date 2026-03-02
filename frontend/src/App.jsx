@@ -7,6 +7,7 @@ import SubmitReq from './pages/SubmitReq';
 import Tracking from './pages/Tracking';
 import Dashboard from './pages/Dashboard';
 import TrackTicket from './pages/TrackingTicketNL';
+import Confirmation from './pages/confirmation';
 // import Signup from './pages/Signup';
 
 const App = () => {
@@ -23,7 +24,7 @@ const App = () => {
                     <Route path="/submit" element={<SubmitReq />} />
                     <Route path="/track" element={<Tracking />} />
                     <Route path="/trackticket" element={<TrackTicket />} />
-
+                    <Route path="/confirmation" element={<Confirmation />} />
                     {/* <Route path='/register' element={<Signup />} /> */}
                 </Routes>
             </BrowserRouter>
