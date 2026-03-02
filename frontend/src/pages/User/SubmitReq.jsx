@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import UserNavbar from "../components/userNavbar";
-import api from "../api/axios";
+import UserNavbar from "@/components/userNavbar";
+import api from "@/api/axios";
 
 export default function SubmitReq() {
   const [email, setEmail] = useState("");

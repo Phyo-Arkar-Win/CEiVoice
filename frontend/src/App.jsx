@@ -3,10 +3,12 @@ import { Routes, Route, BrowserRouter } from 'react-router-dom';
 
 import Login from './pages/Login';
 import Signup from './pages/Signup';
-import SubmitReq from './pages/SubmitReq';
-import Tracking from './pages/Tracking';
-import Dashboard from './pages/Dashboard';
 import TrackTicket from './pages/TrackingTicketNL';
+
+import SubmitReq from './pages/User/SubmitReq';
+import Tracking from './pages/User/Tracking';
+import Dashboard from './pages/User/Dashboard';
+import Admin_Dashboard from './pages/Admin/Admin_Dashboard';
 // import Signup from './pages/Signup';
 
 const App = () => {
@@ -23,6 +25,8 @@ const App = () => {
                     <Route path="/submit" element={<SubmitReq />} />
                     <Route path="/track" element={<Tracking />} />
                     <Route path="/trackticket" element={<TrackTicket />} />
+
+                    <Route path='/admin_dashboard' element={<Admin_Dashboard/>}/>
 
                     {/* <Route path='/register' element={<Signup />} /> */}
                 </Routes>
