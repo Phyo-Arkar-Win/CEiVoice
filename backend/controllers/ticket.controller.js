@@ -28,9 +28,11 @@ const submitDraftTicket = async (req, res) => {
         ticket.category = category;
         ticket.resolution_path = resolution_path;
         ticket.assignees = assignees;
-        // if (ticket.creator && !ticket.followers.includes(ticket.creator)) {
-        //   ticket.followers.push(ticket.creator);
-        // }
+
+        if (ticket.creator && !ticket.followers.includes(ticket.creator)) {
+          ticket.followers.push(ticket.creator);
+          ticket.creator = "";
+        }
         await ticket.save();
 
         res.status(200).json({
@@ -50,6 +52,8 @@ const newToDraft = async (req, res) => {
     try {
         const ticket = await Ticket.findById(id);
         ticket.status = 'Draft';
+        ticket.creator = ticket.followers[0];
+        ticket.followers.pop();
         await ticket.save();
         res.status(201).json({
             message: 'Ticket status changed to Draft',
