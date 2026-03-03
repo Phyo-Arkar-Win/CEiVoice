@@ -1,4 +1,4 @@
-import UserNavbar from "../components/userNavbar";
+import UserNavbar from "@/components/userNavbar";
 
 export default function Dashboard(){
 

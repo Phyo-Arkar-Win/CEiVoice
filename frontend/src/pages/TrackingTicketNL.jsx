@@ -1,9 +1,8 @@
 import { useState } from "react";
 import api from "../api/axios";
-import ceiLogo from "../assets/cei.png";
 import noSearchImg from "../assets/no_search.png";
 import error_img from "../assets/error_img.png";
-import NavBarNoLogin from "../components/NavbarNoLogin";
+import Navbar from "../components/Navbar";
 
 
 export default function TrackTicket() {
@@ -27,8 +26,8 @@ export default function TrackTicket() {
     try {
       setStatus("loading");
 
-      const res = await api.post("/api/tickets/track", {
-        trackingId,
+      const res = await api.post("/api/tickets/track/submit", {
+        ticketId: trackingId,
         email,
       });
 
@@ -46,19 +45,7 @@ export default function TrackTicket() {
   return (
     <div className="min-h-screen bg-gray-200">
 
-      <div className="bg-white border-b-2 border-orange-500 px-6 py-3 flex justify-between items-center">
-        <div className="flex items-center gap-3">
-          <img src={ceiLogo} alt="CEi Logo" className="w-12 h-12 object-contain" />
-          <h1 className="text-2xl font-semibold text-black">CEiVoice</h1>
-        </div>
-
-        <button
-          className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-xl"
-          onClick={() => window.location.href = "/login"}
-        >
-          Log in
-        </button>
-      </div>
+      <Navbar title="Log in"></Navbar>
 
       <div className="max-w-5xl mx-auto mt-10 bg-white rounded-2xl shadow-lg p-8">
 
@@ -132,6 +119,8 @@ export default function TrackTicket() {
               <p><strong>Category:</strong> {ticket.category}</p>
               <p><strong>Priority:</strong> {ticket.priority}</p>
               <p><strong>Last Updated:</strong> {ticket.updatedAt}</p>
+              <p><strong>Issue:</strong> {ticket.issue}</p>
+              
             </div>
           )}
 

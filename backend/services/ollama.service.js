@@ -25,17 +25,18 @@ const generateDraftTicket = async (email, issue, user) => {
 
     const parsed = JSON.parse(response.response);
 
-    await Ticket.create({
+    const newTicket = await Ticket.create({
         email: email,
-        user_issue: issue,
+        issue: issue,
         title: parsed.title,
         summary: parsed.summary,
         category: parsed.category,
         resolution_path: parsed.resolution_path,
         original_message: issue,
-        creator : user
+        creator: user
     });
-
+    
+    return newTicket
 
 };
 
