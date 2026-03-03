@@ -1,4 +1,5 @@
 import { useState } from "react";
+import api from "../api/axios";
 import axios from "axios";
 import ceiLogo from "../assets/cei.png";
 import noSearchImg from "../assets/no_search.png";
@@ -25,7 +26,7 @@ export default function TrackTicket() {
     try {
       setStatus("loading");
 
-      const res = await axios.post("/api/tickets/track", {
+      const res = await api.post("/api/tickets/track", {
         trackingId,
         email,
       });
