@@ -1,16 +1,17 @@
 import { useState } from "react";
 import api from "../api/axios";
-import axios from "axios";
 import ceiLogo from "../assets/cei.png";
 import noSearchImg from "../assets/no_search.png";
 import error_img from "../assets/error_img.png";
 import NavBarNoLogin from "../components/NavbarNoLogin";
+
+
 export default function TrackTicket() {
   const [trackingId, setTrackingId] = useState("");
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState("idle");
   const [ticket, setTicket] = useState(null);
-  
+  const [error, setError] = useState("")
 
   const onSearch = async (e) => {
     e.preventDefault();
@@ -26,8 +27,8 @@ export default function TrackTicket() {
     try {
       setStatus("loading");
 
-      const res = await api.post("/api/tickets/track", {
-        trackingId,
+      const res = await api.post("/api/tickets/track/submit", {
+        ticketId: trackingId,
         email,
       });
 
@@ -90,7 +91,7 @@ export default function TrackTicket() {
 
           <button
             type="submit"
-            className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-xl"
+            className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-xl cursor-pointer"
           >
             {status === "loading" ? "Searching..." : "Search"}
           </button>

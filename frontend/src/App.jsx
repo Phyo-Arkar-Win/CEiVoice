@@ -10,23 +10,25 @@ import TrackTicketNL from './pages/TrackingTicketNL';
 // import Signup from './pages/Signup';
 
 const App = () => {
-  return (
-    <>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          
-          <Route path="/dashboard" element={<Dashboard/>} />
-          <Route path="/submitrequest" element={<SubmitReq/>} />
-          <Route path="/tracking" element={<Tracking/>} />
-          <Route path="/trackticket" element={<TrackTicketNL />} />
+    return (
+        <>
+            <BrowserRouter>
+                <Routes>
 
-          {/* <Route path='/register' element={<Signup />} /> */}
-        </Routes>
-      </BrowserRouter>
-    </>
-  )
+
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/signup" element={<Signup />} />
+
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/submit" element={<SubmitReq />} />
+                    <Route path="/track" element={<Tracking />} />
+                    <Route path="/trackticket" element={<TrackTicket />} />
+
+                    {/* <Route path='/register' element={<Signup />} /> */}
+                </Routes>
+            </BrowserRouter>
+        </>
+    )
 }
 
 export default App;
