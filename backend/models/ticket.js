@@ -11,7 +11,7 @@ const ticketSchema = new mongoose.Schema(
         status: {
             type: String,
             enum: [
-                'Draft',
+                'Draft', 
                 'New',
                 'Assigned',
                 'Solving',
@@ -21,9 +21,22 @@ const ticketSchema = new mongoose.Schema(
             ],
             default: 'Draft',
         },
-        creator: { type: String },
+        creator: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+            // required: true,
+        }, // changed from { type: String }
         followers: [{ type: String }],
-        assignees: [{ type: String }],
+        assignees: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+        parentTicketId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Ticket',
+            default: null,
+        },
+        mergedRequestIds: [
+            { type: mongoose.Schema.Types.ObjectId, ref: 'Ticket' },
+        ],
+        deadline: { type: Date },
     },
     { timestamps: true },
 );
