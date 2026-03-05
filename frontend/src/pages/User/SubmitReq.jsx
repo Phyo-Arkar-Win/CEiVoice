@@ -42,7 +42,6 @@ export default function SubmitReq() {
 
     try {
       setLoading(true);
-
       const res = await api.post("/submit", {
         email,
         issue,
