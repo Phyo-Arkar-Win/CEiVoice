@@ -54,6 +54,7 @@ export default function SubmitReq() {
 
     } catch (err) {
       console.error(err);
+      console.log(err)
       setError("Failed to submit ticket. Please try again.");
     } finally {
       setLoading(false);
@@ -61,7 +62,7 @@ export default function SubmitReq() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-300 flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       <UserNavbar />
 
       {/* Content Wrapper */}
@@ -71,7 +72,7 @@ export default function SubmitReq() {
             w-[90%]
             md:w-[80%]
             mx-auto
-            bg-[rgb(241,236,236)]
+            bg-white
             rounded-2xl
             shadow-xl
             p-6

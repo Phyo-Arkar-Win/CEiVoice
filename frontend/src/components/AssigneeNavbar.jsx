@@ -30,7 +30,7 @@ export default function AdminNavbar() {
 
   return (
     <>
-    <div className="h-screen w-64 bg-gray-100 border-r-2 border-orange-500 flex flex-col justify-between">
+    <div className="h-screen w-64  bg-gray-100 border-r-2 border-orange-500 flex flex-col justify-between">
 
       {/* TOP SECTION */}
       <div>

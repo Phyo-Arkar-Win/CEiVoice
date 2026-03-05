@@ -24,6 +24,7 @@ const App = () => {
         <>
             <BrowserRouter>
                 <Routes>
+                    
 
                     {/* AUTHENTICATION */}
                     <Route path="/login" element={<Login />} />
