@@ -24,6 +24,6 @@ app.use('/login', loginRoutes);
 app.use('/signup', signupRoutes);
 app.use('/email', emailRoutes);
 app.use('/submit', issueSubmissionRoutes);
-app.use('/api/tickets', ticketRoutes);
+app.use('/tickets', ticketRoutes);
 
 export default app;
