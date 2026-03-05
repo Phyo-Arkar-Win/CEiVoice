@@ -7,6 +7,8 @@ import signupRoutes from './routes/signup.routes.js';
 import emailRoutes from './routes/email.routes.js';
 import issueSubmissionRoutes from './routes/issueSubmission.routes.js';
 import ticketRoutes from './routes/ticket.routes.js';
+import recruitAssigneeRoutes from './routes/recruitAssignee.routes.js';
+import ScopesRoutes from './routes/scopes.routes.js';
 
 const app = express();
 
@@ -25,5 +27,7 @@ app.use('/signup', signupRoutes);
 app.use('/email', emailRoutes);
 app.use('/submit', issueSubmissionRoutes);
 app.use('/tickets', ticketRoutes);
+app.use('/recruit', recruitAssigneeRoutes);
+app.use('/scopes', ScopesRoutes);
 
 export default app;
