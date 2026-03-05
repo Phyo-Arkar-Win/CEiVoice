@@ -1,8 +1,9 @@
 import { Router } from 'express';
-import recruitAssigneeController from '../controllers/recruitAssignee.controller.js';
+import { recruitAssignee, getAssignee } from '../controllers/recruitAssignee.controller.js';
 
 const router = Router();
 
-router.post('/', recruitAssigneeController);
+router.get("/", getAssignee)
+router.post('/', recruitAssignee);
 
 export default router;

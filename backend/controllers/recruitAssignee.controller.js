@@ -1,25 +1,60 @@
 import User from '../models/user.js';
+import Scope from "../models/scope.js"
 
-const recruitAssignee = async (req, res) => {
-    try {
-        const { name, email, scopes } = req.body;
-        const user = await User.findOne({ email });
+export const getAssignee = async (req, res) => {
+  try {
+    const assignees = await User.find({ role: "assignee" }).populate("scopes")
+    res.status(200).json({
+      success: true,
+      data: assignees
+    });
 
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch assignees",
+      error: error.message
+    });
+  }
+};
 
-        
-        user.name = name;
-        user.scope = scopes;
-        user.role = 'assignee';
+export const recruitAssignee = async (req, res) => {
 
-        await user.save();
+  try {
 
-        res.status(200).json({ message: 'Assignee assigned successfully', data: user });
-    } catch (error) {
-        res.status(500).json({ message: `Cannot assign assignee. ${error.message}` });
+    const { name, email, scopes } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found"
+      });
     }
-}
 
-export default recruitAssignee;
+    // convert scope names -> ids
+    const scopeDocs = await Scope.find({
+      name: { $in: scopes }
+    });
+
+    const scopeIds = scopeDocs.map(s => s._id);
+
+    user.name = name;
+    user.scopes = scopeIds;
+    user.role = "assignee";
+
+    await user.save();
+
+    res.status(200).json({
+      message: "Assignee assigned successfully",
+      data: user
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+};

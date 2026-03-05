@@ -33,7 +33,7 @@ export default function AdminNavbar() {
       <div>
         {/* Logo + Title */}
         <div className="flex items-center gap-3 px-6 py-4 border-b border-orange-500">
-          <img src={ceiLogo} alt="CEi Logo" className="w-10 h-10 object-contain" />
+          <img src={ceiLogo} alt="CEi Logo" className="w-14 h-14 object-contain" />
           <h1 className="text-xl font-bold">CEiVoice</h1>
         </div>
 
@@ -59,17 +59,10 @@ export default function AdminNavbar() {
             Tickets
           </NavLink>
 
-          <NavLink to="/reports" className={linkStyle}>
-            Reports
-          </NavLink>
-
           <NavLink to="/staff" className={linkStyle}>
             Staff Management
           </NavLink>
 
-          <NavLink to="/settings" className={linkStyle}>
-            Settings
-          </NavLink>
         </div>
       </div>
 

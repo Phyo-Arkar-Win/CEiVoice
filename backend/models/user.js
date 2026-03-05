@@ -5,7 +5,12 @@ const userSchema = new mongoose.Schema({
     password: { type: String },
     name: { type: String, required: true },
     role: { type: String, enum: ['user', 'admin', "assignee"], default: 'user' },
-    scope: [{ type: String}]
+    scopes: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Scope"
+        }
+    ]
 }, { timestamps: true });
 
 export default mongoose.model('User', userSchema);
