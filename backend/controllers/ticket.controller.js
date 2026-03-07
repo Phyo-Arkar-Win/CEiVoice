@@ -145,6 +145,9 @@ export const viewTicketAsGuest = async (req, res) => {
 
 export const viewTicketAsUser = async (req, res) => {
     const { email, ticketId } = req.body;
+    if (!email || !ticketId) {
+        return res.status(400).json({ message: 'Email and Ticket ID are required' });
+    }
     try {
         const ticket = await Ticket.findById(ticketId);
         if (ticket.email !== email) {
