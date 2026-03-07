@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route, BrowserRouter } from 'react-router-dom';
 
+import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import TrackTicket from './pages/TrackingTicketNL';
@@ -28,7 +29,8 @@ const App = () => {
         <>
             <BrowserRouter>
                 <Routes>
-
+                    {/* Home "/" Route */}
+                    <Route path='/' element={<Home/>}/>
 
                     {/* AUTHENTICATION */}
                     <Route path="/login" element={<Login />} />
