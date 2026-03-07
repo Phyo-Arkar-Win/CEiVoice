@@ -30,7 +30,7 @@ export default function AdminNavbar() {
 
   return (
     <>
-    <div className="h-screen w-64  bg-gray-100 border-r-2 border-orange-500 flex flex-col justify-between">
+    <div className="h-screen w-64 bg-gray-100 border-r-2 border-orange-500 flex flex-col justify-between">
 
       {/* TOP SECTION */}
       <div>
@@ -41,7 +41,7 @@ export default function AdminNavbar() {
         </div>
 
         {/* User Info */}
-        <div className="flex flex-col items-center py-6 mt-4">
+        <div className="flex flex-col items-center py-2 mt-6">
           <span className="border-b text-xl border-black px-2 font-medium">
             {name}
           </span>
@@ -49,7 +49,7 @@ export default function AdminNavbar() {
         </div>
 
         {/* Navigation Links */}
-        <div className="flex flex-col py-4 text-xl mt-4">
+        <div className="flex flex-col py-1 text-xl">
           <NavLink to="/assignee_dashboard" className={({isActive})=>`${linkStyle({ isActive })} flex gap-2`}>
           <BsGraphUp className="font-bold mt-1" />
           

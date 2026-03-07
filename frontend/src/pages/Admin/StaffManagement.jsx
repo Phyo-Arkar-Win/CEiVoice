@@ -270,7 +270,7 @@ export default function StaffManagement() {
 
               {assignees.map((user) => (
 
-                <tr key={user._id} className="border-t">
+                <tr key={user._id} className="border-t text-lg">
 
                   <td className="py-2">
                     {user.name}
@@ -281,8 +281,8 @@ export default function StaffManagement() {
                   </td>
 
                   <td>
- {user.scopes?.map(scope => scope.name).join(", ")}
-</td>
+                    {user.scopes?.map(scope => scope.name).join(", ")}
+                  </td>
 
                   <td>
                     <LuPencil className="text-xl cursor-pointer" />
