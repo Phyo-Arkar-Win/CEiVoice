@@ -1,6 +1,6 @@
 import Ticket from '../models/ticket.js';
 
-const getAssigneeStats = async (req, res) => {
+const getAssigneeDashboardData = async (req, res) => {
     try {
         const assigneeId = req.user._id;
 
@@ -14,7 +14,7 @@ const getAssigneeStats = async (req, res) => {
         threeDaysLater.setDate(threeDaysLater.getDate() + 3);
         threeDaysLater.setHours(23, 59, 59, 999);
 
-        const activeStatus = ['New', 'Solving', 'Renew'];
+        const activeStatus = ['New', 'Solving'];
 
         // active tickets
         const activeTickets = await Ticket.countDocuments({
@@ -43,15 +43,20 @@ const getAssigneeStats = async (req, res) => {
             deadline: { $lt: todayStart }
         })
 
+        const tickets = await Ticket.find({ assignees: assigneeId, status: { $in: activeStatus } });
+
         res.status(200).json({
-            activeTickets,
-            nearDeadlineTickets,
-            dueTodayTickets,
-            overdueTickets
+            stats: {
+                activeTickets,
+                nearDeadlineTickets,
+                dueTodayTickets,
+                overdueTickets
+            },
+            tickets
         });
     } catch (error) {
         res.status(500).json({ message: `Error fetching dashboard data: ${error.message}` });
     }
 }
 
-export { getAssigneeStats };
+export { getAssigneeDashboardData };

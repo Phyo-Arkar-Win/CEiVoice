@@ -16,7 +16,6 @@ const ticketSchema = new mongoose.Schema(
                 'Solving',
                 'Solved',
                 'Failed',
-                'Renew',
             ],
             default: 'Draft',
         },
