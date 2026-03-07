@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
-import { ticketEmailTemplate } from "./emailTemplate.js";
+import { confirmationEmailTemplate } from "./confirmationEmail.js";
+import { updateStatusEmailTemplate } from "./updateStatusEmail.js";
 
 const getTransporter = () => {
     return nodemailer.createTransport({
@@ -11,15 +12,26 @@ const getTransporter = () => {
     });
 };
 
-const sendEmail = async (email, issue) => {
+const sendConfirmationEmail = async (email, issue) => {
     const transporter = getTransporter();
     const mailOptions = {
         from: process.env.EMAIL_USER,
         to: email,
         subject: "Confirmation of Issue Report",
-        html: ticketEmailTemplate(issue)
+        html: confirmationEmailTemplate(issue)
     }
     await transporter.sendMail(mailOptions);
 }
 
-export default sendEmail;
+export const sendStatusUpdateEmail = async (email, ticket) => {
+    const transporter = getTransporter();
+    const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: `Update on Your Ticket: ${ticket.title}`,
+        html: updateStatusEmailTemplate(ticket)
+    };
+    await transporter.sendMail(mailOptions);
+};
+
+export default sendConfirmationEmail;
