@@ -1,63 +1,61 @@
-import React from 'react';
-import { Routes, Route, BrowserRouter } from 'react-router-dom';
+import React from "react";
+import { Routes, Route, BrowserRouter } from "react-router-dom";
 
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
-import TrackTicket from './pages/TrackingTicketNL';
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import TrackTicket from "./pages/TrackingTicketNL";
 
 // User
-import Dashboard from './pages/User/Dashboard';
-import SubmitReq from './pages/User/SubmitReq';
-import Tracking from './pages/User/Tracking';
+import Dashboard from "./pages/User/Dashboard";
+import SubmitReq from "./pages/User/SubmitReq";
+import Tracking from "./pages/User/Tracking";
 import Confirmation from "./pages/User/Confirmation";
 
 // Admin
-import Admin_Dashboard from './pages/Admin/Admin_Dashboard';
+import Admin_Dashboard from "./pages/Admin/Admin_Dashboard";
 import Draft from "./pages/Admin/Draft";
-import StaffManagement from './pages/Admin/StaffManagement';
+import StaffManagement from "./pages/Admin/StaffManagement";
 import Tickets from "./pages/Admin/Tickets";
 import MergeDraftToNew from "./pages/Admin/MergeDraftToNew";
 
 // Assignee
 import Assignee_Dashboard from "./pages/Assignee/Assignee_Dashboard";
-import Assignee_Referral from './pages/Assignee/Referral';
-import Assignee_Historylog from './pages/Assignee/History_log';
+import Assignee_Referral from "./pages/Assignee/Referral";
+import Assignee_Historylog from "./pages/Assignee/History_log";
 
 const App = () => {
-    return (
-        <BrowserRouter>
-            <Routes>
-                {/* Home "/" Route */}
-                <Route path='/' element={<Home />} />
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* Home */}
+        <Route path="/" element={<Home />} />
 
-                {/* AUTHENTICATION */}
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
-                <Route path="/trackticket" element={<TrackTicket />} />
+        {/* Authentication */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/trackticket" element={<TrackTicket />} />
 
-                {/* User Route */}
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/submit" element={<SubmitReq />} />
-                <Route path="/track" element={<Tracking />} />
-                <Route path="/confirmation" element={<Confirmation />} />
+        {/* User */}
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/submit" element={<SubmitReq />} />
+        <Route path="/track" element={<Tracking />} />
+        <Route path="/confirmation" element={<Confirmation />} />
 
-                {/* Admin Route */}
-                <Route path='/admin_dashboard' element={<Admin_Dashboard />} />
-                <Route path='/drafts' element={<Draft />} />
-                <Route path='/tickets' element={<Tickets />} />
-                <Route path='/staff' element={<StaffManagement />} />
+        {/* Admin */}
+        <Route path="/admin/dashboard" element={<Admin_Dashboard />} />
+        <Route path="/admin/drafts" element={<Draft />} />
+        <Route path="/admin/drafts/merge" element={<MergeDraftToNew />} />
+        <Route path="/admin/tickets" element={<Tickets />} />
+        <Route path="/admin/staff" element={<StaffManagement />} />
 
-                {/* NEW MERGE PAGE */}
-                <Route path='/merge_draft_to_new' element={<MergeDraftToNew />} />
-
-                {/* Assignee Route */}
-                <Route path='/assignee_dashboard' element={<Assignee_Dashboard />} />
-                <Route path='/assignee_referral' element={<Assignee_Referral />} />
-                <Route path='/assignee_historylog' element={<Assignee_Historylog />} />
-            </Routes>
-        </BrowserRouter>
-    );
+        {/* Assignee */}
+        <Route path="/assignee/dashboard" element={<Assignee_Dashboard />} />
+        <Route path="/assignee/referral" element={<Assignee_Referral />} />
+        <Route path="/assignee/historylog" element={<Assignee_Historylog />} />
+      </Routes>
+    </BrowserRouter>
+  );
 };
 
 export default App;

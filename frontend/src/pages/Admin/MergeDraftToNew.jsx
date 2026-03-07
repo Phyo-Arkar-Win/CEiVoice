@@ -1,32 +1,41 @@
 import React, { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
 import AdminNavbar from "@/components/AdminNavbar";
 import api from "../../api/axios";
 
-export default function MergeDraftToNewPage() {
-  const location = useLocation();
-  const navigate = useNavigate();
+export default function Tickets() {
 
-  const mergedTicketsFromState = location.state?.mergedTickets || [];
-
-  const [title, setTitle] = useState("Mouse Not Working");
-  const [category, setCategory] = useState("Hardware Issue");
-  const [summary, setSummary] = useState(
-    "Multiple users reported that their mouse devices are not responding."
-  );
-  const [resolution, setResolution] = useState(
-    "1. Check USB connection\n2. Try another port\n3. Restart the device\n4. Replace hardware if needed"
-  );
   const [deadline, setDeadline] = useState("");
-  const [mergedUsers, setMergedUsers] = useState(
-    mergedTicketsFromState.length > 0
-      ? mergedTicketsFromState.map((ticket, index) => ({
-          id: ticket.id,
-          email: `user${index + 1}@uni.edu`,
-          description: ticket.title,
-        }))
-      : []
-  );
+  const [assignee, setAssignee] = useState("Linn Hein Htet");
+
+  const assignees = [
+    "Linn Hein Htet",
+    "Phyo Arkar Win",
+    "Luchit",
+    "Yu Yu Khaing",
+    "Hsaung Thet Htar",
+    "Aung Pyae Song"
+
+  ];
+
+  const title = "";
+  const category = "";
+  const summary =
+    "";
+  const resolution =
+    "";
+
+  const [mergedUsers, setMergedUsers] = useState([
+    {
+      id: "Ticket-001",
+      email: "",
+      description: "",
+    },
+    {
+      id: "Ticket-002",
+      email: "",
+      description: "",
+    },
+  ]);
 
   const unmergeUser = (index) => {
     const updated = [...mergedUsers];
@@ -35,36 +44,46 @@ export default function MergeDraftToNewPage() {
   };
 
   const handleSubmit = async () => {
+
     const payload = {
       title,
       category,
       deadline,
+      assignee,
       summary,
       resolutionPath: resolution,
       mergedTickets: mergedUsers,
     };
 
     try {
+
       console.log("Submitting Ticket:", payload);
+
       await api.post("/tickets/merge", payload);
-      alert("Ticket submitted successfully!");
-      navigate("/admin/drafts");
+
+      alert("Ticket submitted!");
+
     } catch (error) {
+
       console.log("Backend not ready yet", payload);
-      alert("Backend not ready yet, but payload is ready.");
+
     }
   };
 
   return (
     <div className="min-h-screen flex bg-gray-200">
+
       <AdminNavbar />
 
       <div className="flex-1 p-10">
+
         <h1 className="text-2xl font-semibold mb-6">
           Merged Draft Ticket (AI Suggested)
         </h1>
 
+        {/* FORM CARD */}
         <div className="bg-gray-100 rounded-xl shadow p-6 mb-8">
+
           <div className="flex justify-end mb-3">
             <span className="bg-orange-200 text-orange-700 px-3 py-1 rounded-full text-sm">
               AI Suggestion
@@ -72,60 +91,78 @@ export default function MergeDraftToNewPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-8">
+
+            {/* TITLE */}
             <div>
               <label className="font-semibold block mb-2">Title</label>
-              <input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="w-full h-10 border border-orange-400 rounded-full px-4 bg-white"
-              />
+              <div className="w-full h-10 border border-orange-400 rounded-full px-4 flex items-center bg-white">
+                {title}
+              </div>
             </div>
 
+            {/* CATEGORY */}
             <div>
               <label className="font-semibold block mb-2">Category</label>
-              <input
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full h-10 border border-orange-400 rounded-full px-4 bg-white"
-              />
+              <div className="w-full h-10 border border-orange-400 rounded-full px-4 flex items-center bg-white">
+                {category}
+              </div>
             </div>
 
+            {/* SUMMARY */}
             <div>
               <label className="font-semibold block mb-2">Summary</label>
-              <textarea
-                value={summary}
-                onChange={(e) => setSummary(e.target.value)}
-                className="w-full h-32 border border-orange-400 rounded-xl px-4 py-2 bg-white resize-none"
-              />
+              <div className="w-full h-32 border border-orange-400 rounded-xl px-4 py-2 bg-white">
+                {summary}
+              </div>
             </div>
 
+            {/* RESOLUTION */}
             <div>
               <label className="font-semibold block mb-2">Resolution Path</label>
-              <textarea
-                value={resolution}
-                onChange={(e) => setResolution(e.target.value)}
-                className="w-full h-32 border border-orange-400 rounded-xl px-4 py-2 whitespace-pre-line bg-white resize-none"
+              <div className="w-full h-32 border border-orange-400 rounded-xl px-4 py-2 whitespace-pre-line bg-white">
+                {resolution}
+              </div>
+            </div>
+
+            {/* DEADLINE */}
+            <div>
+              <label className="font-semibold block mb-2">Deadline</label>
+              <input
+                type="date"
+                value={deadline}
+                onChange={(e) => setDeadline(e.target.value)}
+                className="w-full h-10 border border-orange-400 rounded-full px-4 focus:outline-none focus:ring-2 focus:ring-orange-300"
               />
             </div>
 
-            <div className="col-span-2">
-              <label className="font-semibold block mb-2">Deadline</label>
-              <input
-                type="datetime-local"
-                value={deadline}
-                onChange={(e) => setDeadline(e.target.value)}
-                className="w-full h-10 border border-orange-400 rounded-full px-4 bg-white"
-              />
+            {/* ASSIGNEE */}
+            <div>
+              <label className="font-semibold block mb-2">Assignee</label>
+              <select
+                value={assignee}
+                onChange={(e) => setAssignee(e.target.value)}
+                className="w-full h-10 border border-orange-400 rounded-full px-4 bg-white focus:outline-none focus:ring-2 focus:ring-orange-300"
+              >
+                {assignees.map((name, index) => (
+                  <option key={index} value={name}>
+                    {name}
+                  </option>
+                ))}
+              </select>
             </div>
+
           </div>
         </div>
 
+        {/* MERGED USERS */}
         <div className="bg-gray-100 rounded-xl shadow p-6">
+
           <h2 className="text-lg font-semibold mb-4">
-            Merged Requests / Users ({mergedUsers.length})
+            Merged Users:
           </h2>
 
           <table className="w-full">
+
             <thead>
               <tr>
                 <th className="text-left py-2">Request ID</th>
@@ -137,10 +174,13 @@ export default function MergeDraftToNewPage() {
 
             <tbody>
               {mergedUsers.map((user, index) => (
-                <tr key={user.id} className="border-t">
+
+                <tr key={index} className="border-t">
+
                   <td className="py-3">{user.id}</td>
                   <td>{user.email}</td>
                   <td>{user.description}</td>
+
                   <td>
                     <button
                       onClick={() => unmergeUser(index)}
@@ -149,16 +189,17 @@ export default function MergeDraftToNewPage() {
                       Unmerge
                     </button>
                   </td>
+
                 </tr>
+
               ))}
             </tbody>
+
           </table>
 
           <div className="flex justify-end gap-4 mt-6">
-            <button
-              onClick={() => navigate("/admin/drafts")}
-              className="bg-gray-300 px-6 py-2 rounded hover:bg-gray-400"
-            >
+
+            <button className="bg-gray-300 px-6 py-2 rounded hover:bg-gray-400">
               Cancel
             </button>
 
@@ -168,8 +209,11 @@ export default function MergeDraftToNewPage() {
             >
               Submit Ticket
             </button>
+
           </div>
+
         </div>
+
       </div>
     </div>
   );

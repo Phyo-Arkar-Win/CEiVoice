@@ -5,29 +5,35 @@ import api from "../../api/axios";
 export default function Tickets() {
 
   const [deadline, setDeadline] = useState("");
+  const [assignee, setAssignee] = useState("Linn Hein Htet");
 
-  const title = "Mouse Not Working";
-  const category = "Hardware Issue";
+  const assignees = [
+    "Linn Hein Htet",
+    "Phyo Arkar Win",
+    "Luchit",
+    "Yu Yu Khaing",
+    "Hsaung Thet Htar",
+    "Aung Pyae Song"
+
+  ];
+
+  const title = "";
+  const category = "";
   const summary =
-    "User reported that their mouse stopped responding. Cursor does not move even after reconnecting.";
+    "";
   const resolution =
-    "1. Check USB connection\n2. Try different port\n3. Restart system\n4. Replace mouse if issue persists";
+    "";
 
   const [mergedUsers, setMergedUsers] = useState([
     {
       id: "Ticket-001",
-      email: "linnheinhtet@gmail.com",
-      description: "Mouse not working",
+      email: "",
+      description: "",
     },
     {
       id: "Ticket-002",
-      email: "linnheinhtet@gmail.com",
-      description: "Mouse not working",
-    },
-    {
-      id: "Ticket-003",
-      email: "linnheinhtet@gmail.com",
-      description: "Mouse not working",
+      email: "",
+      description: "",
     },
   ]);
 
@@ -43,6 +49,7 @@ export default function Tickets() {
       title,
       category,
       deadline,
+      assignee,
       summary,
       resolutionPath: resolution,
       mergedTickets: mergedUsers,
@@ -117,8 +124,8 @@ export default function Tickets() {
               </div>
             </div>
 
-            {/* DEADLINE (Editable) */}
-            <div className="col-span-2">
+            {/* DEADLINE */}
+            <div>
               <label className="font-semibold block mb-2">Deadline</label>
               <input
                 type="date"
@@ -126,6 +133,22 @@ export default function Tickets() {
                 onChange={(e) => setDeadline(e.target.value)}
                 className="w-full h-10 border border-orange-400 rounded-full px-4 focus:outline-none focus:ring-2 focus:ring-orange-300"
               />
+            </div>
+
+            {/* ASSIGNEE */}
+            <div>
+              <label className="font-semibold block mb-2">Assignee</label>
+              <select
+                value={assignee}
+                onChange={(e) => setAssignee(e.target.value)}
+                className="w-full h-10 border border-orange-400 rounded-full px-4 bg-white focus:outline-none focus:ring-2 focus:ring-orange-300"
+              >
+                {assignees.map((name, index) => (
+                  <option key={index} value={name}>
+                    {name}
+                  </option>
+                ))}
+              </select>
             </div>
 
           </div>

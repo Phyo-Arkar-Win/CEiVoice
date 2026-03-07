@@ -63,45 +63,51 @@ export default function Draft() {
     <div className="h-screen flex bg-gray-200 overflow-hidden">
       <AdminNavbar />
 
-      <div className="flex-1 p-8 overflow-hidden">
+      <div className="flex-1 p-8 overflow-y-auto">
         <h1 className="text-2xl font-bold mb-6">Draft Tickets</h1>
 
-        <div className="bg-gray-100 rounded-xl shadow p-6 mb-6 overflow-y-auto max-h-[420px]">
+        {/* TOP CARD */}
+        <div className="bg-gray-100 rounded-xl shadow p-6 mb-6 overflow-y-auto max-h-[500px]">
           {tickets.map((ticket, index) => (
             <div key={ticket.id} className="mb-6 border-b pb-4 last:border-b-0">
               <div className="flex items-center justify-between mb-3">
-                <div
-                  className="flex items-center gap-3 cursor-pointer"
-                  onClick={() => toggleExpand(index)}
-                >
+                <div className="flex items-center gap-3">
                   <input
                     type="checkbox"
                     checked={ticket.checked}
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      toggleCheck(index);
-                    }}
-                    className="w-4 h-4"
+                    onChange={() => toggleCheck(index)}
+                    className="w-4 h-4 cursor-pointer"
                   />
-                  <span>{ticket.id}</span>
+
+                  <button
+                    type="button"
+                    onClick={() => toggleExpand(index)}
+                    className="select-none text-left cursor-pointer hover:text-orange-600"
+                  >
+                    {ticket.id}
+                  </button>
                 </div>
 
                 <div className="flex gap-3">
                   <button
+                    type="button"
                     onClick={() => toggleExpand(index)}
                     className="bg-gray-300 px-4 py-1 rounded hover:bg-gray-400"
                   >
                     Edit
                   </button>
 
-                  <button className="bg-orange-500 text-white px-4 py-1 rounded hover:bg-orange-600">
+                  <button
+                    type="button"
+                    className="bg-orange-500 text-white px-4 py-1 rounded hover:bg-orange-600"
+                  >
                     Save
                   </button>
                 </div>
               </div>
 
               {ticket.expanded && (
-                <div className="border border-gray-500 rounded-2xl p-4 grid grid-cols-2 gap-6 max-h-[420px] overflow-y-auto">
+                <div className="border border-gray-500 rounded-2xl p-4 grid grid-cols-2 gap-6">
                   <div>
                     <label className="font-semibold block mb-1">Title</label>
                     <input
@@ -169,7 +175,8 @@ export default function Draft() {
           ))}
         </div>
 
-        <div className="bg-gray-100 rounded-xl shadow p-6 overflow-y-auto max-h-[260px]">
+        {/* MERGE CARD */}
+        <div className="bg-gray-100 rounded-xl shadow p-6 mb-8">
           <h2 className="text-2xl font-bold mb-6">Merge Selected Requests</h2>
 
           <div className="bg-orange-100 border border-orange-300 p-4 mb-8 w-fit">
@@ -198,6 +205,7 @@ export default function Draft() {
 
           <div className="flex justify-end mt-8">
             <button
+              type="button"
               onClick={handleMerge}
               className="bg-orange-500 text-white px-5 py-2 rounded hover:bg-orange-600"
             >
