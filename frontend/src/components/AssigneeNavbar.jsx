@@ -35,7 +35,7 @@ export default function AdminNavbar() {
       {/* TOP SECTION */}
       <div>
         {/* Logo + Title */}
-        <div className="flex items-center gap-3 px-6 py-4 border-b border-orange-500">
+        <div className="flex items-center gap-3 px-6 py-4 border-b-2 border-orange-500">
           <img src={ceiLogo} alt="CEi Logo" className="w-15 h-15 object-contain" />
           <h1 className="text-xl font-bold">CEiVoice</h1>
         </div>
