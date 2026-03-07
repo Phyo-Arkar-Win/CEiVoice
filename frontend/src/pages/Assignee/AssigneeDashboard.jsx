@@ -5,7 +5,10 @@ import { FaSearch } from "react-icons/fa";
 
 export default function Assignee_Dashboard() {
   const navigate = useNavigate();
-  const [tickets, setTickets] = useState([
+
+  const [collapsed, setCollapsed] = useState(true);
+
+  const [tickets] = useState([
     {
       id: "Ticket-001",
       title: "My mouse not working",
@@ -34,18 +37,25 @@ export default function Assignee_Dashboard() {
   };
 
   return (
-    <div className="min-h-screen flex bg-gray-100">
+    <div className="bg-gray-100 min-h-screen">
+
       {/* Sidebar */}
-      <AssigneeNavbar />
+      <AssigneeNavbar
+        collapsed={collapsed}
+        setCollapsed={setCollapsed}
+      />
 
       {/* Main Content */}
-      <div className="flex-1 p-8">
-
+      <div
+        className={`transition-all duration-300 p-8 ${
+          collapsed ? "ml-20" : "ml-64"
+        }`}
+      >
         {/* Statistics */}
         <div className="bg-white shadow rounded-xl p-6 mb-6">
           <h2 className="text-xl font-semibold mb-4">Statistics</h2>
 
-          <div className="flex gap-12 text-lg">
+          <div className="flex gap-12 text-lg flex-wrap">
             <p><span className="font-semibold">Active:</span> {stats.active}</p>
             <p><span className="font-semibold">Near Deadline:</span> {stats.nearDeadline}</p>
             <p><span className="font-semibold">Due Today:</span> {stats.dueToday}</p>
@@ -54,7 +64,7 @@ export default function Assignee_Dashboard() {
         </div>
 
         {/* Ticket Table */}
-        <div className="bg-white shadow rounded-xl p-6">
+        <div className="bg-white shadow rounded-xl p-6 overflow-x-auto">
           <h2 className="text-xl font-semibold mb-6">Assignee Dashboard</h2>
 
           <table className="w-full text-left">
@@ -84,9 +94,12 @@ export default function Assignee_Dashboard() {
                   <td className="p-3">
                     <FaSearch
                       onClick={() =>
-                        navigate(`/assignee_ticket_details/${encodeURIComponent(ticket.id)}`, {
-                          state: { ticketId: ticket.id },
-                        })
+                        navigate(
+                          `/assignee_ticket_details/${encodeURIComponent(ticket.id)}`,
+                          {
+                            state: { ticketId: ticket.id },
+                          }
+                        )
                       }
                       className="cursor-pointer text-gray-700"
                     />
@@ -97,7 +110,6 @@ export default function Assignee_Dashboard() {
 
           </table>
         </div>
-
       </div>
     </div>
   );

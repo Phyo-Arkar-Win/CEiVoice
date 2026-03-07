@@ -27,6 +27,7 @@ import Tickets from "./pages/Admin/Tickets"
 import Assignee_Dashboard from "./pages/Assignee/AssigneeDashboard"
 import Assignee_Referral from './pages/Assignee/Referral';
 import Assignee_Historylog from './pages/Assignee/HistoryLog';
+import Assignee_Ticket_Details from './pages/Assignee/AssigneeTicketDetails';
 
 const App = () => {
     return (
@@ -43,7 +44,9 @@ const App = () => {
 
                     {/* User Route */}
                     <Route path="/dashboard" element={
-                        <ProtectedRoute allowedRoles={["user"]}> <Dashboard /></ProtectedRoute>} />
+                        <ProtectedRoute allowedRoles={["user"]}> 
+                            <Dashboard />
+                        </ProtectedRoute>} />
                     <Route path="/submit" element={
                         <ProtectedRoute allowedRoles={["user"]}>
                             <SubmitReq />
@@ -84,6 +87,11 @@ const App = () => {
                     <Route path='/assignee_historylog' element={
                         <ProtectedRoute allowedRoles={["assignee"]}>
                             <Assignee_Historylog />
+                        </ProtectedRoute>}/>
+
+                    <Route path='/assignee_ticket_details/:routeTicketId' element= {
+                        <ProtectedRoute allowedRoles={['assignee']}>
+                            <Assignee_Ticket_Details/>
                         </ProtectedRoute>}/>
                     
                     {/* UNAUTHORIZED PAGE */}

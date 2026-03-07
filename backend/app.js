@@ -9,11 +9,7 @@ import issueSubmissionRoutes from './routes/issueSubmission.routes.js';
 import ticketRoutes from './routes/ticket.routes.js';
 import recruitAssigneeRoutes from './routes/recruitAssignee.routes.js';
 import ScopesRoutes from './routes/scopes.routes.js';
-<<<<<<< HEAD
-import historyLogRoutes from './routes/historyLog.routes.js';
-=======
 import assigneeRoutes from './routes/assignee.routes.js';
->>>>>>> 10a7898f42cd608901005692050394dcb17f49b7
 
 const app = express();
 

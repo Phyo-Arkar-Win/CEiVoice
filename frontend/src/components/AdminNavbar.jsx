@@ -1,79 +1,116 @@
-import React, { useEffect, useState } from "react";
-import ceiLogo from "../assets/cei.png";
-import { IoIosLogOut } from "react-icons/io";
-import { NavLink, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import AssigneeNavbar from "@/components/AssigneeNavbar";
+import { FaSearch } from "react-icons/fa";
 
-export default function AdminNavbar() {
-  const [name, setName] = useState("");
+export default function Assignee_Dashboard() {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (user) {
-      setName(user.name);
-    }
-  }, []);
+  const [collapsed, setCollapsed] = useState(false);
 
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-    navigate("/login");
+  const [tickets] = useState([
+    {
+      id: "Ticket-001",
+      title: "My mouse not working",
+      status: "Assigned",
+      deadline: "3/3/2026",
+    },
+    {
+      id: "Ticket-002",
+      title: "My mouse not working",
+      status: "Assigned",
+      deadline: "4/3/2026",
+    },
+    {
+      id: "Ticket-003",
+      title: "My mouse not working",
+      status: "Assigned",
+      deadline: "5/3/2026",
+    },
+  ]);
+
+  const stats = {
+    active: 8,
+    nearDeadline: 3,
+    dueToday: 1,
+    pastDue: 0,
   };
 
-  const linkStyle = ({ isActive }) =>
-    `block py-3 mt-4 px-6 font-bold ${
-      isActive ? "text-orange-500" : "text-black"
-    }`;
-
   return (
-    <>
-    <div className="h-screen w-64 bg-gray-100 border-r-2 border-orange-500 flex flex-col justify-between">
+    <div className="bg-gray-100 min-h-screen">
 
-      {/* TOP SECTION */}
-      <div>
-        {/* Logo + Title */}
-        <div className="flex items-center gap-3 px-6 py-4 border-b border-orange-500">
-          <img src={ceiLogo} alt="CEi Logo" className="w-14 h-14 object-contain" />
-          <h1 className="text-xl font-bold">CEiVoice</h1>
-        </div>
+      {/* Sidebar */}
+      <AssigneeNavbar
+        collapsed={collapsed}
+        setCollapsed={setCollapsed}
+      />
 
-        {/* User Info */}
-        <div className="flex flex-col items-center py-6 mt-4">
-          <span className="border-b text-xl border-black px-2 font-medium">
-            {name}
-          </span>
-          <span className="text-xl mt-1">Admin</span>
-        </div>
-
-        {/* Navigation Links */}
-        <div className="flex flex-col py-4 text-xl mt-4">
-          <NavLink to="/admin_dashboard" className={linkStyle}>
-            Dashboard
-          </NavLink>
-
-          <NavLink to="/drafts" className={linkStyle}>
-            Drafts
-          </NavLink>
-
-          <NavLink to="/tickets" className={linkStyle}>
-            Tickets
-          </NavLink>
-
-          <NavLink to="/staff" className={linkStyle}>
-            Staff Management
-          </NavLink>
-
-        </div>
-      </div>
-
-      {/* LOGOUT SECTION */}
+      {/* Main Content */}
       <div
-        onClick={handleLogout}
-        className="flex items-center text-xl justify-center  gap-2 px-6 py-4 cursor-pointer hover:bg-gray-200">
-        <IoIosLogOut className="text-2xl" />
-        <span>Logout</span>
+        className={`transition-all duration-300 p-8 ${
+          collapsed ? "ml-20" : "ml-64"
+        }`}
+      >
+        {/* Statistics */}
+        <div className="bg-white shadow rounded-xl p-6 mb-6">
+          <h2 className="text-xl font-semibold mb-4">Statistics</h2>
+
+          <div className="flex gap-12 text-lg flex-wrap">
+            <p><span className="font-semibold">Active:</span> {stats.active}</p>
+            <p><span className="font-semibold">Near Deadline:</span> {stats.nearDeadline}</p>
+            <p><span className="font-semibold">Due Today:</span> {stats.dueToday}</p>
+            <p><span className="font-semibold">Past Due:</span> {stats.pastDue}</p>
+          </div>
+        </div>
+
+        {/* Ticket Table */}
+        <div className="bg-white shadow rounded-xl p-6 overflow-x-auto">
+          <h2 className="text-xl font-semibold mb-6">Assignee Dashboard</h2>
+
+          <table className="w-full text-left">
+            <thead>
+              <tr className="border-b text-gray-600">
+                <th className="p-3">Ticket ID</th>
+                <th className="p-3">Title</th>
+                <th className="p-3">Status</th>
+                <th className="p-3">Deadline</th>
+                <th className="p-3">Action</th>
+                <th className="p-3">View</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {tickets.map((ticket, index) => (
+                <tr key={index} className="border-b hover:bg-gray-50">
+                  <td className="p-3">{ticket.id}</td>
+                  <td className="p-3">{ticket.title}</td>
+                  <td className="p-3">{ticket.status}</td>
+                  <td className="p-3">{ticket.deadline}</td>
+
+                  <td className="p-3 text-blue-600 cursor-pointer">
+                    Solving
+                  </td>
+
+                  <td className="p-3">
+                    <FaSearch
+                      onClick={() =>
+                        navigate(
+                          `/assignee_ticket_details/${encodeURIComponent(ticket.id)}`,
+                          {
+                            state: { ticketId: ticket.id },
+                          }
+                        )
+                      }
+                      className="cursor-pointer text-gray-700"
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+
+          </table>
+        </div>
       </div>
     </div>
-    </>
   );
 }

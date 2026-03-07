@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import AdminNavbar from "@/components/AdminNavbar";
 import api from "../../api/axios";
+import { useNavigate } from "react-router";
 
 export default function Tickets() {
+  const navigate = useNavigate("")
 
   const [deadline, setDeadline] = useState("");
   const [assignee, setAssignee] = useState("Linn Hein Htet");
@@ -62,17 +64,21 @@ export default function Tickets() {
 
     try {
 
-      console.log("Submitting Ticket:", payload);
+  console.log("Submitting Ticket:", payload);
 
-      await api.post("/tickets/merge", payload);
+  const res = await api.post("/tickets/merge", payload);
 
-      alert("Ticket submitted!");
+  const ticketId = res.data?.ticketId || res.data?.id;
 
-    } catch (error) {
+  if (ticketId) {
+    navigate(`/assignee_ticket/${ticketId}`);
+  }
 
-      console.log("Backend not ready yet", payload);
+} catch (error) {
 
-    }
+  console.log("Backend not ready yet", payload);
+
+}
   };
 
   return (
