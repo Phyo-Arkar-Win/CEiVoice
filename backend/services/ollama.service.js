@@ -25,7 +25,7 @@ const generateDraftTicket = async (email, issue, user) => {
 
     const parsed = JSON.parse(response.response);
 
-    await Ticket.create({
+    const newTicket = await Ticket.create({
         email: email,
         issue: issue,
         title: parsed.title,
@@ -35,7 +35,8 @@ const generateDraftTicket = async (email, issue, user) => {
         original_message: issue,
         creator: user
     });
-
+    
+    return newTicket
 
 };
 

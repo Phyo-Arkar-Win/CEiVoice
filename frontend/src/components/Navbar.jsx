@@ -1,6 +1,7 @@
 import React from 'react';
-import ceiLogo from '../assets/cei.png';
+import ceiLogo from '@/assets/cei.png';
 import { useNavigate } from 'react-router';
+import { BsEaselFill } from 'react-icons/bs';
 
 export default function Navbar({ title }) {
     const navigate = useNavigate();
@@ -10,7 +11,7 @@ export default function Navbar({ title }) {
             navigate('/signup');
         } else if (title === 'Log in') {
             navigate('/login');
-        }
+        } 
     };
     return (
         <>

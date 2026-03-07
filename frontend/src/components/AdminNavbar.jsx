@@ -1,0 +1,79 @@
+import React, { useEffect, useState } from "react";
+import ceiLogo from "../assets/cei.png";
+import { IoIosLogOut } from "react-icons/io";
+import { NavLink, useNavigate } from "react-router-dom";
+
+export default function AdminNavbar() {
+  const [name, setName] = useState("");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user) {
+      setName(user.name);
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
+
+  const linkStyle = ({ isActive }) =>
+    `block py-3 mt-4 px-6 font-bold ${
+      isActive ? "text-orange-500" : "text-black"
+    }`;
+
+  return (
+    <>
+    <div className="h-screen w-64 bg-gray-100 border-r-2 border-orange-500 flex flex-col justify-between">
+
+      {/* TOP SECTION */}
+      <div>
+        {/* Logo + Title */}
+        <div className="flex items-center gap-3 px-6 py-4 border-b border-orange-500">
+          <img src={ceiLogo} alt="CEi Logo" className="w-14 h-14 object-contain" />
+          <h1 className="text-xl font-bold">CEiVoice</h1>
+        </div>
+
+        {/* User Info */}
+        <div className="flex flex-col items-center py-6 mt-4">
+          <span className="border-b text-xl border-black px-2 font-medium">
+            {name}
+          </span>
+          <span className="text-xl mt-1">Admin</span>
+        </div>
+
+        {/* Navigation Links */}
+        <div className="flex flex-col py-4 text-xl mt-4">
+          <NavLink to="/admin_dashboard" className={linkStyle}>
+            Dashboard
+          </NavLink>
+
+          <NavLink to="/drafts" className={linkStyle}>
+            Drafts
+          </NavLink>
+
+          <NavLink to="/tickets" className={linkStyle}>
+            Tickets
+          </NavLink>
+
+          <NavLink to="/staff" className={linkStyle}>
+            Staff Management
+          </NavLink>
+
+        </div>
+      </div>
+
+      {/* LOGOUT SECTION */}
+      <div
+        onClick={handleLogout}
+        className="flex items-center text-xl justify-center  gap-2 px-6 py-4 cursor-pointer hover:bg-gray-200">
+        <IoIosLogOut className="text-2xl" />
+        <span>Logout</span>
+      </div>
+    </div>
+    </>
+  );
+}

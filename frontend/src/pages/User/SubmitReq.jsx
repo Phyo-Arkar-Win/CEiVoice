@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from "react";
-import UserNavbar from "../components/userNavbar";
-import api from "../api/axios";
+import React, { use, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import UserNavbar from "@/components/userNavbar";
+import api from "@/api/axios";
 
 export default function SubmitReq() {
+  const navigate = useNavigate("")
   const [email, setEmail] = useState("");
   const [issue, setIssue] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState();
 
   // Load user email once
   useEffect(() => {
@@ -40,16 +42,18 @@ export default function SubmitReq() {
 
     try {
       setLoading(true);
-
-      await api.post("/submit", {
+      const res = await api.post("/submit", {
         email,
         issue,
       });
-
-      setMessage("Ticket submitted successfully! Please check your email.");
+      
+      console.log(res.data)
       setIssue("");
+      navigate("/confirmation", { state: { trackingId: res.data._id } })
+
     } catch (err) {
       console.error(err);
+      console.log(err)
       setError("Failed to submit ticket. Please try again.");
     } finally {
       setLoading(false);
@@ -57,7 +61,7 @@ export default function SubmitReq() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-300 flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       <UserNavbar />
 
       {/* Content Wrapper */}
@@ -67,7 +71,7 @@ export default function SubmitReq() {
             w-[90%]
             md:w-[80%]
             mx-auto
-            bg-[rgb(241,236,236)]
+            bg-white
             rounded-2xl
             shadow-xl
             p-6
