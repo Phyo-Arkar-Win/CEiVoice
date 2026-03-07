@@ -18,15 +18,15 @@ import Tracking from './pages/User/Tracking';
 import Confirmation from "./pages/User/Confirmation"
 
 // Admin
-import Admin_Dashboard from './pages/Admin/Admin_Dashboard';
+import Admin_Dashboard from './pages/Admin/AdminDashboard';
 import Draft from "./pages/Admin/Draft"
 import Staff from "./pages/Admin/StaffManagement"
 import Tickets from "./pages/Admin/Tickets"
 
 // Assignee
-import Assignee_Dashboard from "./pages/Assignee/Assignee_Dashboard"
+import Assignee_Dashboard from "./pages/Assignee/AssigneeDashboard"
 import Assignee_Referral from './pages/Assignee/Referral';
-import Assignee_Historylog from './pages/Assignee/History_log';
+import Assignee_Historylog from './pages/Assignee/HistoryLog';
 
 const App = () => {
     return (
@@ -46,44 +46,44 @@ const App = () => {
                         <ProtectedRoute allowedRoles={["user"]}> <Dashboard /></ProtectedRoute>} />
                     <Route path="/submit" element={
                         <ProtectedRoute allowedRoles={["user"]}>
-                        <SubmitReq />
+                            <SubmitReq />
                         </ProtectedRoute>} />
 
                     <Route path="/track" element={
                         <ProtectedRoute allowedRoles={["user"]}>
-                        <Tracking />
+                            <Tracking />
                         </ProtectedRoute>} />
 
                     <Route path="/confirmation" element={
                         <ProtectedRoute allowedRoles={["user"]}>
-                        <Confirmation />
+                            <Confirmation />
                         </ProtectedRoute>} />
 
                     {/* Admin Route */}
                     <Route path='/admin_dashboard' element={
                         <ProtectedRoute allowedRoles={["admin"]}>
-                        <Admin_Dashboard />
+                            <Admin_Dashboard />
                         </ProtectedRoute>} />
 
                     <Route path='/drafts' element={<Draft/>}/>
                     <Route path='/tickets' element={<Tickets/>}></Route>
                     <Route path='/staff' element={
                         <ProtectedRoute allowedRoles={["admin"]}>
-                        <Staff />
+                            <Staff />
                         </ProtectedRoute>} />
 
                     {/* Assignee Route */}
                     <Route path='/assignee_dashboard' element={
                         <ProtectedRoute allowedRoles={["assignee"]}>
-                        <Assignee_Dashboard />
+                            <Assignee_Dashboard />
                         </ProtectedRoute>}/>
                     <Route path='/assignee_referral' element={
                         <ProtectedRoute allowedRoles={["assignee"]}>
-                        <Assignee_Referral />
+                            <Assignee_Referral />
                         </ProtectedRoute>}/>
                     <Route path='/assignee_historylog' element={
                         <ProtectedRoute allowedRoles={["assignee"]}>
-                        <Assignee_Historylog />
+                            <Assignee_Historylog />
                         </ProtectedRoute>}/>
                     
                     {/* UNAUTHORIZED PAGE */}
