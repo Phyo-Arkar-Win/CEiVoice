@@ -1,4 +1,4 @@
-export const ticketEmailTemplate = (issue) => {
+export const confirmationEmailTemplate = (issue) => {
   return `
 
     <h2>Your Issue Has Been Reported</h2>
