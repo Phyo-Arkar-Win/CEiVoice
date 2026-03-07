@@ -10,54 +10,54 @@ import TrackTicket from './pages/TrackingTicketNL';
 import Dashboard from './pages/User/Dashboard';
 import SubmitReq from './pages/User/SubmitReq';
 import Tracking from './pages/User/Tracking';
-import Confirmation from "./pages/User/Confirmation"
+import Confirmation from "./pages/User/Confirmation";
 
 // Admin
 import Admin_Dashboard from './pages/Admin/Admin_Dashboard';
-import Draft from "./pages/Admin/Draft"
-import Staff from "./pages/Admin/StaffManagement"
-import Tickets from "./pages/Admin/Tickets"
+import Draft from "./pages/Admin/Draft";
+import StaffManagement from './pages/Admin/StaffManagement';
+import Tickets from "./pages/Admin/Tickets";
+import MergeDraftToNew from "./pages/Admin/MergeDraftToNew";
 
 // Assignee
-import Assignee_Dashboard from "./pages/Assignee/Assignee_Dashboard"
+import Assignee_Dashboard from "./pages/Assignee/Assignee_Dashboard";
 import Assignee_Referral from './pages/Assignee/Referral';
 import Assignee_Historylog from './pages/Assignee/History_log';
-import StaffManagement from './pages/Admin/StaffManagement';
 
 const App = () => {
     return (
-        <>
-            <BrowserRouter>
-                <Routes>
-                    {/* Home "/" Route */}
-                    <Route path='/' element={<Home/>}/>
+        <BrowserRouter>
+            <Routes>
+                {/* Home "/" Route */}
+                <Route path='/' element={<Home />} />
 
-                    {/* AUTHENTICATION */}
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/signup" element={<Signup />} />
-                    <Route path="/trackticket" element={<TrackTicket />} />
+                {/* AUTHENTICATION */}
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/trackticket" element={<TrackTicket />} />
 
-                    {/* User Route */}
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/submit" element={<SubmitReq />} />
-                    <Route path="/track" element={<Tracking />} />
-                    <Route path="/confirmation" element={<Confirmation />} />
+                {/* User Route */}
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/submit" element={<SubmitReq />} />
+                <Route path="/track" element={<Tracking />} />
+                <Route path="/confirmation" element={<Confirmation />} />
 
-                    {/* Admin Route */}
-                    <Route path='/admin_dashboard' element={<Admin_Dashboard/>}/>
-                    <Route path='/drafts' element={<Draft/>}/>
-                    <Route path='/tickets' element={<Tickets/>}></Route>
-                    <Route path='/staff' element={<StaffManagement/>}/>
+                {/* Admin Route */}
+                <Route path='/admin_dashboard' element={<Admin_Dashboard />} />
+                <Route path='/drafts' element={<Draft />} />
+                <Route path='/tickets' element={<Tickets />} />
+                <Route path='/staff' element={<StaffManagement />} />
 
-                    {/* Assignee Route */}
-                    <Route path='/assignee_dashboard' element={<Assignee_Dashboard/>}/>
-                    <Route path='/assignee_referral' element={<Assignee_Referral/>}/>
-                    <Route path='/assignee_historylog' element={<Assignee_Historylog/>}/>
+                {/* NEW MERGE PAGE */}
+                <Route path='/merge_draft_to_new' element={<MergeDraftToNew />} />
 
-                </Routes>
-            </BrowserRouter>
-        </>
-    )
-}
+                {/* Assignee Route */}
+                <Route path='/assignee_dashboard' element={<Assignee_Dashboard />} />
+                <Route path='/assignee_referral' element={<Assignee_Referral />} />
+                <Route path='/assignee_historylog' element={<Assignee_Historylog />} />
+            </Routes>
+        </BrowserRouter>
+    );
+};
 
 export default App;
