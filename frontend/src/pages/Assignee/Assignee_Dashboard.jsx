@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import AssigneeNavbar from "@/components/AssigneeNavbar";
 import { FaSearch } from "react-icons/fa";
 
 export default function Assignee_Dashboard() {
+  const navigate = useNavigate();
   const [tickets, setTickets] = useState([
     {
       id: "Ticket-001",
@@ -80,7 +82,14 @@ export default function Assignee_Dashboard() {
                   </td>
 
                   <td className="p-3">
-                    <FaSearch className="cursor-pointer text-gray-700" />
+                    <FaSearch
+                      onClick={() =>
+                        navigate(`/assignee_ticket_details/${encodeURIComponent(ticket.id)}`, {
+                          state: { ticketId: ticket.id },
+                        })
+                      }
+                      className="cursor-pointer text-gray-700"
+                    />
                   </td>
                 </tr>
               ))}

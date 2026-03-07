@@ -21,7 +21,8 @@ import Tickets from "./pages/Admin/Tickets"
 // Assignee
 import Assignee_Dashboard from "./pages/Assignee/Assignee_Dashboard"
 import Assignee_Referral from './pages/Assignee/Referral';
-import Assignee_Historylog from './pages/Assignee/History_log';
+import Assignee_Historylog from './pages/Assignee/History_log'; 
+import Assignee_Ticket_Details from './pages/Assignee/Assignee_Ticket_Details';
 import StaffManagement from './pages/Admin/StaffManagement';
 
 const App = () => {
@@ -53,6 +54,8 @@ const App = () => {
                     <Route path='/assignee_dashboard' element={<Assignee_Dashboard/>}/>
                     <Route path='/assignee_referral' element={<Assignee_Referral/>}/>
                     <Route path='/assignee_historylog' element={<Assignee_Historylog/>}/>
+                    <Route path='/assignee_ticket_details' element={<Assignee_Ticket_Details/>}/>
+                    <Route path='/assignee_ticket_details/:ticketId' element={<Assignee_Ticket_Details/>}/>
 
                 </Routes>
             </BrowserRouter>
