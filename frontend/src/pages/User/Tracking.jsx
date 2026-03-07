@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import api from  "@/api/axios";
 import noSearchImg from "@/assets/no_search.png";
 import error_img from "@/assets/error_img.png";
-import Navbar from "@/components/Navbar";
+import UserNavbar from "@/components/UserNavbar";
 
 
 export default function TrackTicket() {
@@ -33,8 +33,9 @@ export default function TrackTicket() {
     try {
       setStatus("loading");
 
-      const res = await api.post("/api/tickets/track/submit", {
+      const res = await api.post("/tickets/track/user", {
         ticketId: trackingId,
+        email,
       });
 
       setTicket(res.data);
@@ -51,7 +52,7 @@ export default function TrackTicket() {
   return (
     <div className="min-h-screen bg-gray-200">
 
-      <Navbar title="Log in"></Navbar>
+      <UserNavbar title="Log in"></UserNavbar>
 
       <div className="max-w-5xl mx-auto mt-10 bg-white rounded-2xl shadow-lg p-8">
 
