@@ -2,7 +2,7 @@ import { Ollama } from 'ollama';
 import Ticket from '../models/ticket.js';
 import Scope from '../models/scope.js';
 
-const generateDraftTicket = async (email, issue, user) => {
+const AIGenerateDraftTicket = async (email, issue, user) => {
     const scopes = await Scope.find({}, 'name');
     const scopeList = scopes.map(scope => scope.name).join(', ');
 
@@ -83,7 +83,7 @@ ${issue}
 };
 
 
-export const mergeDraftTicket = async (tickets) => {
+export const AIMergeDraftTicket = async (tickets) => {
 const scopes = await Scope.find({}, 'name');
 const scopeList = scopes.map(scope => scope.name).join(', ');
 const ticketList = tickets.map((ticket, index) => `
@@ -93,7 +93,6 @@ const ticketList = tickets.map((ticket, index) => `
     Category: ${ticket.category}
     Resolution Path: ${(ticket.resolution_path)}
 `).join("\n");
-console.log("Ticket List for Merging:", ticketList);
 const prompt = `
 You are an AI service desk assistant responsible for consolidating multiple helpdesk tickets into a single ticket draft.
 
@@ -179,4 +178,4 @@ ${ticketList}
     console.log("Merged Ticket Draft:", parsed);
 };
 
-export default generateDraftTicket;
+export default AIGenerateDraftTicket;
