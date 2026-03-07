@@ -1,7 +1,7 @@
 import Ticket from '../models/ticket.js';
 
 // GET : Get all draft tickets for admin
-const getDraftTickets = async (req, res) => {
+export const getDraftTickets = async (req, res) => {
     try {
         const draftTickets = await Ticket.find({ status: 'Draft' });
         res.status(200).json(draftTickets);
@@ -13,7 +13,7 @@ const getDraftTickets = async (req, res) => {
 };
 
 //PUT :  Merge tickets
-const mergeDraftTickets = async (req, res) => {
+export const mergeDraftTickets = async (req, res) => {
     try {
         const { ticketIds } = req.body;
 
@@ -66,7 +66,7 @@ const mergeDraftTickets = async (req, res) => {
 };
 
 // PUT : Submit a new ticket from draft | submit draft ticket
-const submitDraftTicket = async (req, res) => {
+export const submitDraftTicket = async (req, res) => {
     try {
         const id = req.params.id;
         const { title, summary, category, resolution_path, assignees } =
@@ -128,7 +128,7 @@ const submitDraftTicket = async (req, res) => {
     }
 };
 
-const viewTicketAsGuest = async (req, res) => {
+export const viewTicketAsGuest = async (req, res) => {
     const { email, ticketId } = req.body;
     try {
         const ticket = await Ticket.findById(ticketId);
@@ -143,4 +143,18 @@ const viewTicketAsGuest = async (req, res) => {
     }
 };
 
-export default { getDraftTickets, mergeDraftTickets, submitDraftTicket, viewTicketAsGuest};
+export const viewTicketAsUser = async (req, res) => {
+    const { email, ticketId } = req.body;
+    try {
+        const ticket = await Ticket.findById(ticketId);
+        if (ticket.email !== email) {
+            return res.status(403).json({ message: 'Incorrect Email or Ticket ID' });
+        }
+        res.status(200).json({ id: ticket.id, status: ticket.status, title: ticket.title, issue: ticket.issue });
+    } catch (error) {
+        res.status(500).json({
+            message: `Error viewing ticket: ${error.message}`,
+        });
+    }
+};
+
