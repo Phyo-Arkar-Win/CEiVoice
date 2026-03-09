@@ -171,7 +171,7 @@ export const updateDraftTicket = async (req, res) => {
 };
 
 export const ticketDetailsAsAdminOrAssignee = async (req, res) => {
-    const { ticketId } = req.body;
+    const ticketId = req.params.id;
     try {
         const ticket = await Ticket.findById(ticketId);
         const publicComments = await Comment.find({ ticket: ticketId, visibility: 'Public' }).sort({ createdAt: -1 });

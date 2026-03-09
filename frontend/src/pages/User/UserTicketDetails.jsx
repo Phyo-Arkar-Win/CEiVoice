@@ -1,39 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import UserNavbar from "@/components/UserNavbar";
-
-const FALLBACK_TICKET = {
-  id: "Ticket-001",
-  title: "My mouse not working",
-  category: "Hardware",
-  deadline: "March 3, 2026",
-  followers: 3,
-  creator: "linnheinhtet@gmail.com",
-  assignees: ["someone@gmail.com"],
-  issue: "My mouse is not working. I've tried plugging in and out.",
-  comments: [
-    {
-      id: "c1",
-      message: "I cannot use mouse.",
-      type: "Public",
-      senderEmail: "linnheinhtet@gmail.com",
-      senderRole: "Follower",
-    },
-    {
-      id: "c2",
-      message: "Plug it in again.",
-      type: "Public",
-      senderEmail: "someone@gmail.com",
-      senderRole: "Assignee",
-    },
-  ],
-};
-
-const getAssigneeLabel = (assignee) =>
-  typeof assignee === "string" ? assignee : assignee?.email || assignee?.name || "";
-
-const getUserLabel = (value, fallback = "-") =>
-  typeof value === "string" ? value : value?.email || value?.name || fallback;
+import api from  "@/api/axios";
 
 export default function UserTicketDetails() {
   const navigate = useNavigate();
@@ -47,10 +15,26 @@ export default function UserTicketDetails() {
   const userEmail = user?.email || "user@gmail.com";
 
   useEffect(() => {
-    setTicket(FALLBACK_TICKET);
-    setComments(Array.isArray(FALLBACK_TICKET.comments) ? FALLBACK_TICKET.comments : []);
-    setLoading(false);
+    const fetchTicketAndComments = async () => {
+      try {
+        const response = await api.get("/user/ticketDetails");
+        setTicket(response.data.ticket);
+        setComments(Array.isArray(response.data.comments) ? response.data.comments : []);
+      } catch (error) {
+        console.error("Error fetching ticket and comments:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTicketAndComments();
   }, []);
+
+  const getAssigneeLabel = (assignee) =>
+    typeof assignee === "string" ? assignee : assignee?.email || assignee?.name || "";
+
+  const getUserLabel = (value, fallback = "-") =>
+    typeof value === "string" ? value : value?.email || value?.name || fallback;
 
   const publicComments = comments.filter(
     (comment) => (comment?.type || "Public").toLowerCase() === "public"
@@ -75,20 +59,19 @@ export default function UserTicketDetails() {
     { label: "Assignee", value: assigneesText },
   ];
 
-  const handleSubmitComment = () => {
+  const handleSubmitComment = async () => {
     const message = commentText.trim();
     if (!message) return;
 
-    const newComment = {
-      message,
-      type: "Public",
-      senderEmail: userEmail,
-      senderRole: "Follower",
-      id: `temp-${Date.now()}`,
-    };
-
-    setComments((prev) => [...prev, newComment]);
-    setCommentText("");
+    try {
+      const response = await api.post("/user/submitComment", {
+        message,
+      });
+      setComments((prev) => [...prev, response.data]);
+      setCommentText("");
+    } catch (error) {
+      console.error("Error submitting comment:", error);
+    }
   };
 
   return (
