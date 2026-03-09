@@ -3,15 +3,30 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 import AssigneeNavbar from "@/components/AssigneeNavbar";
 import api from "@/api/axios";
 
+const isMongoId = (value) => /^[a-f\d]{24}$/i.test(String(value || "").trim());
+
+const getAssigneeLabel = (assignee) => {
+  if (!assignee) return "";
+  if (typeof assignee === "string") {
+    return isMongoId(assignee) ? "Unknown assignee" : assignee;
+  }
+
+  if (assignee?.name) return assignee.name;
+  if (assignee?.email) return assignee.email.split("@")[0];
+
+  return "Unknown assignee";
+};
+
 export default function Assignee_Ticket_Details() {
   const navigate = useNavigate();
   const { routeTicketId } = useParams();
   const location = useLocation();
   const ticketId = decodeURIComponent(routeTicketId || location.state?.ticketId || "");
+  const initialTicket = location.state?.ticket || null;
 
   const [collapsed, setCollapsed] = useState(false);
 
-  const [ticket, setTicket] = useState(null);
+  const [ticket, setTicket] = useState(initialTicket);
   const [publicComments, setPublicComments] = useState([]);
   const [internalComments, setInternalComments] = useState([]);
   const [status, setStatus] = useState("New");
@@ -24,23 +39,37 @@ export default function Assignee_Ticket_Details() {
   const [saving, setSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [saveMessage, setSaveMessage] = useState("");
+  const [commentSubmitting, setCommentSubmitting] = useState(false);
+  const [commentError, setCommentError] = useState("");
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userEmail = user?.email || "assignee@gmail.com";
 
-  const isMongoId = (value) => /^[a-f\d]{24}$/i.test(String(value || "").trim());
-
-  const getAssigneeLabel = (assignee) => {
-    if (!assignee) return "";
-    if (typeof assignee === "string") return assignee;
-    return assignee?.email || assignee?.name || "";
-  };
-
   const getUserLabel = (value, fallback = "-") => {
     if (!value) return fallback;
-    if (typeof value === "string") return value;
+    if (typeof value === "string") {
+      return isMongoId(value) ? fallback : value;
+    }
     return value?.email || value?.name || fallback;
   };
+
+  const getCommentSender = (comment) => {
+    const commentUser = comment?.user;
+
+    if (commentUser && typeof commentUser === "object") {
+      if (commentUser.name) return commentUser.name;
+      if (commentUser.email) return commentUser.email;
+    }
+
+    if (typeof commentUser === "string" && !isMongoId(commentUser)) {
+      return commentUser;
+    }
+
+    return comment?.email || comment?.senderEmail || comment?.name || "Unknown user";
+  };
+
+  const getCommentRole = (comment) =>
+    comment?.role || comment?.senderRole || (commentType === "Internal" ? "Assignee" : "User");
 
   useEffect(() => {
     const fetchTicketAndComments = async () => {
@@ -52,11 +81,9 @@ export default function Assignee_Ticket_Details() {
 
       try {
         setErrorMessage("");
-        const response = await api.get("/assignee/ticketDetailsAsAdminOrAssignee", {
-          params: { ticketId },
-        });
+        const response = await api.get(`/assignee/ticketDetailsAsAdminOrAssignee/${encodeURIComponent(ticketId)}`);
         const ticketData = response.data.ticket;
-        console.log("Fetched ticket data:", ticketData);
+
         if (!ticketData) {
           setErrorMessage(
             isMongoId(ticketId)
@@ -70,6 +97,7 @@ export default function Assignee_Ticket_Details() {
         setPublicComments(Array.isArray(response.data.publicComments) ? response.data.publicComments : []);
         setInternalComments(Array.isArray(response.data.internalComments) ? response.data.internalComments : []);
         setStatus(ticketData.status || "New");
+        setCommentError("");
 
         const firstAssignee = ticketData.assignees?.[0];
         const assigneeLabel = getAssigneeLabel(firstAssignee);
@@ -100,11 +128,19 @@ export default function Assignee_Ticket_Details() {
 
   const filteredComments = activeTab === "Public" ? publicComments : internalComments;
 
+  const formatDeadline = (deadline) => {
+    if (!deadline) return "-";
+    const date = new Date(deadline);
+    if (Number.isNaN(date.getTime())) return deadline;
+    return date.toLocaleDateString();
+  };
+
   const followersText = Array.isArray(ticket?.followers)
     ? `${ticket.followers.length} users`
     : `${ticket?.followers ?? 0} users`;
 
-  const creatorText = getUserLabel(ticket?.creator);
+  const creatorFallback = ticket?.email ? ticket.email.split("@")[0] : "-";
+  const creatorText = getUserLabel(ticket?.creator, creatorFallback);
 
   const assigneesText = Array.isArray(ticket?.assignees)
     ? ticket.assignees.map(getAssigneeLabel).filter(Boolean).join(", ")
@@ -112,7 +148,7 @@ export default function Assignee_Ticket_Details() {
   const details = [
     { label: "Title", value: ticket?.title || "-" },
     { label: "Category", value: ticket?.category || "-" },
-    { label: "Deadline", value: ticket?.deadline || "-" },
+    { label: "Deadline", value: formatDeadline(ticket?.deadline) },
     { label: "Followers", value: followersText },
     { label: "Creator", value: creatorText },
     { label: "Assignees", value: assigneesText },
@@ -148,9 +184,12 @@ export default function Assignee_Ticket_Details() {
     const message = commentText.trim();
     if (!message) return;
 
+    setCommentSubmitting(true);
+    setCommentError("");
+
     try {
       const response = await api.post("/assignee/commentAsAdminOrAssignee", {
-        ticketId,
+        ticketId: ticket?._id || ticketId,
         commentText: message,
         visibility: commentType,
       });
@@ -161,15 +200,20 @@ export default function Assignee_Ticket_Details() {
           email: response.data.email || userEmail,
           name: response.data.name || user?.name,
         },
+        role: response.data.role || user?.role || "assignee",
+        visibility: commentType,
       };
       if (commentType === "Public") {
-        setPublicComments((prev) => [...prev, newComment]);
+        setPublicComments((prev) => [newComment, ...prev]);
       } else {
-        setInternalComments((prev) => [...prev, newComment]);
+        setInternalComments((prev) => [newComment, ...prev]);
       }
       setCommentText("");
     } catch (error) {
       console.error("Error submitting comment:", error);
+      setCommentError(error?.response?.data?.message || "Failed to submit comment.");
+    } finally {
+      setCommentSubmitting(false);
     }
   };
 
@@ -191,7 +235,7 @@ export default function Assignee_Ticket_Details() {
             ← Back
           </button>
 
-          <h1 className="text-xl font-semibold text-center mb-6">{ticket?.id || "Ticket-001"}</h1>
+          <h1 className="text-xl font-semibold text-center mb-6">{ticket?.id || ticket?._id || "Ticket-001"}</h1>
 
           {loading ? (
             <p className="text-gray-600 text-center text-sm">Loading ticket...</p>
@@ -288,11 +332,12 @@ export default function Assignee_Ticket_Details() {
                     </p>
                   ) : (
                     filteredComments.map((comment, index) => {
-                      const sender = comment?.user?.email || userEmail || "someone@gmail.com";
-                      const role = "Assignee";
+                      const sender = getCommentSender(comment);
+                      const role = getCommentRole(comment);
 
                       const isAssignee =
-                        sender.toLowerCase() === String(userEmail).toLowerCase();
+                        sender.toLowerCase() === String(userEmail).toLowerCase() ||
+                        sender.toLowerCase() === String(user?.name || "").toLowerCase();
 
                       return (
                         <div
@@ -312,6 +357,10 @@ export default function Assignee_Ticket_Details() {
                     })
                   )}
                 </div>
+
+                {commentError ? (
+                  <p className="mt-3 text-sm text-red-600">{commentError}</p>
+                ) : null}
 
                 <div className="mt-4 flex">
                   <input
@@ -333,9 +382,10 @@ export default function Assignee_Ticket_Details() {
 
                   <button
                     onClick={handleSubmitComment}
+                    disabled={commentSubmitting || !ticket}
                     className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-r-md text-sm"
                   >
-                    Submit
+                    {commentSubmitting ? "Submitting..." : "Submit"}
                   </button>
                 </div>
               </div>
