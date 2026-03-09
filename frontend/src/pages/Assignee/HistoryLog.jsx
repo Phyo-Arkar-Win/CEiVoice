@@ -81,7 +81,7 @@ export default function Assignee_Historylog() {
         {/* STATUS HISTORY */}
         <div className="bg-gray-100 rounded-xl shadow p-6 mb-8 overflow-x-auto">
 
-          <h2 className="text-xl font-semibold mb-4">Status</h2>
+          <h2 className="text-xl font-semibold mb-4">Status Change</h2>
 
           <table className="w-full">
 
@@ -89,25 +89,33 @@ export default function Assignee_Historylog() {
               <tr>
                 <th className="text-left py-2">Ticket ID</th>
                 <th className="text-left">Date/Time</th>
-                <th className="text-left">Old Status - New Status</th>
+                <th className="text-left">Old Status</th>
+                <th className="text-left">New Status</th>
                 <th className="text-left">By</th>
               </tr>
             </thead>
 
             <tbody>
 
-              {statusLogs.map((log, index) => (
+              {statusLogs.map((log, index) => {
 
-                <tr key={index} className="border-t hover:bg-gray-50">
+                const [oldStatus, newStatus] = log.change.split(" to ");
 
-                  <td className="py-3">{log.ticketId}</td>
-                  <td>{log.datetime}</td>
-                  <td>{log.change}</td>
-                  <td>{log.by}</td>
+                return (
 
-                </tr>
+                  <tr key={index} className="border-t hover:bg-gray-50">
 
-              ))}
+                    <td className="py-3">{log.ticketId}</td>
+                    <td>{log.datetime}</td>
+                    <td>{oldStatus}</td>
+                    <td>{newStatus}</td>
+                    <td>{log.by}</td>
+
+                  </tr>
+
+                );
+
+              })}
 
             </tbody>
 
@@ -118,7 +126,7 @@ export default function Assignee_Historylog() {
         {/* ASSIGNEE HISTORY */}
         <div className="bg-gray-100 rounded-xl shadow p-6 overflow-x-auto">
 
-          <h2 className="text-xl font-semibold mb-4">Assignee</h2>
+          <h2 className="text-xl font-semibold mb-4">Assignee Change</h2>
 
           <table className="w-full">
 
@@ -126,25 +134,33 @@ export default function Assignee_Historylog() {
               <tr>
                 <th className="text-left py-2">Ticket ID</th>
                 <th className="text-left">Date/Time</th>
-                <th className="text-left">Old Assignee - New Assignee</th>
+                <th className="text-left">Old Assignee</th>
+                <th className="text-left">New Assignee</th>
                 <th className="text-left">By</th>
               </tr>
             </thead>
 
             <tbody>
 
-              {assigneeLogs.map((log, index) => (
+              {assigneeLogs.map((log, index) => {
 
-                <tr key={index} className="border-t hover:bg-gray-50">
+                const [oldAssignee, newAssignee] = log.change.split(" to ");
 
-                  <td className="py-3">{log.ticketId}</td>
-                  <td>{log.datetime}</td>
-                  <td>{log.change}</td>
-                  <td>{log.by}</td>
+                return (
 
-                </tr>
+                  <tr key={index} className="border-t hover:bg-gray-50">
 
-              ))}
+                    <td className="py-3">{log.ticketId}</td>
+                    <td>{log.datetime}</td>
+                    <td>{oldAssignee}</td>
+                    <td>{newAssignee}</td>
+                    <td>{log.by}</td>
+
+                  </tr>
+
+                );
+
+              })}
 
             </tbody>
 
