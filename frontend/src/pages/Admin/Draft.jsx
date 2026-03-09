@@ -16,28 +16,35 @@ export default function Draft() {
 
   // Fetch assignees from backend
   const fetchAssignees = async () => {
-    try {
-      const res = await api.get("/assignee");
-      setAssignees(res.data);
-    } catch (err) {
-      console.error("Error fetching assignees:", err);
-    }
-  };
-
-  const updateTicket = async (ticket) => {
   try {
-    const res = await api.put(`/tickets/${ticket._id}`, {
+    const res = await api.get("/admin/assignee");
+    setAssignees(res.data.data || res.data);
+  } catch (err) {
+    console.error("Error fetching assignees:", err);
+  }
+};
+
+ const updateTicket = async (ticket) => {
+  try {
+    const updates = {
       title: ticket.title,
       summary: ticket.summary,
       category: ticket.category,
       resolution_path: ticket.resolution_path,
       deadline: ticket.deadline,
-      assignees: [ticket.assignee],
-    });
+      assignees: ticket.assignee ? [ticket.assignee] : undefined,
+    };
+
+    // remove undefined values so only changed fields are sent
+    Object.keys(updates).forEach(
+      (key) => updates[key] === undefined && delete updates[key]
+    );
+
+    await api.patch(`/tickets/${ticket._id}`, updates);
 
     alert("Draft updated successfully");
-
     fetchDraftTickets(); // refresh list
+
   } catch (err) {
     console.error("Update error:", err);
   }

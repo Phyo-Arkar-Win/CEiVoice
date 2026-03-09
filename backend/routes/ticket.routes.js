@@ -7,7 +7,7 @@ const router = Router();
 router.get('/drafts', authController.protect, authController.restrictTo('admin', 'assignee'), getDraftTicketsAsAdmin);
 router.put('/merge', authController.protect, authController.restrictTo('admin', 'assignee'), mergeDraftTickets);
 router.put('/:id/submit', authController.protect, authController.restrictTo('admin', 'assignee'), submitDraftTicket);
-router.put(
+router.patch(
   '/:id',
   authController.protect,
   authController.restrictTo('admin', 'assignee'),

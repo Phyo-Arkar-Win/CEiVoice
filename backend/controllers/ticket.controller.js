@@ -161,18 +161,10 @@ export const getIndividualTicket = async (req, res) => {
 // update draft ticket ( admin can update before submitting )
 export const updateDraftTicket = async (req, res) => {
   try {
-    const { title, summary, category, resolution_path, deadline, assignees } = req.body;
 
     const ticket = await Ticket.findByIdAndUpdate(
       req.params.id,
-      {
-        title,
-        summary,
-        category,
-        resolution_path,
-        deadline,
-        assignees
-      },
+      req.body,   // <-- important
       { new: true }
     );
 
@@ -183,14 +175,30 @@ export const updateDraftTicket = async (req, res) => {
     }
 
     res.status(200).json({
-      message: "Draft ticket updated successfully",
+      message: "Draft updated",
       ticket
     });
 
   } catch (error) {
+    console.error(error);
+
     res.status(500).json({
       message: "Update failed",
       error: error.message
     });
   }
+};
+
+export const ticketDetailsAsAdminAndAssignee = async (req, res) => {
+    const { ticketId } = req.body;
+    try {
+        const ticket = await Ticket.findById(ticketId);
+        const publicComments = await Comment.find({ ticket: ticketId, visibility: 'Public' }, sort);
+        const internalComments = await Comment.find({ ticket: ticketId, visibility: 'Internal' });
+        res.status(200).json({ ticket, publicComments, internalComments });
+    } catch (error) {
+        res.status(500).json({
+            message: `Error viewing ticket: ${error.message}`,
+        });
+    }
 };
