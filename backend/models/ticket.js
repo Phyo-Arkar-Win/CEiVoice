@@ -12,12 +12,10 @@ const ticketSchema = new mongoose.Schema(
             type: String,
             enum: [
                 'Draft', 
-                'New',
-                'Assigned',
+                'New', 
                 'Solving',
                 'Solved',
                 'Failed',
-                'Renew',
             ],
             default: 'Draft',
         },

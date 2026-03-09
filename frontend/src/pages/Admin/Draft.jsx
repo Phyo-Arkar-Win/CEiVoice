@@ -54,7 +54,7 @@ export default function Draft() {
       return;
     }
 
-    navigate("/admin/drafts/merge", {
+    navigate("/drafts/merge", {
       state: { mergedTickets: selectedTickets },
     });
   };

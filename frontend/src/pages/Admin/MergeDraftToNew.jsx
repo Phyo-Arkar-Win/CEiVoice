@@ -10,10 +10,10 @@ export default function Tickets() {
   const assignees = [
     "Linn Hein Htet",
     "Phyo Arkar Win",
-    "Luchit",
+    "Lu Chit",
     "Yu Yu Khaing",
     "Hsaung Thet Htar",
-    "Aung Pyae Song"
+    "Aung Pyae Sone"
 
   ];
 
