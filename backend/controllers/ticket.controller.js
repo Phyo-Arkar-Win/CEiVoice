@@ -1,7 +1,7 @@
 import Ticket from '../models/ticket.js';
 import Comment from '../models/comment.js';
 import User from '../models/user.js';
-import { AIMergeDraftTicket } from '../services/ollama.service.js';
+import { AIMergeDraftTickets } from '../services/ollama.service.js';
 
 export const getDraftTicketsAsAdmin = async (req, res) => {
     try {
