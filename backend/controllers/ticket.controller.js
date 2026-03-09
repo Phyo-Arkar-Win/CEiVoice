@@ -1,7 +1,7 @@
 import Ticket from '../models/ticket.js';
 import Comment from '../models/comment.js';
 import User from '../models/user.js';
-import { AIMergeDraftTicket } from '../services/ollama.service.js';
+import { AIMergeDraftTickets } from '../services/ollama.service.js';
 
 export const getDraftTicketsAsAdmin = async (req, res) => {
     try {
@@ -137,6 +137,37 @@ export const mergeDraftTickets = async (req, res) => {
             message: `Error merging tickets: ${error.message}`,
         });
     }
+};
+
+// update draft ticket ( admin can update before submitting )
+export const updateDraftTicket = async (req, res) => {
+  try {
+
+    const ticket = await Ticket.findByIdAndUpdate(
+      req.params.id,
+      req.body,   // <-- important
+      { new: true }
+    );
+
+    if (!ticket) {
+      return res.status(404).json({
+        message: "Ticket not found"
+      });
+    }
+
+    res.status(200).json({
+      message: "Draft updated",
+      ticket
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      message: "Update failed",
+      error: error.message
+    });
+  }
 };
 
 export const ticketDetailsAsAdminOrAssignee = async (req, res) => {
