@@ -1,6 +1,7 @@
 import Ticket from '../models/ticket.js';
 import Comment from '../models/comment.js';
 import User from '../models/user.js';
+import Scope from '../models/scope.js';
 import { AIMergeDraftTickets } from '../services/ollama.service.js';
 
 export const getDraftTicketsAsAdmin = async (req, res) => {
@@ -176,7 +177,8 @@ export const ticketDetailsAsAdminOrAssignee = async (req, res) => {
         const ticket = await Ticket.findById(ticketId);
         const publicComments = await Comment.find({ ticket: ticketId, visibility: 'Public' }).sort({ createdAt: -1 });
         const internalComments = await Comment.find({ ticket: ticketId, visibility: 'Internal' }).sort({ createdAt: -1 });
-        res.status(200).json({ ticket, publicComments, internalComments });
+        const scopes = await Scope.find()
+        res.status(200).json({ ticket, publicComments, internalComments, scopes });
     } catch (error) {
         res.status(500).json({
             message: `Error viewing ticket: ${error.message}`,
