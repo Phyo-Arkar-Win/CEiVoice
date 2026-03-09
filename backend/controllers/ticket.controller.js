@@ -98,8 +98,9 @@ export const getIndividualTicket = async (req, res) => {
 };
 
 export const handleMergeSelection = async (req, res) => {
-    let tickets = req.body
-    let mergedTicket = await AIMergeDraftTickets(tickets)
+    const { tickets } = req.body;
+    
+    let mergedTicket = await AIMergeDraftTickets(tickets);
     res.status(200).json({ message: 'Tickets merged successfully', mergedTicket: mergedTicket });
 };
 
