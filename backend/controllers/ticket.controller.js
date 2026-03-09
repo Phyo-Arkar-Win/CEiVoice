@@ -1,4 +1,3 @@
-import ticket from '../models/ticket.js';
 import Ticket from '../models/ticket.js';
 import { AIMergeDraftTickets } from '../services/ollama.service.js';
 
@@ -13,18 +12,11 @@ export const getDraftTicketsAsAdmin = async (req, res) => {
     }
 };
 
-// for (let i = 1; i < tickets.length; i++) {
-//             merged.followers.push(...tickets[i].creator);
-//             tickets[i].status = 'Merged';
-//             await tickets[i].save();
-//         }
-
 // PUT : Submit a new ticket from draft | submit draft ticket
 export const submitDraftTicket = async (req, res) => {
     try {
         const id = req.params.id;
-        const { title, summary, category, resolution_path, assignees } =
-            req.body;
+        const { title, summary, category, resolution_path, assignees, deadline } = req.body;
         const ticket = await Ticket.findById(id);
         if (!ticket) {
             return res.status(404).json({ message: 'Ticket not found' });
@@ -37,43 +29,19 @@ export const submitDraftTicket = async (req, res) => {
                 .json({ message: 'Only Draft tickets can be submitted' });
         }
 
-        if (title !== undefined) ticket.title = title;
-        if (summary !== undefined) ticket.summary = summary;
-        if (category !== undefined) ticket.category = category;
-        if (resolution_path !== undefined)
-            ticket.resolution_path = resolution_path;
-        if (assignees !== undefined) ticket.assignees = assignees;
-
-        let allFollowers = []; // get all creator emails ( parent + merged )
-        if (ticket.creator) {
-            allFollowers.push(ticket.creator);
-        }
-
-        let mergedTickets = [];
-
-        if (ticket.mergedRequestIds.length > 0) {
-            mergedTickets = await Ticket.find({
-                _id: { $in: ticket.id },
-            });
-        }
-
-        mergedTickets.forEach((mergedTicket) => {
-            if (mergedTicket.creator) {
-                allFollowers.push(mergedTicket.creator);
-            }
-        });
-
-        // remove duplicates
-        const uniqueFollowers = [...new Set(allFollowers)];
-        ticket.followers = uniqueFollowers;
-
+        ticket.title = title;
+        ticket.summary = summary;
+        ticket.category = category;
+        ticket.resolution_path = resolution_path;
+        ticket.assignees = assignees;
+        ticket.deadline = deadline;
         ticket.status = 'New';
 
         await ticket.save();
 
         res.status(200).json({
             message: 'Draft ticket submitted successfully',
-            data: ticket,
+            ticket: ticket,
         });
     } catch (error) {
         res.status(500).json({
