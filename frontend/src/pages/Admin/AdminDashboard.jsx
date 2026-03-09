@@ -16,6 +16,7 @@ import {
 export default function Admin_Dashboard() {
 
   const [collapsed, setCollapsed] = useState(false);
+  const [period, setPeriod] = useState(7);
 
   const [stats, setStats] = useState({
     totalTickets: 0,
@@ -24,9 +25,8 @@ export default function Admin_Dashboard() {
     topCategory: "-"
   });
 
-  const [chartData, setChartData] = useState([]);
-
-  const [period, setPeriod] = useState(7);
+  const [categoryChart, setCategoryChart] = useState([]);
+  const [statusChart, setStatusChart] = useState([]);
 
   useEffect(() => {
 
@@ -34,11 +34,11 @@ export default function Admin_Dashboard() {
 
       try {
 
-        const res = await api.get(`/dashboard?period=${period}`);
-
+        const res = await api.get(`/admin/dashboard?period=${period}`);
         const data = res.data;
 
-        // Stats
+        /* ---------- STATS ---------- */
+
         setStats({
           totalTickets: data.ticketsCreated,
           avgResolution: data.avgResolutionTime,
@@ -46,16 +46,30 @@ export default function Admin_Dashboard() {
           topCategory: data.topCategory?.name || "-"
         });
 
-        // Convert chart data
-        const formattedChart = data.ticketsByCategory.map((item) => ({
-          name: item._id,
-          count: item.count
-        }));
 
-        setChartData(formattedChart);
+        /* ---------- CATEGORY CHART (dynamic but same design) ---------- */
+
+        const categoryRow = { name: "Category" };
+
+        data.ticketsByCategory.forEach((item) => {
+          categoryRow[item._id] = item.count;
+        });
+
+        setCategoryChart([categoryRow]);
+
+
+        /* ---------- STATUS CHART (dynamic but same design) ---------- */
+
+        const statusRow = { name: "Status" };
+
+        data.ticketsByStatus.forEach((item) => {
+          statusRow[item._id] = item.count;
+        });
+
+        setStatusChart([statusRow]);
 
       } catch (error) {
-        console.log("Dashboard error:", error);
+        console.error("Dashboard error:", error);
       }
 
     };
@@ -64,20 +78,17 @@ export default function Admin_Dashboard() {
 
   }, [period]);
 
+
   return (
 
     <div className="flex bg-gray-200 min-h-screen">
 
-      {/* Sidebar */}
-      <AdminNavbar
-        collapsed={collapsed}
-        setCollapsed={setCollapsed}
-      />
+      <AdminNavbar collapsed={collapsed} setCollapsed={setCollapsed} />
 
-      {/* Main Content */}
       <div className="flex-1 p-10">
 
-        {/* Header */}
+        {/* HEADER */}
+
         <div className="flex justify-between items-center mb-8">
 
           <h1 className="text-2xl font-semibold">
@@ -87,87 +98,113 @@ export default function Admin_Dashboard() {
           <select
             className="border rounded-lg px-3 py-1 text-sm bg-white"
             value={period}
-            onChange={(e) => setPeriod(e.target.value)}
+            onChange={(e) => setPeriod(Number(e.target.value))}
           >
-            <option value="7">Last 7 Days</option>
-            <option value="30">Last 30 Days</option>
-            <option value="90">Last 3 Months</option>
+            <option value={7}>Last 7 Days</option>
+            <option value={30}>Last 30 Days</option>
+            <option value={90}>Last 3 Months</option>
           </select>
 
         </div>
 
-        {/* Stats Cards */}
+
+        {/* STATS */}
+
         <div className="grid grid-cols-4 gap-6 mb-10">
 
           <div className="bg-white rounded-xl shadow p-5">
-            <p className="text-gray-500 text-sm">
-              Total Tickets Created
-            </p>
-            <h2 className="text-2xl font-bold mt-2">
-              {stats.totalTickets}
-            </h2>
+            <p className="text-gray-500 text-sm">Total Tickets Created</p>
+            <h2 className="text-2xl font-bold mt-2">{stats.totalTickets}</h2>
           </div>
 
           <div className="bg-white rounded-xl shadow p-5">
-            <p className="text-gray-500 text-sm">
-              Avg. Resolution Time
-            </p>
-            <h2 className="text-2xl font-bold mt-2">
-              {stats.avgResolution}
-            </h2>
+            <p className="text-gray-500 text-sm">Avg. Resolution Time</p>
+            <h2 className="text-2xl font-bold mt-2">{stats.avgResolution}</h2>
           </div>
 
           <div className="bg-white rounded-xl shadow p-5">
-            <p className="text-gray-500 text-sm">
-              Active Tickets
-            </p>
-            <h2 className="text-2xl font-bold mt-2">
-              {stats.activeTickets}
-            </h2>
+            <p className="text-gray-500 text-sm">Active Tickets</p>
+            <h2 className="text-2xl font-bold mt-2">{stats.activeTickets}</h2>
           </div>
 
           <div className="bg-white rounded-xl shadow p-5">
-            <p className="text-gray-500 text-sm">
-              Top Category
-            </p>
-            <h2 className="text-2xl font-bold mt-2">
-              {stats.topCategory}
-            </h2>
+            <p className="text-gray-500 text-sm">Top Category</p>
+            <h2 className="text-2xl font-bold mt-2">{stats.topCategory}</h2>
           </div>
 
         </div>
 
-        {/* Chart */}
-        <div className="bg-white rounded-xl shadow p-8">
 
-          <h2 className="text-lg font-semibold mb-5">
-            Tickets by Category
-          </h2>
+        {/* CHARTS */}
 
-          <ResponsiveContainer width="100%" height={350}>
+        <div className="grid grid-cols-2 gap-8">
 
-            <BarChart data={chartData}>
+          {/* CATEGORY CHART */}
 
-              <CartesianGrid strokeDasharray="3 3" />
+          <div className="bg-white rounded-xl shadow p-8">
 
-              <XAxis dataKey="name" />
+            <h2 className="text-lg font-semibold mb-5">
+              Tickets by Category
+            </h2>
 
-              <YAxis />
+            <ResponsiveContainer width="100%" height={350}>
 
-              <Tooltip />
+              <BarChart data={categoryChart}>
 
-              <Legend />
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
 
-              <Bar dataKey="count" fill="#7c6ee6" />
+                <Bar dataKey="Access" fill="#7c6ee6" />
+                <Bar dataKey="Feature" fill="#f87171" />
+                <Bar dataKey="Hardware" fill="#60a5fa" />
+                <Bar dataKey="Network" fill="#fbbf24" />
 
-            </BarChart>
+              </BarChart>
 
-          </ResponsiveContainer>
+            </ResponsiveContainer>
+
+          </div>
+
+
+
+          {/* STATUS CHART */}
+
+          <div className="bg-white rounded-xl shadow p-8">
+
+            <h2 className="text-lg font-semibold mb-5">
+              Tickets by Status
+            </h2>
+
+            <ResponsiveContainer width="100%" height={350}>
+
+              <BarChart data={statusChart}>
+
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+
+                <Bar dataKey="New" fill="#60a5fa" />
+                <Bar dataKey="Solving" fill="#fbbf24" />
+                <Bar dataKey="Solved" fill="#4ade80" />
+                <Bar dataKey="Failed" fill="#f87171" />
+                <Bar dataKey="Draft" fill="#9ca3af" />
+
+              </BarChart>
+
+            </ResponsiveContainer>
+
+          </div>
 
         </div>
 
       </div>
 
     </div>
+
   );
 }
