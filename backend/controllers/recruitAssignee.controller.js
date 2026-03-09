@@ -5,7 +5,6 @@ export const getAssignee = async (req, res) => {
   try {
     const assignees = await User.find({ role: "assignee" }).populate("scopes")
     res.status(200).json({
-      success: true,
       data: assignees
     });
 
