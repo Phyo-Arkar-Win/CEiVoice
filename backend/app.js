@@ -9,7 +9,7 @@ import issueSubmissionRoutes from './routes/issueSubmission.routes.js';
 import ticketRoutes from './routes/ticket.routes.js';
 import recruitAssigneeRoutes from './routes/recruitAssignee.routes.js';
 import ScopesRoutes from './routes/scopes.routes.js';
-import historyLogRoutes from './routes/historyLog.routes.js';
+import assigneeRoutes from './routes/assignee.routes.js';
 
 const app = express();
 
@@ -30,6 +30,6 @@ app.use('/submit', issueSubmissionRoutes);
 app.use('/tickets', ticketRoutes);
 app.use('/recruit', recruitAssigneeRoutes);
 app.use('/scopes', ScopesRoutes);
-app.use('/history', historyLogRoutes);
+app.use('/assignee', assigneeRoutes);
 
 export default app;

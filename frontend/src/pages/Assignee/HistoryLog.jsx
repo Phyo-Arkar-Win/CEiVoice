@@ -4,6 +4,8 @@ import api from "../../api/axios";
 
 export default function Assignee_Historylog() {
 
+  const [collapsed, setCollapsed] = useState(false);
+
   const [statusLogs, setStatusLogs] = useState([
     {
       ticketId: "Ticket-001",
@@ -12,17 +14,17 @@ export default function Assignee_Historylog() {
       by: "Linn Hein Htet",
     },
     {
-    ticketId: "Ticket-002",
-    datetime: "10:15 / 4/3/2026",
-    change: "Pending to Solving",
-    by: "Phyo Arkar Win",
-  },
-  {
-    ticketId: "Ticket-003",
-    datetime: "11:40 / 4/3/2026",
-    change: "Open to Pending",
-    by: "Admin67",
-  }
+      ticketId: "Ticket-002",
+      datetime: "10:15 / 4/3/2026",
+      change: "Pending to Solving",
+      by: "Phyo Arkar Win",
+    },
+    {
+      ticketId: "Ticket-003",
+      datetime: "11:40 / 4/3/2026",
+      change: "Open to Pending",
+      by: "Admin67",
+    },
   ]);
 
   const [assigneeLogs, setAssigneeLogs] = useState([
@@ -33,8 +35,6 @@ export default function Assignee_Historylog() {
       by: "Admin67",
     },
   ]);
-
-  
 
   useEffect(() => {
 
@@ -58,19 +58,28 @@ export default function Assignee_Historylog() {
   }, []);
 
   return (
-    <div className="min-h-screen flex bg-gray-200">
+    <div className="bg-gray-200 min-h-screen">
 
-      <AssigneeNavbar />
+      {/* Sidebar */}
+      <AssigneeNavbar
+        collapsed={collapsed}
+        setCollapsed={setCollapsed}
+      />
 
-      <div className="flex-1 p-10">
+      {/* Main Content */}
+      <div
+        className={`transition-all duration-300 p-10 ${
+          collapsed ? "ml-20" : "ml-64"
+        }`}
+      >
 
         {/* PAGE TITLE */}
-        <h1 className="text-2xl font-semibold mb-6 flex items-center gap-2">
-           History Log
+        <h1 className="text-2xl font-semibold mb-6">
+          History Log
         </h1>
 
         {/* STATUS HISTORY */}
-        <div className="bg-gray-100 rounded-xl shadow p-6 mb-8">
+        <div className="bg-gray-100 rounded-xl shadow p-6 mb-8 overflow-x-auto">
 
           <h2 className="text-xl font-semibold mb-4">Status</h2>
 
@@ -89,7 +98,7 @@ export default function Assignee_Historylog() {
 
               {statusLogs.map((log, index) => (
 
-                <tr key={index} className="border-t">
+                <tr key={index} className="border-t hover:bg-gray-50">
 
                   <td className="py-3">{log.ticketId}</td>
                   <td>{log.datetime}</td>
@@ -107,7 +116,7 @@ export default function Assignee_Historylog() {
         </div>
 
         {/* ASSIGNEE HISTORY */}
-        <div className="bg-gray-100 rounded-xl shadow p-6">
+        <div className="bg-gray-100 rounded-xl shadow p-6 overflow-x-auto">
 
           <h2 className="text-xl font-semibold mb-4">Assignee</h2>
 
@@ -126,7 +135,7 @@ export default function Assignee_Historylog() {
 
               {assigneeLogs.map((log, index) => (
 
-                <tr key={index} className="border-t">
+                <tr key={index} className="border-t hover:bg-gray-50">
 
                   <td className="py-3">{log.ticketId}</td>
                   <td>{log.datetime}</td>
