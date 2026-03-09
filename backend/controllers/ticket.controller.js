@@ -150,7 +150,7 @@ export const viewTicketAsUser = async (req, res) => {
     }
     try {
         const ticket = await Ticket.findById(ticketId);
-        if (ticket.email !== email) {
+        if (ticket.email !== email || ticket.creator !== email) {
             return res.status(403).json({ message: 'Incorrect Email or Ticket ID' });
         }
         res.status(200).json({ id: ticket.id, status: ticket.status, title: ticket.title, issue: ticket.issue });
