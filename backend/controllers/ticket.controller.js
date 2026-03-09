@@ -1,17 +1,5 @@
 import Ticket from '../models/ticket.js';
 
-// GET : Get all draft tickets for admin
-export const getDraftTickets = async (req, res) => {
-    try {
-        const draftTickets = await Ticket.find({ status: 'Draft' });
-        res.status(200).json(draftTickets);
-    } catch (error) {
-        res.status(500).json({
-            message: `Error loading draft tickets: ${error.message}`,
-        });
-    }
-};
-
 //PUT :  Merge tickets
 export const mergeDraftTickets = async (req, res) => {
     try {
@@ -161,3 +149,14 @@ export const viewTicketAsUser = async (req, res) => {
     }
 };
 
+export const getIndividualTicket = async (req, res) => {
+    const { ticketId } = req.body;
+    try {
+        const ticket = await Ticket.findById(ticketId);
+        res.status(200).json({ title: ticket.title, category: ticket.category, summary: ticket.summary, resolution_path: ticket.resolution_path });
+    } catch (error) {
+        res.status(500).json({
+            message: `Error viewing ticket: ${error.message}`,
+        });
+    }
+};
