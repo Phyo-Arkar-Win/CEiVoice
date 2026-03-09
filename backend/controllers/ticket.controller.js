@@ -157,3 +157,40 @@ export const getIndividualTicket = async (req, res) => {
         });
     }
 };
+
+// update draft ticket ( admin can update before submitting )
+export const updateDraftTicket = async (req, res) => {
+  try {
+    const { title, summary, category, resolution_path, deadline, assignees } = req.body;
+
+    const ticket = await Ticket.findByIdAndUpdate(
+      req.params.id,
+      {
+        title,
+        summary,
+        category,
+        resolution_path,
+        deadline,
+        assignees
+      },
+      { new: true }
+    );
+
+    if (!ticket) {
+      return res.status(404).json({
+        message: "Ticket not found"
+      });
+    }
+
+    res.status(200).json({
+      message: "Draft ticket updated successfully",
+      ticket
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: "Update failed",
+      error: error.message
+    });
+  }
+};
