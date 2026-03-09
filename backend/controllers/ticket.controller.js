@@ -175,9 +175,6 @@ export const ticketDetailsAsAdminOrAssignee = async (req, res) => {
     const ticketId = req.params.id;
     try {
         const ticket = await Ticket.findById(ticketId);
-        if (!ticket) {
-            return res.status(404).json({ message: "Ticket not found" });
-        }
         const publicComments = await Comment.find({ ticket: ticketId, visibility: 'Public' }).sort({ createdAt: -1 });
         const internalComments = await Comment.find({ ticket: ticketId, visibility: 'Internal' }).sort({ createdAt: -1 });
         const scopes = await Scope.find()
