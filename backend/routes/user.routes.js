@@ -5,7 +5,7 @@ import { ticketDetailsAsUser, submitCommentAsUser } from '../controllers/ticket.
 
 const router = Router();
 router.get('/tickets', getUserTickets);
-router.get('/ticketDetails', ticketDetailsAsUser);
+router.get('/ticketDetails/:id', ticketDetailsAsUser);
 router.post('/submitComment', submitCommentAsUser);
 
 export default router;
