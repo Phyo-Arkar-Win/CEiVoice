@@ -7,6 +7,7 @@ export default function Assignee_Ticket_Details() {
   const navigate = useNavigate();
   const location = useLocation();
   const { ticketId: routeTicketId } = useParams();
+  const [collapsed, setCollapsed] = useState(false);
 
   const [ticket, setTicket] = useState(null);
   const [comments, setComments] = useState([]);
@@ -166,11 +167,13 @@ export default function Assignee_Ticket_Details() {
 
 return (
   <div className="min-h-screen flex bg-gray-100">
-    <div className="fixed left-0 top-0 h-screen z-20">
-      <AssigneeNavbar />
-    </div>
+    <AssigneeNavbar collapsed={collapsed} setCollapsed={setCollapsed} />
 
-    <div className="flex-1 ml-64 p-4 md:p-6">
+    <div
+  className={`flex-1 transition-all duration-300 p-4 md:p-6 ${
+    collapsed ? "ml-20" : "ml-64"
+  }`}
+>
       <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6">
 
         <button

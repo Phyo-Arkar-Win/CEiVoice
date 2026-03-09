@@ -29,9 +29,18 @@ export default function Login() {
 
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("role", user.role);
 
       // alert(`Welcome, ${user.name}!`);
+      if (user.role === "admin") {
+    navigate("/admin_dashboard");
+    } 
+    else if (user.role === "assignee") {
+      navigate("/assignee_dashboard");
+    } 
+    else {
       navigate("/dashboard");
+    }
     } catch (error) {
       console.error("Login failed:", error);
       alert(
@@ -56,9 +65,18 @@ export default function Login() {
 
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("role",user.role)
 
       // alert(`Welcome, ${user.name}!`);
+      if (user.role === "admin") {
+    navigate("/admin_dashboard");
+    } 
+    else if (user.role === "assignee") {
+      navigate("/assignee_dashboard");
+    } 
+    else {
       navigate("/dashboard");
+    }
     } catch (error) {
       console.error("Google login failed at backend:", error);
       alert("Google login failed. Please try again.");
