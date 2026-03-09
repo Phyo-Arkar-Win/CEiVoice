@@ -1,6 +1,19 @@
 import Ticket from '../models/ticket.js';
+import { AIMergeDraftTicket } from '../services/ollama.service.js';
 
-//PUT :  Merge tickets
+// Get all draft tickets for admin
+export const getDraftTicketsAsAdmin = async (req, res) => {
+    try {
+        const draftTickets = await Ticket.find({ status: 'Draft' });
+        res.status(200).json(draftTickets);
+    } catch (error) {
+        res.status(500).json({
+            message: `Error loading draft tickets: ${error.message}`,
+        });
+    }
+};
+
+// Merge tickets
 export const mergeDraftTickets = async (req, res) => {
     try {
         const { ticketIds } = req.body;
@@ -20,38 +33,22 @@ export const mergeDraftTickets = async (req, res) => {
                 .status(404)
                 .json({ message: 'One or more tickets not found.' });
         }
-
-        for (let ticket of tickets) {
-            if (ticket.status !== 'Draft') {
-                return res.status(400).json({
-                    message: 'All selected tickets must be draft.',
-                });
-            }
-        }
-
-        const parent = tickets[0];
-        for (let i = 1; i < tickets.length; i++) {
-            const child = tickets[i];
-            child.parentTicketId = parent._id;
-            child.status = 'Merged';
-
-            await child.save();
-
-            parent.mergedRequestIds.push(child._id);
-        }
-
-        await parent.save();
-
-        res.status(200).json({
-            message: 'Tickets merged successfully',
-            parentTicket: parent,
-        });
+ 
+        const merged = await AIMergeDraftTicket(tickets);
+        
+        res.status(200).json({ merged });
     } catch (error) {
         res.status(500).json({
             message: `Error merging tickets: ${error.message}`,
         });
     }
 };
+
+// for (let i = 1; i < tickets.length; i++) {
+//             merged.followers.push(...tickets[i].creator);
+//             tickets[i].status = 'Merged';
+//             await tickets[i].save();
+//         }
 
 // PUT : Submit a new ticket from draft | submit draft ticket
 export const submitDraftTicket = async (req, res) => {
