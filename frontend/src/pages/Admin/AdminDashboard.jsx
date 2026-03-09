@@ -21,10 +21,12 @@ export default function Admin_Dashboard() {
     totalTickets: 0,
     avgResolution: "0h",
     activeTickets: 0,
-    topCategory: "-",
+    topCategory: "-"
   });
 
   const [chartData, setChartData] = useState([]);
+
+  const [period, setPeriod] = useState(7);
 
   useEffect(() => {
 
@@ -32,26 +34,38 @@ export default function Admin_Dashboard() {
 
       try {
 
-        const res = await api.get("/dashboard");
+        const res = await api.get(`/dashboard?period=${period}`);
 
-        setStats(res.data.stats);
-        setChartData(res.data.chart);
+        const data = res.data;
+
+        // Stats
+        setStats({
+          totalTickets: data.ticketsCreated,
+          avgResolution: data.avgResolutionTime,
+          activeTickets: data.activeTickets,
+          topCategory: data.topCategory?.name || "-"
+        });
+
+        // Convert chart data
+        const formattedChart = data.ticketsByCategory.map((item) => ({
+          name: item._id,
+          count: item.count
+        }));
+
+        setChartData(formattedChart);
 
       } catch (error) {
-
-        console.log("Backend not ready yet");
-
+        console.log("Dashboard error:", error);
       }
 
     };
 
     fetchDashboard();
 
-  }, []);
+  }, [period]);
 
   return (
 
-    /* FLEX LAYOUT FIX */
     <div className="flex bg-gray-200 min-h-screen">
 
       {/* Sidebar */}
@@ -61,49 +75,61 @@ export default function Admin_Dashboard() {
       />
 
       {/* Main Content */}
-      <div className="flex-1 p-10 transition-all duration-300">
+      <div className="flex-1 p-10">
 
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
 
           <h1 className="text-2xl font-semibold">
-            Dashboard overview
+            Dashboard Overview
           </h1>
 
-          <select className="border rounded-lg px-3 py-1 text-sm bg-white">
-            <option>Last 7 Days</option>
-            <option>Last 30 Days</option>
-            <option>Last 3 Months</option>
+          <select
+            className="border rounded-lg px-3 py-1 text-sm bg-white"
+            value={period}
+            onChange={(e) => setPeriod(e.target.value)}
+          >
+            <option value="7">Last 7 Days</option>
+            <option value="30">Last 30 Days</option>
+            <option value="90">Last 3 Months</option>
           </select>
 
         </div>
 
-        {/* Dashboard Cards */}
+        {/* Stats Cards */}
         <div className="grid grid-cols-4 gap-6 mb-10">
 
           <div className="bg-white rounded-xl shadow p-5">
-            <p className="text-gray-500 text-sm">Total Tickets Created</p>
+            <p className="text-gray-500 text-sm">
+              Total Tickets Created
+            </p>
             <h2 className="text-2xl font-bold mt-2">
               {stats.totalTickets}
             </h2>
           </div>
 
           <div className="bg-white rounded-xl shadow p-5">
-            <p className="text-gray-500 text-sm">Avg. Resolution Time</p>
+            <p className="text-gray-500 text-sm">
+              Avg. Resolution Time
+            </p>
             <h2 className="text-2xl font-bold mt-2">
               {stats.avgResolution}
             </h2>
           </div>
 
           <div className="bg-white rounded-xl shadow p-5">
-            <p className="text-gray-500 text-sm">Active Tickets</p>
+            <p className="text-gray-500 text-sm">
+              Active Tickets
+            </p>
             <h2 className="text-2xl font-bold mt-2">
               {stats.activeTickets}
             </h2>
           </div>
 
           <div className="bg-white rounded-xl shadow p-5">
-            <p className="text-gray-500 text-sm">Top Category</p>
+            <p className="text-gray-500 text-sm">
+              Top Category
+            </p>
             <h2 className="text-2xl font-bold mt-2">
               {stats.topCategory}
             </h2>
@@ -111,8 +137,12 @@ export default function Admin_Dashboard() {
 
         </div>
 
-        {/* Chart Section */}
+        {/* Chart */}
         <div className="bg-white rounded-xl shadow p-8">
+
+          <h2 className="text-lg font-semibold mb-5">
+            Tickets by Category
+          </h2>
 
           <ResponsiveContainer width="100%" height={350}>
 
@@ -128,13 +158,7 @@ export default function Admin_Dashboard() {
 
               <Legend />
 
-              <Bar dataKey="Access" stackId="a" fill="#7c6ee6" />
-
-              <Bar dataKey="Hardware" stackId="a" fill="#f28b82" />
-
-              <Bar dataKey="Network" stackId="a" fill="#5fb3c8" />
-
-              <Bar dataKey="Feature" stackId="a" fill="#f5b461" />
+              <Bar dataKey="count" fill="#7c6ee6" />
 
             </BarChart>
 
@@ -143,6 +167,7 @@ export default function Admin_Dashboard() {
         </div>
 
       </div>
+
     </div>
   );
 }
