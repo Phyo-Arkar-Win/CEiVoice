@@ -1,4 +1,6 @@
 import Ticket from '../models/ticket.js';
+import Comment from '../models/comment.js';
+import User from '../models/user.js';
 import { AIMergeDraftTicket } from '../services/ollama.service.js';
 
 // Get all draft tickets for admin
@@ -158,16 +160,98 @@ export const getIndividualTicket = async (req, res) => {
     }
 };
 
-export const ticketDetailsAsAdminAndAssignee = async (req, res) => {
+export const ticketDetailsAsAdminOrAssignee = async (req, res) => {
     const { ticketId } = req.body;
     try {
         const ticket = await Ticket.findById(ticketId);
-        const publicComments = await Comment.find({ ticket: ticketId, visibility: 'Public' }, sort);
-        const internalComments = await Comment.find({ ticket: ticketId, visibility: 'Internal' });
+        const publicComments = await Comment.find({ ticket: ticketId, visibility: 'Public' }).sort({ createdAt: -1 });
+        const internalComments = await Comment.find({ ticket: ticketId, visibility: 'Internal' }).sort({ createdAt: -1 });
         res.status(200).json({ ticket, publicComments, internalComments });
     } catch (error) {
         res.status(500).json({
             message: `Error viewing ticket: ${error.message}`,
+        });
+    }
+};
+
+export const ticketDetailsAsUser = async (req, res) => {
+    const { ticketId } = req.body;
+    try {
+        const ticket = await Ticket.findById(ticketId);
+        const publicComments = await Comment.find({ ticket: ticketId, visibility: 'Public' }).sort({ createdAt: -1 });
+        res.status(200).json({ ticket, publicComments });
+    } catch (error) {
+        res.status(500).json({
+            message: `Error viewing ticket: ${error.message}`,
+        });
+    }
+};
+
+export const saveAsAssignee = async (req, res) => {
+    const { ticketId, status, reassignedAssigneeId } = req.body;
+    try {
+        const ticket = await Ticket.findById(ticketId);
+        const reassignedAssignee = await User.findById(reassignedAssigneeId);
+        if (status !== "Solved") {
+            ticket.status = status;
+        } else if (status === "Solved") {
+            const commented = await Comment.find({ ticket: ticketId, user: req.user.id });
+
+            if (!commented.length) {
+                return res.status(400).json({ message: 'You must comment before marking the ticket as solved' });
+            }
+        }
+
+        if (reassignedAssignee) {
+            ticket.assignees.push(reassignedAssignee);
+        }
+
+        await ticket.save();
+        res.status(200).json({ ticket });
+    } catch (error) {
+        res.status(500).json({
+            message: `Error updating ticket: ${error.message}`,
+        });
+    }
+}
+
+export const submitCommentAsUser = async (req, res) => {
+    const userId = req.user.id;
+    const { ticketId, commentText } = req.body;
+    try {
+        const ticket = await Ticket.findById(ticketId);
+        const user = await User.findById(userId);
+        const newComment = new Comment({
+            user,
+            ticket,
+            comment: commentText,
+        });
+        await newComment.save();
+        res.status(200).json({ message: 'Comment added successfully', comment: newComment, name: user.name, role: user.role });
+    } catch (error) {
+        res.status(500).json({
+            message: `Error adding comment: ${error.message}`,
+        });
+    }
+};
+
+export const submitCommentAsAdminOrAssignee = async (req, res) => {
+    const userId = req.user.id;
+    const { ticketId, commentText, visibility } = req.body;
+    try {
+        const ticket = await Ticket.findById(ticketId);
+        const user = await User.findById(userId);
+        const newComment = new Comment({
+            user,
+            ticket,
+            comment: commentText,
+            visibility
+        });
+        await newComment.save();
+        res.status(200).json({ message: 'Comment added successfully', comment: newComment, name: user.name, role: user.role });
+    } catch (error) {
+        res.status(500).json({
+            message: `Error adding comment: ${error.message}`,
         });
     }
 };
