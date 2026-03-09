@@ -3,7 +3,6 @@ import Comment from '../models/comment.js';
 import User from '../models/user.js';
 import { AIMergeDraftTicket } from '../services/ollama.service.js';
 
-// Get all draft tickets for admin
 export const getDraftTicketsAsAdmin = async (req, res) => {
     try {
         const draftTickets = await Ticket.find({ status: 'Draft' });
@@ -11,37 +10,6 @@ export const getDraftTicketsAsAdmin = async (req, res) => {
     } catch (error) {
         res.status(500).json({
             message: `Error loading draft tickets: ${error.message}`,
-        });
-    }
-};
-
-// Merge tickets
-export const mergeDraftTickets = async (req, res) => {
-    try {
-        const { ticketIds } = req.body;
-
-        if (!ticketIds || ticketIds.length < 2) {
-            return res
-                .status(400)
-                .json({ message: 'Select at least 2 draft tickets to merge.' });
-        }
-
-        const tickets = await Ticket.find({
-            _id: { $in: ticketIds },
-        });
-
-        if (tickets.length !== ticketIds.length) {
-            return res
-                .status(404)
-                .json({ message: 'One or more tickets not found.' });
-        }
- 
-        const merged = await AIMergeDraftTicket(tickets);
-        
-        res.status(200).json({ merged });
-    } catch (error) {
-        res.status(500).json({
-            message: `Error merging tickets: ${error.message}`,
         });
     }
 };
@@ -156,6 +124,48 @@ export const getIndividualTicket = async (req, res) => {
     } catch (error) {
         res.status(500).json({
             message: `Error viewing ticket: ${error.message}`,
+        });
+    }
+};
+
+export const handleMergeSelection = async (req, res) => {
+    let tickets = req.body
+    let mergedTicket = await AIMergeDraftTickets(tickets)
+    res.status(200).json({ message: 'Tickets merged successfully', mergedTicket: mergedTicket });
+};
+
+export const handleUnlinkTickets = async (req, res) => {
+    const { mergedTicketId, ticketToUnlinkId } = req.body
+    try {
+        const mergedTicket = await Ticket.findById(mergedTicketId);
+        const ticketToUnlink = await Ticket.findById(ticketToUnlinkId);
+        if (!mergedTicket || !ticketToUnlink) {
+            return res.status(404).json({ message: 'One or both tickets not found' });
+        }
+        mergedTicket.mergedTickets = mergedTicket.mergedTickets.filter(
+            id => !id.equals(ticketToUnlink._id)
+        );
+        mergedTicket.followers = mergedTicket.followers.filter(
+            follower => follower !== ticketToUnlink.creator
+        );
+    } catch (error) {
+        res.status(500).json({
+            message: `Error unlinking tickets: ${error.message}`,
+        });
+    }
+    res.status(200).json({ ticket: mergedTicketId, message: 'Tickets unlinked successfully' });
+};
+
+export const mergeDraftTickets = async (req, res) => {
+    try {
+        const { mergedTicketId } = req.body;
+        const mergedTicket = await Ticket.findById(mergedTicketId);
+        await Ticket.deleteMany({ _id: { $in: mergedTicket.mergedTickets } });
+        await mergedTicket.save();
+        res.status(200).json({ message: 'Tickets merged successfully', data: mergedTicket });
+    } catch (error) {
+        res.status(500).json({
+            message: `Error merging tickets: ${error.message}`,
         });
     }
 };
