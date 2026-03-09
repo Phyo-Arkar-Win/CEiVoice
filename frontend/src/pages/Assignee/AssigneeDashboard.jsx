@@ -6,8 +6,6 @@ import { FaSearch } from "react-icons/fa";
 export default function Assignee_Dashboard() {
   const navigate = useNavigate();
 
-  const [collapsed, setCollapsed] = useState(true);
-
   const [tickets] = useState([
     {
       id: "Ticket-001",
@@ -40,17 +38,11 @@ export default function Assignee_Dashboard() {
     <div className="bg-gray-100 min-h-screen">
 
       {/* Sidebar */}
-      <AssigneeNavbar
-        collapsed={collapsed}
-        setCollapsed={setCollapsed}
-      />
+      <AssigneeNavbar />
 
       {/* Main Content */}
-      <div
-        className={`transition-all duration-300 p-8 ${
-          collapsed ? "ml-20" : "ml-64"
-        }`}
-      >
+      <div className="ml-64 p-8">
+
         {/* Statistics */}
         <div className="bg-white shadow rounded-xl p-6 mb-6">
           <h2 className="text-xl font-semibold mb-4">Statistics</h2>
@@ -110,6 +102,7 @@ export default function Assignee_Dashboard() {
 
           </table>
         </div>
+
       </div>
     </div>
   );
