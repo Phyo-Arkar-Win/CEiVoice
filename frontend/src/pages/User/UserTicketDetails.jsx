@@ -29,8 +29,6 @@ const FALLBACK_TICKET = {
   ],
 };
 
-const COMMENT_TABS = ["Public", "Internal"];
-
 const getAssigneeLabel = (assignee) =>
   typeof assignee === "string" ? assignee : assignee?.email || assignee?.name || "";
 
@@ -43,8 +41,6 @@ export default function UserTicketDetails() {
   const [ticket, setTicket] = useState(null);
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState("");
-  const [commentType, setCommentType] = useState("Public");
-  const [activeTab, setActiveTab] = useState("Public");
   const [loading, setLoading] = useState(true);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -56,8 +52,8 @@ export default function UserTicketDetails() {
     setLoading(false);
   }, []);
 
-  const filteredComments = comments.filter(
-    (comment) => (comment?.type || "Public").toLowerCase() === activeTab.toLowerCase()
+  const publicComments = comments.filter(
+    (comment) => (comment?.type || "Public").toLowerCase() === "public"
   );
 
   const followersText = Array.isArray(ticket?.followers)
@@ -85,7 +81,7 @@ export default function UserTicketDetails() {
 
     const newComment = {
       message,
-      type: commentType,
+      type: "Public",
       senderEmail: userEmail,
       senderRole: "Follower",
       id: `temp-${Date.now()}`,
@@ -139,34 +135,20 @@ export default function UserTicketDetails() {
           {/* Comments Section */}
           <div className="border-t border-gray-300 p-6">
 
-            <h2 className="text-lg font-semibold mb-3">Comments</h2>
-
-            {/* Tabs */}
-            <div className="flex gap-2 mb-2">
-              {COMMENT_TABS.map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`px-3 py-1 text-xs rounded-t border ${
-                    activeTab === tab
-                      ? "bg-white border-orange-500"
-                      : "bg-gray-200 border-gray-300"
-                  }`}
-                >
-                  {tab}
-                </button>
-              ))}
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-semibold">Comments</h2>
+              <span className="text-xs font-medium px-2 py-1 rounded bg-orange-100 text-orange-700">
+                Public only
+              </span>
             </div>
 
             {/* Comment Box */}
             <div className="border border-orange-400 bg-gray-100 rounded-xl p-4 h-[240px] overflow-y-auto">
 
-              {filteredComments.length === 0 ? (
-                <p className="text-gray-500 text-sm">
-                  No {activeTab.toLowerCase()} comments yet.
-                </p>
+              {publicComments.length === 0 ? (
+                <p className="text-gray-500 text-sm">No public comments yet.</p>
               ) : (
-                filteredComments.map((comment, index) => {
+                publicComments.map((comment, index) => {
 
                   const role = comment?.senderRole || comment?.role || "Follower";
                   const sender =
@@ -182,7 +164,7 @@ export default function UserTicketDetails() {
                     <div
                       key={comment?.id || index}
                       className={`mb-4 flex ${
-                        isUser ? "justify-start" : "justify-end"
+                        isUser ? "justify-end" : "justify-start"
                       }`}
                     >
 
@@ -213,15 +195,6 @@ export default function UserTicketDetails() {
                 placeholder="Enter the comment to post it"
                 className="flex-1 border border-orange-400 rounded-l-lg px-3 py-2 text-sm outline-none"
               />
-
-              <select
-                value={commentType}
-                onChange={(e) => setCommentType(e.target.value)}
-                className="border-y border-l border-gray-300 px-2 py-2 text-sm"
-              >
-                <option value="Public">Public</option>
-                <option value="Internal">Internal</option>
-              </select>
 
               <button
                 onClick={handleSubmitComment}
