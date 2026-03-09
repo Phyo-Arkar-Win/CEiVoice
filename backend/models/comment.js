@@ -9,7 +9,7 @@ const commentSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Ticket"
     },
-    role: {
+    visibility: {
         type: String,
         enum: ["Internal", "Public"],
         required: true

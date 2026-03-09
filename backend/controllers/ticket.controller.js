@@ -2,6 +2,23 @@ import ticket from '../models/ticket.js';
 import Ticket from '../models/ticket.js';
 import { AIMergeDraftTickets } from '../services/ollama.service.js';
 
+export const getDraftTicketsAsAdmin = async (req, res) => {
+    try {
+        const draftTickets = await Ticket.find({ status: 'Draft' });
+        res.status(200).json(draftTickets);
+    } catch (error) {
+        res.status(500).json({
+            message: `Error loading draft tickets: ${error.message}`,
+        });
+    }
+};
+
+// for (let i = 1; i < tickets.length; i++) {
+//             merged.followers.push(...tickets[i].creator);
+//             tickets[i].status = 'Merged';
+//             await tickets[i].save();
+//         }
+
 // PUT : Submit a new ticket from draft | submit draft ticket
 export const submitDraftTicket = async (req, res) => {
     try {
@@ -135,7 +152,7 @@ export const handleUnlinkTickets = async (req, res) => {
             message: `Error unlinking tickets: ${error.message}`,
         });
     }
-    res.status(200).json({ ticket: mergedTicket, message: 'Tickets unlinked successfully' });
+    res.status(200).json({ ticket: mergedTicketId, message: 'Tickets unlinked successfully' });
 };
 
 export const mergeDraftTickets = async (req, res) => {
@@ -148,6 +165,20 @@ export const mergeDraftTickets = async (req, res) => {
     } catch (error) {
         res.status(500).json({
             message: `Error merging tickets: ${error.message}`,
+        });
+    }
+};
+
+export const ticketDetailsAsAdminAndAssignee = async (req, res) => {
+    const { ticketId } = req.body;
+    try {
+        const ticket = await Ticket.findById(ticketId);
+        const publicComments = await Comment.find({ ticket: ticketId, visibility: 'Public' }, sort);
+        const internalComments = await Comment.find({ ticket: ticketId, visibility: 'Internal' });
+        res.status(200).json({ ticket, publicComments, internalComments });
+    } catch (error) {
+        res.status(500).json({
+            message: `Error viewing ticket: ${error.message}`,
         });
     }
 };
