@@ -157,3 +157,17 @@ export const getIndividualTicket = async (req, res) => {
         });
     }
 };
+
+export const ticketDetailsAsAdminAndAssignee = async (req, res) => {
+    const { ticketId } = req.body;
+    try {
+        const ticket = await Ticket.findById(ticketId);
+        const publicComments = await Comment.find({ ticket: ticketId, visibility: 'Public' }, sort);
+        const internalComments = await Comment.find({ ticket: ticketId, visibility: 'Internal' });
+        res.status(200).json({ ticket, publicComments, internalComments });
+    } catch (error) {
+        res.status(500).json({
+            message: `Error viewing ticket: ${error.message}`,
+        });
+    }
+};
