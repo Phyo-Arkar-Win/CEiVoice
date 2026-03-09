@@ -18,18 +18,11 @@ import Tracking from "./pages/User/Tracking";
 import Confirmation from "./pages/User/Confirmation";
 
 // Admin
-<<<<<<< HEAD
-import Admin_Dashboard from './pages/Admin/AdminDashboard';
-import Draft from "./pages/Admin/Draft"
-import Staff from "./pages/Admin/StaffManagement"
-import Tickets from "./pages/Admin/Tickets"
-=======
-import Admin_Dashboard from "./pages/Admin/Admin_Dashboard";
+import Admin_Dashboard from "./pages/Admin/AdminDashboard";
 import Draft from "./pages/Admin/Draft";
 import Staff from "./pages/Admin/StaffManagement";
 import Tickets from "./pages/Admin/Tickets";
 import MergeDraftToNew from "./pages/Admin/MergeDraftToNew";
->>>>>>> 3125406 (merge with Linn-Hein-Htet)
 
 // Assignee
 import Assignee_Dashboard from "./pages/Assignee/AssigneeDashboard"
@@ -76,19 +69,10 @@ const App = () => {
                             <Admin_Dashboard />
                         </ProtectedRoute>} />
 
-<<<<<<< HEAD
-                    <Route path='/drafts' element={<Draft/>}/>
-                    <Route path='/tickets' element={<Tickets/>}></Route>
-                    <Route path='/staff' element={
-                        <ProtectedRoute allowedRoles={["admin"]}>
-                            <Staff />
-                        </ProtectedRoute>} />
-=======
                     <Route path='/drafts' element={<ProtectedRoute allowedRoles={["admin"]}><Draft/></ProtectedRoute>}/>
                     <Route path='/tickets' element={<ProtectedRoute allowedRoles={["admin"]}><Tickets/></ProtectedRoute>}/>
                     <Route path='/drafts/merge' element={<ProtectedRoute allowedRoles={["admin"]}><MergeDraftToNew/></ProtectedRoute>}/>
                     <Route path='/staff' element={<ProtectedRoute allowedRoles={["admin"]}><Staff /></ProtectedRoute>} />
->>>>>>> 3125406 (merge with Linn-Hein-Htet)
 
                     {/* Assignee Route */}
                     <Route path='/assignee_dashboard' element={
