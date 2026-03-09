@@ -175,7 +175,7 @@ ${ticketList}
     // });
     
     // return newTicket
-    console.log("Merged Ticket Draft:", parsed);
+    return ("Merged Ticket Draft:", parsed);
 };
 
 export default AIGenerateDraftTicket;
