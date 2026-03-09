@@ -130,6 +130,7 @@ export const mergeDraftTickets = async (req, res) => {
         const { mergedTicketId } = req.body;
         const mergedTicket = await Ticket.findById(mergedTicketId);
         await Ticket.deleteMany({ _id: { $in: mergedTicket.mergedTickets } });
+        await mergedTicket.updateOne({ $set: { status: 'New' } });
         await mergedTicket.save();
         res.status(200).json({ message: 'Tickets merged successfully', data: mergedTicket });
     } catch (error) {
