@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 import { confirmationEmailTemplate } from "./confirmationEmail.js";
-import { updateNewEmailTemplate } from "./updateStatusEmail.js";
+import { updateNewEmailTemplate, updateSolvedEmailTemplate, updateFailedEmailTemplate } from "./updateStatusEmail.js";
 
 const getTransporter = () => {
     return nodemailer.createTransport({
