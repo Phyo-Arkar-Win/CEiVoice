@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import AdminNavbar from "@/components/AdminNavbar";
 import api from "@/api/axios";
@@ -114,11 +114,6 @@ export default function AdminTicketDetails() {
 
     fetchTicketAndComments();
   }, [ticketId]);
-
-  const assigneeOptions = useMemo(() => {
-    if (!Array.isArray(ticket?.assignees)) return [];
-    return ticket.assignees.map(getAssigneeLabel).filter(Boolean);
-  }, [ticket]);
 
   const filteredComments = activeTab === "Public" ? publicComments : internalComments;
 

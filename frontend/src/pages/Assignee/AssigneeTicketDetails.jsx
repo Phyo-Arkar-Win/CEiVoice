@@ -29,6 +29,7 @@ export default function Assignee_Ticket_Details() {
   const [saveMessage, setSaveMessage] = useState("");
   const [commentSubmitting, setCommentSubmitting] = useState(false);
   const [commentError, setCommentError] = useState("");
+  const [followersCount, setFollowersCount] = useState(0);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userEmail = user?.email || "assignee@gmail.com";
@@ -106,9 +107,6 @@ export default function Assignee_Ticket_Details() {
         setSavedStatus(ticketData.status || "New");
         setFollowersCount(response.data.followersCount ?? 0);
         setCommentError("");
-
-        // const res = await api.get("/admin/assignee/");
-        // setSelectedAssignee
       } catch (error) {
         console.error("Error fetching ticket and comments:", error);
         const backendMessage = error?.response?.data?.message;
@@ -136,8 +134,6 @@ export default function Assignee_Ticket_Details() {
     if (Number.isNaN(date.getTime())) return deadline;
     return date.toLocaleDateString();
   };
-
-  const [followersCount, setFollowersCount] = useState(0);
 
   const creatorFallback = ticket?.email ? ticket.email.split("@")[0] : "-";
   const creatorText = getUserLabel(ticket?.creator, creatorFallback);
@@ -224,7 +220,6 @@ export default function Assignee_Ticket_Details() {
       setCommentSubmitting(false);
     }
   };
-
 
   return (
     <div className="min-h-screen flex bg-gray-100">
