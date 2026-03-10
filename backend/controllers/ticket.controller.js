@@ -255,9 +255,6 @@ export const saveAsAssignee = async (req, res) => {
 
         const updateFields = {};
 
-        const updateFields = {};
-
-        if (status === "Solved") {
         if (status === "Solved") {
             const commented = await Comment.find({ ticket: ticketId, user: req.user.id });
             if (!commented.length) {
@@ -267,14 +264,7 @@ export const saveAsAssignee = async (req, res) => {
         if (status) {
             updateFields.status = status;
         }
-        if (status) {
-            updateFields.status = status;
-        }
 
-        if (reassignedAssigneeId) {
-            const reassignedAssignee = await User.findById(reassignedAssigneeId);
-            if (reassignedAssignee && !ticket.assignees.map(String).includes(String(reassignedAssignee._id))) {
-                updateFields.$push = { assignees: reassignedAssignee._id };
         if (reassignedAssigneeId) {
             const reassignedAssignee = await User.findById(reassignedAssigneeId);
             if (reassignedAssignee && !ticket.assignees.map(String).includes(String(reassignedAssignee._id))) {
@@ -282,12 +272,6 @@ export const saveAsAssignee = async (req, res) => {
             }
         }
 
-        const updatedTicket = await Ticket.findByIdAndUpdate(ticketId, updateFields, { new: true, runValidators: true })
-            .populate('assignees', 'name email')
-            .populate('creator', 'name email')
-            .populate('followers', 'name email');
-
-        res.status(200).json({ ticket: updatedTicket });
         const updatedTicket = await Ticket.findByIdAndUpdate(ticketId, updateFields, { new: true, runValidators: true })
             .populate('assignees', 'name email')
             .populate('creator', 'name email')
