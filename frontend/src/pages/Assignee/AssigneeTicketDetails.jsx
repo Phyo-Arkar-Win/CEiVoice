@@ -21,7 +21,7 @@ export default function Assignee_Ticket_Details() {
   const navigate = useNavigate();
   const { routeTicketId } = useParams();
   const location = useLocation();
-  const ticketId = decodeURIComponent(routeTicketId || location.state?.ticketId || "");
+  const ticketId = routeTicketId || location.state?.ticketId || "";
   const initialTicket = location.state?.ticket || null;
 
   const [collapsed, setCollapsed] = useState(false);
@@ -81,7 +81,7 @@ export default function Assignee_Ticket_Details() {
 
       try {
         setErrorMessage("");
-        const response = await api.get(`/assignee/ticketDetailsAsAdminOrAssignee/${encodeURIComponent(ticketId)}`);
+        const response = await api.get(`/assignee/ticketDetailsAsAdminOrAssignee/${ticketId}`);
         const ticketData = response.data.ticket;
 
         if (!ticketData) {
@@ -188,7 +188,7 @@ export default function Assignee_Ticket_Details() {
     setCommentError("");
 
     try {
-      const response = await api.post("/assignee/commentAsAdminOrAssignee", {
+      const response = await api.post("/assignee/submitComment", {
         ticketId: ticket?._id || ticketId,
         commentText: message,
         visibility: commentType,
