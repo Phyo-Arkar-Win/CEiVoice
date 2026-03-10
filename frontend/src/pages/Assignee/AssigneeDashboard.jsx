@@ -7,41 +7,30 @@ import api from "../../api/axios";
 export default function Assignee_Dashboard() {
 
   const navigate = useNavigate();
-  // const [ expanded, setExpanded ] = useState(false);
 
   const [tickets, setTickets] = useState([]);
   const [stats, setStats] = useState({
-    active: 0,
-    nearDeadline: 0,
-    dueToday: 0,
-    pastDue: 0,
+    activeTickets: 0,
+    nearDeadlineTickets: 0,
+    dueTodayTickets: 0,
+    overdueTickets: 0,
   });
 
   useEffect(() => {
 
     const fetchDashboard = async () => {
-
       try {
 
         const res = await api.get("/assignee/dashboard");
 
-        const data = res.data;
+        const { stats, tickets } = res.data;
 
-        // set statistics
-        setStats({
-          active: data.stats.activeTickets,
-          nearDeadline: data.stats.nearDeadlineTickets,
-          dueToday: data.stats.dueTodayTickets,
-          pastDue: data.stats.overdueTickets
-        });
-
-        // set tickets
-        setTickets(data.tickets);
+        setStats(stats);
+        setTickets(tickets);
 
       } catch (error) {
         console.log(error);
       }
-
     };
 
     fetchDashboard();
@@ -62,10 +51,10 @@ export default function Assignee_Dashboard() {
         <h2 className="text-xl font-semibold mb-4">Statistics</h2>
 
         <div className="flex gap-12 text-lg flex-wrap">
-          <p><span className="font-semibold">Active:</span> {stats.active}</p>
-          <p><span className="font-semibold">Near Deadline:</span> {stats.nearDeadline}</p>
-          <p><span className="font-semibold">Due Today:</span> {stats.dueToday}</p>
-          <p><span className="font-semibold">Past Due:</span> {stats.pastDue}</p>
+          <p><span className="font-semibold">Active:</span> {stats.activeTickets}</p>
+          <p><span className="font-semibold">Near Deadline:</span> {stats.nearDeadlineTickets}</p>
+          <p><span className="font-semibold">Due Today:</span> {stats.dueTodayTickets}</p>
+          <p><span className="font-semibold">Past Due:</span> {stats.overdueTickets}</p>
         </div>
       </div>
 

@@ -19,34 +19,6 @@ export default function Assignee_Ticket_Details() {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userEmail = user?.email || "assignee@gmail.com";
 
-  const fallbackTicket = {
-    id: "Ticket-001",
-    title: "My chicken not working",
-    category: "IT Support",
-    deadline: "March 3, 2026",
-    followers: 3,
-    creator: "test@gmail.com",
-    assignees: ["test@gmail.com", "kfc@gmail.com", "niiga@gmail.com"],
-    issue:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam lacus nisi, sodales et justo nec, lacinia semper sapien. Cras aliquet lectus magna, quis porttitor velit interdum non.",
-    status: "New",
-    comments: [
-      {
-        id: "c1",
-        message: "I cannot use mouse.",
-        type: "Public",
-        senderEmail: "someone@gmail.com",
-        senderRole: "Follower",
-      },
-      {
-        id: "c2",
-        message: "Put it inside the chicken.",
-        type: "Public",
-        senderEmail: "someone@gmail.com",
-        senderRole: "Assignee",
-      },
-    ],
-  };
 
   const getAssigneeLabel = (assignee) =>
     typeof assignee === "string" ? assignee : assignee?.email || assignee?.name || "";

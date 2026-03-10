@@ -99,7 +99,7 @@ const App = () => {
                             <Assignee_Historylog />
                         </ProtectedRoute>}/>
 
-                    <Route path='/assignee_ticket_details/:routeTicketId' element= {
+                    <Route path='/ticket_details/:Id' element= {
                         <ProtectedRoute allowedRoles={['assignee']}>
                             <Assignee_Ticket_Details/>
                         </ProtectedRoute>}/>
