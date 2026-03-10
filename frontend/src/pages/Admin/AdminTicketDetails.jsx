@@ -184,7 +184,7 @@ export default function AdminTicketDetails() {
             ← Back
           </button>
 
-          <h1 className="text-xl font-semibold text-center mb-6">{ticket?.id || ticket?._id || "Ticket"}</h1>
+          <h1 className="text-xl font-semibold text-center mb-6">{ticket?.title || "Ticket"}</h1>
 
           {loading ? (
             <p className="text-gray-600 text-center text-sm">Loading ticket...</p>
