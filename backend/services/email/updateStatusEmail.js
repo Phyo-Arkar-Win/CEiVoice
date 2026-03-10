@@ -4,12 +4,17 @@ export const updateNewEmailTemplate = (ticket) => {
 <h2>Your Ticket Has Been Updated</h2>
 
 <p>
-Your support ticket(ID: ${ticket._id}) has been updated with the following details:
+Your support ticket has been updated with the following details:
 </p>
 
 <p>
 <strong>Title:</strong><br>
 ${ticket.title}
+</p>
+
+<p>
+<strong>Summary:</strong><br>
+${ticket.summary}
 </p>
 
 <p>
@@ -37,7 +42,7 @@ export const updateSolvedEmailTemplate = (ticket) => {
 
 
 <p>
-Your support ticket(ID: ${ticket._id}) has been updated with the following details:
+Your support ticket has been updated with the following details:
 </p>
 
 <p>
@@ -50,6 +55,10 @@ ${ticket.status}
 ${ticket.title}
 </p>
 
+<p>
+<strong>Summary:</strong><br>
+${ticket.summary}
+</p>
 
 
 <p>
@@ -71,7 +80,7 @@ export const updateFailedEmailTemplate = (ticket) => {
 
 
 <p>
-Your support ticket(ID: ${ticket._id}) has been updated with the following details:
+Your support ticket has been updated with the following details:
 </p>
 
 <p>
@@ -84,6 +93,10 @@ ${ticket.status}
 ${ticket.title}
 </p>
 
+<p>
+<strong>Summary:</strong><br>
+${ticket.summary}
+</p>
 
 
 <p>
@@ -97,4 +110,4 @@ Best regards,<br>
 CEiVoice Support Team
 </p>
   `;
-};
+  };

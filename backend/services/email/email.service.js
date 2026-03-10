@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
-import { confirmationEmailTemplate } from "./confirmation-email.js";
-import { updateNewEmailTemplate, updateSolvedEmailTemplate, updateFailedEmailTemplate } from "./update-status-email.js";
+import { confirmationEmailTemplate } from "./confirmationEmail.js";
+import { updateNewEmailTemplate, updateSolvedEmailTemplate, updateFailedEmailTemplate } from "./updateStatusEmail.js";
 
 const getTransporter = () => {
     return nodemailer.createTransport({
@@ -12,7 +12,8 @@ const getTransporter = () => {
     });
 };
 
-export const sendConfirmationEmail = async (email, ticket) => {
+const sendConfirmationEmail = async (email, ticket) => {
+    console.log(ticket)
     const transporter = getTransporter();
     const mailOptions = {
         from: process.env.EMAIL_USER,
@@ -47,3 +48,5 @@ export const sendUpdateEmail = async (email, ticket) => {
     }
 };
 
+
+export default sendConfirmationEmail;
