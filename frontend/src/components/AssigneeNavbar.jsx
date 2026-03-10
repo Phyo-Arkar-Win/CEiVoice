@@ -1,11 +1,11 @@
+
 import React, { useEffect, useState } from "react";
 import ceiLogo from "../assets/cei.png";
 import { IoIosLogOut } from "react-icons/io";
 import { NavLink, useNavigate } from "react-router-dom";
 import { BsGraphUp } from "react-icons/bs";
-import { IoPeopleOutline } from "react-icons/io5";
+import { IoPeopleOutline, IoPerson } from "react-icons/io5";
 import { MdOutlineAccessTime } from "react-icons/md";
-import { IoPerson } from "react-icons/io5";
 
 export default function AssigneeNavbar() {
   const [name, setName] = useState("");
@@ -13,7 +13,9 @@ export default function AssigneeNavbar() {
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
-    if (user) setName(user.name);
+    if (user) {
+      setName(user.name);
+    }
   }, []);
 
   const handleLogout = () => {
@@ -32,20 +34,27 @@ export default function AssigneeNavbar() {
 
       {/* TOP SECTION */}
       <div>
+
         {/* LOGO */}
         <div className="flex items-center gap-3 px-4 py-4 border-b border-orange-500">
-          <img src={ceiLogo} alt="CEi Logo" className="w-10 h-10 object-contain" />
-
+          <img
+            src={ceiLogo}
+            alt="CEi Logo"
+            className="w-10 h-10 object-contain"
+          />
           <h1 className="text-xl font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             CEiVoice
           </h1>
         </div>
 
-        {/* USER */}
+        {/* USER INFO */}
         <div className="flex items-center py-3 mt-4 px-6">
           <IoPerson className="text-2xl min-w-[28px]" />
+
           <div className="ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <div className="font-bold whitespace-nowrap border-b border-black pb-1">{name}</div>
+            <div className="font-bold whitespace-nowrap border-b border-black pb-1">
+              {name}
+            </div>
             <div className="text-sm mt-1">Assignee</div>
           </div>
         </div>
@@ -87,7 +96,6 @@ export default function AssigneeNavbar() {
           Logout
         </span>
       </div>
-
     </div>
   );
 }
