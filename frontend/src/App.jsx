@@ -16,6 +16,7 @@ import Dashboard from "./pages/User/Dashboard";
 import SubmitReq from "./pages/User/SubmitReq";
 import Tracking from "./pages/User/Tracking";
 import Confirmation from "./pages/User/Confirmation";
+import UserTicketDetails from "./pages/User/UserTicketDetails";
 
 // Admin
 import Admin_Dashboard from "./pages/Admin/AdminDashboard";
@@ -23,6 +24,7 @@ import Draft from "./pages/Admin/Draft";
 import Staff from "./pages/Admin/StaffManagement";
 import Tickets from "./pages/Admin/Tickets";
 import MergeDraftToNew from "./pages/Admin/MergeDraftToNew";
+import Admin_Ticket_Details from "./pages/Admin/AdminTicketDetails";
 
 // Assignee
 import Assignee_Dashboard from "./pages/Assignee/AssigneeDashboard"
@@ -62,6 +64,10 @@ const App = () => {
                         <ProtectedRoute allowedRoles={["user"]}>
                             <Confirmation />
                         </ProtectedRoute>} />
+                    <Route path="/user_ticket_details/:routeTicketId" element={
+                        <ProtectedRoute allowedRoles={["user"]}>
+                            <UserTicketDetails />
+                        </ProtectedRoute>} />
 
                     {/* Admin Route */}
                     <Route path='/admin_dashboard' element={
@@ -74,6 +80,11 @@ const App = () => {
                     <Route path='/drafts/merge' element={<ProtectedRoute allowedRoles={["admin"]}><MergeDraftToNew/></ProtectedRoute>}/>
                     <Route path='/staff' element={<ProtectedRoute allowedRoles={["admin"]}><Staff /></ProtectedRoute>} />
 
+                    <Route path='/admin_ticket_details/:routeTicketId' element= {
+                        <ProtectedRoute allowedRoles={['admin']}>
+                            <Admin_Ticket_Details/>
+                        </ProtectedRoute>}/>
+                    
                     {/* Assignee Route */}
                     <Route path='/assignee_dashboard' element={
                         <ProtectedRoute allowedRoles={["assignee"]}>

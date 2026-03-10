@@ -1,75 +1,61 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AssigneeNavbar from "@/components/AssigneeNavbar";
+import AdminNavbar from "@/components/AdminNavbar";
 
-export default function Assignee_Ticket_Details() {
+const FALLBACK_TICKET = {
+  id: "Ticket-001",
+  title: "My dog's not working",
+  category: "IT Support",
+  deadline: "March 3, 2026",
+  followers: 3,
+  creator: "test@gmail.com",
+  assignees: ["test@gmail.com", "kfc@gmail.com", "niiga@gmail.com"],
+  issue:
+    "Admin Admin Admin Admin Admin Admin Admin Admin Admin Admin Admin Admin Admin Admin Admin Admin Admin Admin Admin Admin Admin Admin Admin Admin Admin Admin Admin Admin Admin Admin Admin Admin Admin ",
+  comments: [
+    {
+      id: "c1",
+      message: "I cannot use mouse.",
+      type: "Public",
+      senderEmail: "someone@gmail.com",
+      senderRole: "Follower",
+    },
+    {
+      id: "c2",
+      message: "Put it inside the chicken.",
+      type: "Public",
+      senderEmail: "someone@gmail.com",
+      senderRole: "Assignee",
+    },
+  ],
+};
+
+const COMMENT_TABS = ["Public", "Internal"];
+
+const getAssigneeLabel = (assignee) =>
+  typeof assignee === "string" ? assignee : assignee?.email || assignee?.name || "";
+
+const getUserLabel = (value, fallback = "-") =>
+  typeof value === "string" ? value : value?.email || value?.name || fallback;
+
+export default function AdminTicketDetails() {
   const navigate = useNavigate();
-  const [collapsed, setCollapsed] = useState(false);
 
   const [ticket, setTicket] = useState(null);
   const [comments, setComments] = useState([]);
-  const [status, setStatus] = useState("New");
-  const [selectedAssignee, setSelectedAssignee] = useState("");
   const [commentText, setCommentText] = useState("");
   const [commentType, setCommentType] = useState("Internal");
   const [activeTab, setActiveTab] = useState("Public");
-
   const [loading, setLoading] = useState(true);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const userEmail = user?.email || "assignee@gmail.com";
-
-  const fallbackTicket = {
-    id: "Ticket-001",
-    title: "My chicken not working",
-    category: "IT Support",
-    deadline: "March 3, 2026",
-    followers: 3,
-    creator: "test@gmail.com",
-    assignees: ["test@gmail.com", "kfc@gmail.com", "niiga@gmail.com"],
-    issue:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam lacus nisi, sodales et justo nec, lacinia semper sapien. Cras aliquet lectus magna, quis porttitor velit interdum non.",
-    status: "New",
-    comments: [
-      {
-        id: "c1",
-        message: "I cannot use mouse.",
-        type: "Public",
-        senderEmail: "someone@gmail.com",
-        senderRole: "Follower",
-      },
-      {
-        id: "c2",
-        message: "Put it inside the chicken.",
-        type: "Public",
-        senderEmail: "someone@gmail.com",
-        senderRole: "Assignee",
-      },
-    ],
-  };
-
-  const getAssigneeLabel = (assignee) =>
-    typeof assignee === "string" ? assignee : assignee?.email || assignee?.name || "";
-
-  const getUserLabel = (value, fallback = "-") =>
-    typeof value === "string" ? value : value?.email || value?.name || fallback;
-
-  const applyTicketData = (data) => {
-    setTicket(data);
-    setComments(Array.isArray(data.comments) ? data.comments : []);
-    setStatus(data.status || "New");
-    setSelectedAssignee(getAssigneeLabel(data.assignees?.[0]));
-  };
+  const userEmail = user?.email || "admin@gmail.com";
 
   useEffect(() => {
-    applyTicketData(fallbackTicket);
+    setTicket(FALLBACK_TICKET);
+    setComments(Array.isArray(FALLBACK_TICKET.comments) ? FALLBACK_TICKET.comments : []);
     setLoading(false);
   }, []);
-
-  const assigneeOptions = useMemo(() => {
-    if (!Array.isArray(ticket?.assignees)) return [];
-    return ticket.assignees.map(getAssigneeLabel).filter(Boolean);
-  }, [ticket]);
 
   const filteredComments = comments.filter(
     (comment) => (comment?.type || "Public").toLowerCase() === activeTab.toLowerCase()
@@ -84,6 +70,7 @@ export default function Assignee_Ticket_Details() {
   const assigneesText = Array.isArray(ticket?.assignees)
     ? ticket.assignees.map(getAssigneeLabel).filter(Boolean).join(", ")
     : "-";
+
   const details = [
     { label: "Title", value: ticket?.title || "-" },
     { label: "Category", value: ticket?.category || "-" },
@@ -92,53 +79,37 @@ export default function Assignee_Ticket_Details() {
     { label: "Creator", value: creatorText },
     { label: "Assignees", value: assigneesText },
   ];
-  const commentTabs = ["Public", "Internal"];
-
-  const handleSaveTicket = () => {
-    setTicket((prev) =>
-      prev
-        ? {
-            ...prev,
-            status,
-            assignees: selectedAssignee ? [selectedAssignee] : prev.assignees,
-          }
-        : prev
-    );
-  };
 
   const handleSubmitComment = () => {
     const message = commentText.trim();
     if (!message) return;
+
     const newComment = {
       message,
       type: commentType,
       senderEmail: userEmail,
-      senderRole: "Assignee",
+      senderRole: "Admin",
       id: `temp-${Date.now()}`,
     };
+
     setComments((prev) => [...prev, newComment]);
     setCommentText("");
   };
 
-
   return (
     <div className="min-h-screen flex bg-gray-100">
-      <AssigneeNavbar collapsed={collapsed} setCollapsed={setCollapsed} />
+      <AdminNavbar />
 
-      <div
-        className={`flex-1 transition-all duration-300 p-4 md:p-6 ${
-          collapsed ? "ml-20" : "ml-64"
-        }`}
-      >
+      <div className="flex-1 transition-all duration-300 p-4 md:p-6">
         <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6">
           <button
-            onClick={() => navigate("/assignee_dashboard")}
+            onClick={() => navigate("/tickets")}
             className="text-orange-500 text-lg hover:text-orange-600 mb-2"
           >
             ← Back
           </button>
 
-          <h1 className="text-xl font-semibold text-center mb-6">{fallbackTicket.id}</h1>
+          <h1 className="text-xl font-semibold text-center mb-6">{ticket?.id || "Ticket"}</h1>
 
           {loading ? (
             <p className="text-gray-600 text-center text-sm">Loading ticket...</p>
@@ -152,20 +123,6 @@ export default function Assignee_Ticket_Details() {
                     </p>
                   ))}
                 </div>
-
-                <div>
-                  <label className="font-semibold text-sm block mb-1">Status</label>
-                  <select
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value)}
-                    className="w-full border border-gray-400 rounded-md px-3 py-1 text-sm max-w-[200px]"
-                  >
-                    <option>New</option>
-                    <option>In Progress</option>
-                    <option>Resolved</option>
-                    <option>Closed</option>
-                  </select>
-                </div>
               </div>
 
               <div className="mt-6">
@@ -174,35 +131,11 @@ export default function Assignee_Ticket_Details() {
                 </p>
               </div>
 
-              <div className="mt-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <label className="font-semibold text-sm">Reassign to</label>
-                  <select
-                    value={selectedAssignee}
-                    onChange={(e) => setSelectedAssignee(e.target.value)}
-                    className="border border-gray-400 rounded-md px-3 py-1 text-sm min-w-[200px]"
-                  >
-                    {assigneeOptions.map((assignee, index) => (
-                      <option key={`${assignee}-${index}`} value={assignee}>
-                        {assignee}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <button
-                  onClick={handleSaveTicket}
-                  className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-1 rounded-md text-sm"
-                >
-                  Save
-                </button>
-              </div>
-
               <div className="border-t border-gray-300 mt-8 pt-6">
                 <h2 className="text-lg font-semibold mb-3">Comments</h2>
 
                 <div className="flex gap-2">
-                  {commentTabs.map((tab) => (
+                  {COMMENT_TABS.map((tab) => (
                     <button
                       key={tab}
                       onClick={() => setActiveTab(tab)}
@@ -219,21 +152,19 @@ export default function Assignee_Ticket_Details() {
 
                 <div className="border border-gray-300 bg-white rounded-b-lg rounded-tr-lg p-4 h-[240px] overflow-y-auto">
                   {filteredComments.length === 0 ? (
-                    <p className="text-gray-500 text-sm">
-                      No {activeTab.toLowerCase()} comments yet.
-                    </p>
+                    <p className="text-gray-500 text-sm">No {activeTab.toLowerCase()} comments yet.</p>
                   ) : (
                     filteredComments.map((comment, index) => {
                       const role = comment?.senderRole || comment?.role || "Follower";
                       const sender = comment?.senderEmail || comment?.email || "someone@gmail.com";
-                      const isAssignee =
-                        String(role).toLowerCase() === "assignee" ||
+                      const isAdmin =
+                        String(role).toLowerCase() === "admin" ||
                         sender.toLowerCase() === String(userEmail).toLowerCase();
 
                       return (
                         <div
                           key={comment?.id || index}
-                          className={`mb-3 flex ${isAssignee ? "justify-end" : "justify-start"}`}
+                          className={`mb-3 flex ${isAdmin ? "justify-end" : "justify-start"}`}
                         >
                           <div className="max-w-[70%]">
                             <p className="text-xs text-gray-600 mb-1">
