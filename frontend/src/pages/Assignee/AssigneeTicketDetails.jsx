@@ -99,9 +99,8 @@ export default function Assignee_Ticket_Details() {
         setStatus(ticketData.status || "New");
         setCommentError("");
 
-        const firstAssignee = ticketData.assignees?.[0];
-        const assigneeLabel = getAssigneeLabel(firstAssignee);
-        setSelectedAssignee(assigneeLabel || "");
+        // const res = await api.get("/admin/assignee/");
+        // setSelectedAssignee
       } catch (error) {
         console.error("Error fetching ticket and comments:", error);
         const backendMessage = error?.response?.data?.message;
