@@ -25,6 +25,33 @@ export default function Draft() {
     }
   };
 
+  const updateTicket = async (ticket) => {
+    try {
+      const updates = {
+        title: ticket.title,
+        summary: ticket.summary,
+        category: ticket.category,
+        resolution_path: ticket.resolution_path,
+        deadline: ticket.deadline,
+        assignees: ticket.assignee ? [ticket.assignee] : undefined,
+      };
+
+      // remove undefined values so only changed fields are sent
+      Object.keys(updates).forEach(
+        (key) => updates[key] === undefined && delete updates[key]
+      );
+
+      await api.patch(`/tickets/${ticket._id}`, updates);
+
+      alert("Draft updated successfully");
+      fetchDraftTickets(); // refresh list
+
+    } catch (err) {
+      console.error("Update error:", err);
+    }
+  };
+
+  // Fetch Draft Tickets
   const fetchDraftTickets = async () => {
     try {
       const res = await api.get("/tickets/drafts");
@@ -121,58 +148,45 @@ export default function Draft() {
 
       <AdminNavbar />
 
-      <div className="flex-1 p-4 md:p-8 overflow-y-auto">
+      <div className="flex-1 p-4 md:p-8 min-w-0 overflow-y-auto">
+        <h1 className="text-xl md:text-3xl font-bold mb-4">Draft Tickets</h1>
 
-        <h1 className="text-2xl md:text-3xl font-bold mb-6">
-          Draft Tickets
-        </h1>
-
-
-        {/* ================== DRAFT LIST ================== */}
-
-        <div className="bg-gray-100 rounded-2xl shadow p-4 mb-6">
-
+        <div className="bg-gray-100 rounded-2xl shadow p-4 md:p-6 mb-4 w-full">
           {tickets.map((ticket, index) => (
 
             <div
               key={ticket._id}
-              className="border-b border-gray-300 py-4 last:border-b-0"
+              className="border-b border-gray-300 py-3 md:py-4 last:border-b-0"
             >
-
-              {/* HEADER */}
-
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-
-                <div className="flex items-center gap-3">
-
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
+                <div className="flex items-start md:items-center gap-3">
                   <input
                     type="checkbox"
                     checked={ticket.checked}
                     onChange={() => toggleCheck(index)}
-                    className="w-5 h-5"
+                    className="w-5 h-5 flex-shrink-0 mt-1 md:mt-0"
                   />
 
                   <button
                     onClick={() => toggleExpand(index)}
-                    className="font-semibold hover:text-orange-600 text-left"
+                    className="font-semibold text-left text-sm md:text-base hover:text-orange-600 break-words line-clamp-2 md:line-clamp-none"
                   >
-                    {ticket.title}
+                    {ticket.title || "Untitled Ticket"}
                   </button>
 
                 </div>
 
-                <div className="flex gap-2">
-
+                <div className="flex gap-2 w-full md:w-auto mt-2 md:mt-0 pl-8 md:pl-0">
                   <button
                     onClick={() => toggleExpand(index)}
-                    className="bg-gray-300 px-3 py-2 rounded-md hover:bg-gray-400 text-sm"
+                    className="flex-1 md:flex-none bg-gray-300 px-3 py-1.5 md:px-4 md:py-2 rounded-md hover:bg-gray-400 text-sm md:text-base transition-colors"
                   >
                     Edit
                   </button>
 
                   <button
                     onClick={() => updateTicket(ticket)}
-                    className="bg-orange-500 text-white px-3 py-2 rounded-md hover:bg-orange-600 text-sm"
+                    className="flex-1 md:flex-none bg-orange-500 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-md hover:bg-orange-600 text-sm md:text-base transition-colors"
                   >
                     Save
                   </button>
@@ -185,8 +199,7 @@ export default function Draft() {
               {/* EXPANDED FORM */}
 
               {ticket.expanded && (
-
-                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
 
                   <div>
                     <label className="font-semibold block mb-1">Title</label>
@@ -210,6 +223,7 @@ export default function Draft() {
                     />
                   </div>
 
+                  {/* Summary & Resolution Path Side-by-Side on Desktop */}
                   <div>
                     <label className="font-semibold block mb-1">Summary</label>
                     <textarea
@@ -279,29 +293,21 @@ export default function Draft() {
 
         </div>
 
+        <div className="bg-gray-100 rounded-2xl shadow p-4 md:p-5 mt-4 md:mt-6">
+          <h2 className="text-lg md:text-xl font-bold mb-3">Merge Selected Requests</h2>
 
-        {/* ================== MERGE SECTION ================== */}
-
-        <div className="bg-gray-100 rounded-2xl shadow p-5">
-
-          <h2 className="text-xl font-bold mb-4">
-            Merge Selected Requests
-          </h2>
-
-          <div className="grid grid-cols-2 font-semibold mb-2">
+          <div className="hidden md:grid grid-cols-2 font-semibold mb-2">
             <span>Ticket ID</span>
             <span>Title</span>
           </div>
 
-          <div className="space-y-1 text-sm">
-
+          <div className="flex flex-col space-y-3 md:space-y-1 md:block">
             {tickets
               .filter((ticket) => ticket.checked)
               .map((ticket) => (
-
-                <div key={ticket._id} className="grid grid-cols-2">
-                  <span className="truncate">{ticket._id}</span>
-                  <span className="truncate">{ticket.title || "-"}</span>
+                <div key={ticket._id} className="flex flex-col md:grid md:grid-cols-2 text-sm bg-white md:bg-transparent p-3 md:p-0 rounded border border-gray-200 md:border-none">
+                  <span className="font-semibold text-gray-500 md:text-gray-900 md:font-normal mb-1 md:mb-0">{ticket._id}</span>
+                  <span>{ticket.title || "-"}</span>
                 </div>
 
               ))}
@@ -329,7 +335,7 @@ export default function Draft() {
                   const res = await api.post("/tickets/merge/selection", {
                     tickets: selectedTickets
                   });
-
+                  console.log(tickets)
                   navigate("/drafts/merge", {
                     state: {
                       mergedTicket: res.data.mergedTicket,
@@ -348,14 +354,11 @@ export default function Draft() {
                 }
 
               }}
-              className={`px-5 py-2 rounded text-white 
-              ${merging ? "bg-gray-400" : "bg-orange-600 hover:bg-orange-700"}`}
+              className={`px-4 py-2 rounded text-white cursor-pointer 
+  ${merging ? "bg-gray-400" : "bg-orange-600"}`}
             >
-
               {merging ? "Merging..." : "+ Merge"}
-
             </button>
-
           </div>
 
         </div>

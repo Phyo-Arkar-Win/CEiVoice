@@ -116,26 +116,27 @@ export default function StaffManagement() {
   }, []);
 
   return (
-
-    <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
+    <>
+    <div>
+    <div className="min-h-screen flex bg-gray-100 overflow-hidden">
 
       <AdminNavbar />
 
-      <div className="flex-1 p-4 md:p-8">
+      <div className="flex-1 p-4 md:p-6 min-w-0 overflow-y-auto">
 
-        <h1 className="text-2xl md:text-3xl font-bold mb-6">
+        <h1 className="text-xl md:text-3xl font-bold mb-4 md:mb-6">
           Staff Management
         </h1>
 
         {/* ================= Add Assignee ================= */}
 
-        <div className="bg-white rounded-xl shadow p-6 mb-8">
+        <div className="bg-white rounded-xl shadow p-4 md:p-6 mb-6">
 
-          <h2 className="font-semibold text-xl mb-6">
+          <h2 className="font-semibold text-lg md:text-2xl mb-4 md:mb-6">
             Add new Assignee
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
 
             {/* Name */}
 
@@ -213,19 +214,19 @@ export default function StaffManagement() {
 
               {showInput && (
 
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2 mt-2">
 
                   <input
                     type="text"
                     value={newScope}
                     onChange={(e)=>setNewScope(e.target.value)}
                     placeholder="Enter new scope"
-                    className="border px-3 py-2 rounded w-full"
+                    className="border px-3 py-2 rounded w-full border-gray-300"
                   />
 
                   <button
                     onClick={addScope}
-                    className="bg-orange-500 text-white px-4 rounded"
+                    className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 transition-colors whitespace-nowrap"
                   >
                     Add
                   </button>
@@ -240,7 +241,7 @@ export default function StaffManagement() {
 
           <button
             onClick={assignUser}
-            className="mt-6 bg-orange-500 text-white px-6 py-2 rounded hover:bg-orange-600"
+            className="mt-6 bg-orange-500 text-white px-5 py-2 rounded hover:bg-orange-600 transition-colors w-full sm:w-auto"
           >
             Assign
           </button>
@@ -249,60 +250,61 @@ export default function StaffManagement() {
 
         {/* ================= Existing Assignees ================= */}
 
-        <div className="bg-white rounded-xl shadow p-6">
+        <div className="bg-white rounded-xl shadow p-4 md:p-6">
 
-          <h2 className="font-semibold text-lg mb-6">
+          <h2 className="font-semibold text-lg md:text-xl mb-4 md:mb-6">
             Existing Assignees
           </h2>
 
           <div className="overflow-x-auto">
+            <table className="w-full text-sm min-w-[500px]">
 
-            <table className="w-full text-sm min-w-[600px]">
-
-              <thead className="text-gray-600">
+              <thead className="text-gray-600 border-b border-gray-200">
                 <tr className="text-left">
-                  <th className="pb-3">Name</th>
-                  <th className="pb-3">Email</th>
-                  <th className="pb-3">Scope</th>
-                  <th className="pb-3">Actions</th>
+                  <th className="pb-3 pr-4 font-semibold whitespace-nowrap">Name</th>
+                  <th className="pb-3 pr-4 font-semibold whitespace-nowrap">Email</th>
+                  <th className="pb-3 pr-4 font-semibold whitespace-nowrap">Scope</th>
+                  <th className="pb-3 font-semibold text-center w-16 whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
 
               <tbody>
 
-                {assignees.map((user)=>(
-                  <tr key={user._id} className="border-t">
+                {assignees.map((user) => (
 
-                    <td className="py-3">
+                  <tr key={user._id} className="border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors">
+
+                    <td className="py-3 pr-4 whitespace-nowrap text-base">
                       {user.name}
                     </td>
 
-                    <td>
-                      {user.email}
+                    <td className="py-3 pr-4 text-gray-600">
+                      {user.email || "-"}
                     </td>
 
-                    <td>
-                      {user.scopes?.map(s=>s.name).join(", ")}
+                    <td className="py-3 pr-4 text-gray-600">
+                      {user.scopes?.map(scope => scope.name).join(", ") || "-"}
                     </td>
 
-                    <td>
-                      <LuPencil className="text-xl cursor-pointer"/>
+                    <td className="py-3 text-center">
+                      <LuPencil className="text-lg text-gray-500 hover:text-orange-500 cursor-pointer inline-block transition-colors" />
                     </td>
 
                   </tr>
+
                 ))}
 
               </tbody>
 
             </table>
+          </div>
 
           </div>
 
         </div>
 
-      </div>
-
     </div>
-
+    </div>
+    </>
   );
 }

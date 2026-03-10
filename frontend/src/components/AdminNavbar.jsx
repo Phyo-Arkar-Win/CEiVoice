@@ -3,7 +3,7 @@ import ceiLogo from "../assets/cei.png";
 import { IoIosLogOut } from "react-icons/io";
 import { NavLink, useNavigate } from "react-router-dom";
 import { BsGraphUp } from "react-icons/bs";
-import { IoMailOpenSharp, IoTicket } from "react-icons/io5";
+import { IoMailOpenSharp, IoTicket, IoPerson } from "react-icons/io5";
 import { MdManageAccounts } from "react-icons/md";
 import { HiMenu, HiX } from "react-icons/hi";
 
@@ -33,112 +33,60 @@ export default function AdminNavbar() {
   };
 
   const linkStyle = ({ isActive }) =>
-    `flex items-center py-3 px-6 font-bold ${
+    `flex items-center py-3 mt-4 px-6 font-bold whitespace-nowrap hover:bg-gray-200 transition ${
       isActive ? "text-orange-500" : "text-black"
     }`;
 
   return (
-    <>
-      {/* ================= MOBILE TOPBAR ================= */}
+    <div className="group min-h-screen w-20 hover:w-64 bg-gray-100 border-r-2 border-orange-500 flex flex-col justify-between transition-all duration-300 overflow-hidden">
 
-      <div className="md:hidden flex items-center justify-between px-4 py-3 bg-gray-100 border-b border-orange-500">
-
-        <div className="flex items-center gap-2">
-          <img src={ceiLogo} className="w-8 h-8"/>
-          <span className="font-bold">CEiVoice</span>
-        </div>
-
-        <button onClick={() => setMobileOpen(!mobileOpen)}>
-          {mobileOpen ? <HiX size={26}/> : <HiMenu size={26}/>}
-        </button>
-
-      </div>
-
-
-      {/* ================= MOBILE MENU ================= */}
-
-      <div
-        className={`fixed top-0 left-0 h-full w-64 bg-gray-100 border-r-2 border-orange-500 transform transition-transform duration-300 z-50 md:hidden
-        ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}
-      >
-
+      {/* TOP SECTION */}
+      <div>
+        {/* LOGO */}
         <div className="flex items-center gap-3 px-4 py-4 border-b border-orange-500">
           <img src={ceiLogo} className="w-10 h-10"/>
           <h1 className="font-bold text-lg">CEiVoice</h1>
         </div>
 
-        <div className="flex flex-col items-center py-6">
-          <span className="border-b border-black px-2">{name}</span>
-          <span className="text-sm mt-1">Admin</span>
-        </div>
+        {/* USER */}
+        {/* USER */}
+<div className="flex items-center py-3 mt-4 px-6">
+  <IoPerson className="text-2xl min-w-[28px]" />
+  <div className="ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+    <div className="font-bold whitespace-nowrap border-b border-black pb-1">{name}</div>
+    <div className="text-sm mt-1">Admin</div>
+  </div>
+</div>
 
-        <nav className="flex flex-col">
-
-          <NavLink to="/admin_dashboard" className={linkStyle} onClick={()=>setMobileOpen(false)}>
-            <BsGraphUp className="text-xl mr-3"/> Dashboard
-          </NavLink>
-
-          <NavLink to="/drafts" className={linkStyle} onClick={()=>setMobileOpen(false)}>
-            <IoMailOpenSharp className="text-xl mr-3"/> Drafts
-          </NavLink>
-
-          <NavLink to="/tickets" className={linkStyle} onClick={()=>setMobileOpen(false)}>
-            <IoTicket className="text-xl mr-3"/> Tickets
-          </NavLink>
-
-          <NavLink to="/staff" className={linkStyle} onClick={()=>setMobileOpen(false)}>
-            <MdManageAccounts className="text-xl mr-3"/> Staff
-          </NavLink>
-
-        </nav>
-
-        <div
-          onClick={handleLogout}
-          className="absolute bottom-0 w-full flex items-center gap-2 px-6 py-4 hover:bg-gray-200 cursor-pointer"
-        >
-          <IoIosLogOut className="text-xl"/> Logout
-        </div>
-
-      </div>
-
-
-      {/* ================= TABLET SIDEBAR ================= */}
-
-      <div
-        className={`hidden md:flex lg:hidden flex-col bg-gray-100 border-r-2 border-orange-500 transition-all duration-300
-        ${collapsed ? "w-16" : "w-56"}`}
-      >
-
-        <div className="flex items-center justify-between px-3 py-4 border-b border-orange-500">
-
-          <img src={ceiLogo} className="w-8 h-8"/>
-
-          <button onClick={()=>setCollapsed(!collapsed)}>
-            <HiMenu/>
-          </button>
-
-        </div>
-
-        <nav className="flex flex-col mt-4">
+        {/* NAVIGATION */}
+        <div className="flex flex-col py-4 text-lg mt-4">
 
           <NavLink to="/admin_dashboard" className={linkStyle}>
-            <BsGraphUp className="text-xl mr-3"/>
-            {!collapsed && "Dashboard"}
+            <BsGraphUp className="text-2xl min-w-[28px]" />
+            <span className="ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              Dashboard
+            </span>
           </NavLink>
 
           <NavLink to="/drafts" className={linkStyle}>
-            <IoMailOpenSharp className="text-xl mr-3"/>
-            {!collapsed && "Drafts"}
+            <IoMailOpenSharp className="text-2xl min-w-[28px]" />
+            <span className="ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              Drafts
+            </span>
           </NavLink>
 
           <NavLink to="/tickets" className={linkStyle}>
-            <IoTicket className="text-xl mr-3"/>
-            {!collapsed && "Tickets"}
+            <IoTicket className="text-2xl min-w-[28px]" />
+            <span className="ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              Tickets
+            </span>
           </NavLink>
 
           <NavLink to="/staff" className={linkStyle}>
-            <MdManageAccounts className="text-xl mr-3"/>
-            {!collapsed && "Staff"}
+            <MdManageAccounts className="text-3xl min-w-[28px]" />
+            <span className="ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              Staff Management
+            </span>
           </NavLink>
 
         </nav>
@@ -153,49 +101,17 @@ export default function AdminNavbar() {
 
       </div>
 
-
-      {/* ================= DESKTOP SIDEBAR ================= */}
-
-      <div className="hidden lg:flex flex-col w-64 bg-gray-100 border-r-2 border-orange-500">
-
-        <div className="flex items-center gap-3 px-4 py-4 border-b border-orange-500">
-          <img src={ceiLogo} className="w-10 h-10"/>
-          <h1 className="text-xl font-bold">CEiVoice</h1>
-        </div>
-
-        <div className="flex flex-col items-center py-6">
-          <span className="border-b border-black px-2">{name}</span>
-          <span className="text-sm mt-1">Admin</span>
-        </div>
-
-        <nav className="flex flex-col">
-
-          <NavLink to="/admin_dashboard" className={linkStyle}>
-            <BsGraphUp className="text-xl mr-3"/> Dashboard
-          </NavLink>
-
-          <NavLink to="/drafts" className={linkStyle}>
-            <IoMailOpenSharp className="text-xl mr-3"/> Drafts
-          </NavLink>
-
-          <NavLink to="/tickets" className={linkStyle}>
-            <IoTicket className="text-xl mr-3"/> Tickets
-          </NavLink>
-
-          <NavLink to="/staff" className={linkStyle}>
-            <MdManageAccounts className="text-xl mr-3"/> Staff
-          </NavLink>
-
-        </nav>
-
-        <div
-          onClick={handleLogout}
-          className="mt-auto flex items-center gap-2 px-6 py-4 hover:bg-gray-200 cursor-pointer"
-        >
-          <IoIosLogOut className="text-xl"/> Logout
-        </div>
-
+      {/* LOGOUT */}
+      <div
+        onClick={handleLogout}
+        className="flex items-center px-6 py-4 cursor-pointer hover:bg-gray-200 border-t"
+      >
+        <IoIosLogOut className="text-2xl min-w-[28px]" />
+        <span className="ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          Logout
+        </span>
       </div>
-    </>
+
+    </div>
   );
 }

@@ -125,11 +125,7 @@ export default function Assignee_Ticket_Details() {
     <div className="min-h-screen flex bg-gray-100">
       <AssigneeNavbar collapsed={collapsed} setCollapsed={setCollapsed} />
 
-      <div
-        className={`flex-1 transition-all duration-300 p-4 md:p-6 ${
-          collapsed ? "ml-20" : "ml-64"
-        }`}
-      >
+      <div className="flex-1 p-4 md:p-6 overflow-hidden">
         <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6">
           <button
             onClick={() => navigate("/assignee_dashboard")}

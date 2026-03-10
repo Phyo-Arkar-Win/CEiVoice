@@ -144,22 +144,21 @@ export default function MergeDraftToNew() {
   };
 
   return (
-
-    <div className="min-h-screen flex bg-gray-200">
+    <div className="h-screen flex bg-gray-200 overflow-hidden">
 
       <AdminNavbar />
 
-      <div className="flex-1 p-10">
+      <div className="flex-1 p-4 md:p-10 min-w-0 overflow-y-auto">
 
-        <h1 className="text-2xl font-semibold mb-6">
+        <h1 className="text-xl md:text-2xl font-semibold mb-4 md:mb-6">
           Merge Drafts to New Ticket
         </h1>
 
         {/* FORM */}
 
-        <div className="bg-gray-100 rounded-xl shadow p-6 mb-8">
+        <div className="bg-gray-100 rounded-xl shadow p-4 md:p-6 mb-6 md:mb-8">
 
-          <div className="grid grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
 
             <div>
               <label className="font-semibold block mb-2">Title</label>
@@ -234,61 +233,64 @@ export default function MergeDraftToNew() {
 
         {/* MERGED USERS TABLE */}
 
-        <div className="bg-gray-100 rounded-xl shadow p-6">
+        <div className="bg-gray-100 rounded-xl shadow p-4 md:p-6 mb-8 border border-gray-200">
 
           <h2 className="text-lg font-semibold mb-4">
             Merged Users
           </h2>
 
-          <table className="w-full">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[700px]">
 
-            <thead>
-              <tr>
-                <th className="text-left py-2">Request ID</th>
-                <th className="text-left">User Email</th>
-                <th className="text-left">Description</th>
-                <th></th>
-              </tr>
-            </thead>
-
-            <tbody>
-
-              {mergedUsers.map((user, index) => (
-
-                <tr key={index} className="border-t">
-
-                  <td className="py-3">{user.id}</td>
-                  <td>{user.email}</td>
-                  <td>{user.description}</td>
-
-                  <td>
-                    <button
-                      onClick={() => unmergeUser(user.id)}
-                      className="bg-gray-300 px-4 py-1 rounded cursor-pointer"
-                    >
-                      Unmerge
-                    </button>
-                  </td>
-
+              <thead>
+                <tr>
+                  <th className="text-left py-2 font-semibold pr-4 whitespace-nowrap">Request ID</th>
+                  <th className="text-left font-semibold pr-4 whitespace-nowrap">User Email</th>
+                  <th className="text-left font-semibold">Description</th>
+                  <th></th>
                 </tr>
+              </thead>
 
-              ))}
+              <tbody>
 
-            </tbody>
+                {mergedUsers.map((user, index) => (
 
-          </table>
+                  <tr key={index} className="border-t border-gray-300">
 
-          <div className="flex justify-end gap-4 mt-6">
+                    <td className="py-3 text-sm pr-4 whitespace-nowrap">{user.id}</td>
+                    <td className="text-sm pr-4 whitespace-nowrap">{user.email || "-"}</td>
+                    <td className="text-sm max-w-[200px] sm:max-w-xs truncate pr-4">{user.description || "-"}</td>
+
+                    <td className="text-right pr-2">
+                      <button
+                        onClick={() => unmergeUser(user.id)}
+                        className="bg-gray-300 px-3 py-1.5 md:px-4 md:py-1 rounded text-sm md:text-base hover:bg-gray-400 transition-colors cursor-pointer"
+                      >
+                        Unmerge
+                      </button>
+                    </td>
+
+                  </tr>
+
+                ))}
+
+              </tbody>
+
+            </table>
+          </div>
+
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 mt-6">
 
             <button
-            onClick={() => navigate('/drafts')}
-            className="bg-gray-300 px-6 py-2 rounded">
+              onClick={() => navigate('/drafts')}
+              className="bg-gray-300 px-6 py-3 sm:py-2 rounded font-medium hover:bg-gray-400 transition-colors w-full sm:w-auto text-center"
+            >
               Cancel
             </button>
 
             <button
               onClick={handleSubmit}
-              className="bg-orange-600 text-white px-6 py-2 rounded"
+              className="bg-orange-600 text-white px-6 py-3 sm:py-2 rounded font-medium hover:bg-orange-700 transition-colors w-full sm:w-auto text-center cursor-pointer"
             >
               Submit Ticket
             </button>
