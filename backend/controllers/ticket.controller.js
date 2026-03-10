@@ -104,41 +104,51 @@ export const getIndividualTicket = async (req, res) => {
     }
 };
 
+// Merge Draft Tickets
+
 export const handleMergeSelection = async (req, res) => {
     const { tickets } = req.body;
-    
     let mergedTicket = await AIMergeDraftTickets(tickets);
+    // console.log(mergedTicket);
     res.status(200).json({ message: 'Tickets merged successfully', mergedTicket: mergedTicket });
 };
 
 export const handleUnlinkTickets = async (req, res) => {
-    const { mergedTicketId, ticketToUnlinkId } = req.body
+    const { mergedTicket, ticketToUnlinkId } = req.body;
     try {
-        const mergedTicket = await Ticket.findById(mergedTicketId);
         const ticketToUnlink = await Ticket.findById(ticketToUnlinkId);
-        if (!mergedTicket || !ticketToUnlink) {
-            return res.status(404).json({ message: 'One or both tickets not found' });
+        if (!ticketToUnlink) {
+            return res.status(404).json({ message: 'Ticket to unlink not found' });
         }
-        mergedTicket.mergedTickets = mergedTicket.mergedTickets.filter(
-            id => !id.equals(ticketToUnlink._id)
-        );
-        mergedTicket.followers = mergedTicket.followers.filter(
-            follower => follower !== ticketToUnlink.creator
-        );
+
+        const mergedTicketDoc = new Ticket(mergedTicket);
+
+        console.log(mergedTicketDoc);
+
+        mergedTicketDoc.mergedTickets.pull(ticketToUnlinkId);
+
+        if (ticketToUnlink.creator) {
+            mergedTicketDoc.followers.pull(ticketToUnlink.creator);
+        }
+
+        return res.status(200).json({
+            mergedTicket: mergedTicketDoc,
+            message: 'Tickets unlinked successfully'
+        });
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             message: `Error unlinking tickets: ${error.message}`,
         });
     }
-    res.status(200).json({ ticket: mergedTicketId, message: 'Tickets unlinked successfully' });
 };
 
 export const mergeDraftTickets = async (req, res) => {
     try {
         const { mergedTicketId } = req.body;
-        const mergedTicket = await Ticket.findById(mergedTicketId);
-        await Ticket.deleteMany({ _id: { $in: mergedTicket.mergedTickets } });
-        await mergedTicket.updateOne({ $set: { status: 'New' } });
+        const mergedTicket = new Ticket(mergedTicketId);
+        mergedTicket.status = "New";
+        // await Ticket.deleteMany({ _id: { $in: mergedTicket.mergedTickets } });
+        // await mergedTicket.updateOne({ $set: { status: 'New' } });
         await mergedTicket.save();
         res.status(200).json({ message: 'Tickets merged successfully', data: mergedTicket });
     } catch (error) {
@@ -150,33 +160,33 @@ export const mergeDraftTickets = async (req, res) => {
 
 // update draft ticket ( admin can update before submitting )
 export const updateDraftTicket = async (req, res) => {
-  try {
+    try {
 
-    const ticket = await Ticket.findByIdAndUpdate(
-      req.params.id,
-      req.body,   // <-- important
-      { new: true }
-    );
+        const ticket = await Ticket.findByIdAndUpdate(
+            req.params.id,
+            req.body,   // <-- important
+            { new: true }
+        );
 
-    if (!ticket) {
-      return res.status(404).json({
-        message: "Ticket not found"
-      });
+        if (!ticket) {
+            return res.status(404).json({
+                message: "Ticket not found"
+            });
+        }
+
+        res.status(200).json({
+            message: "Draft updated",
+            ticket
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            message: "Update failed",
+            error: error.message
+        });
     }
-
-    res.status(200).json({
-      message: "Draft updated",
-      ticket
-    });
-
-  } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      message: "Update failed",
-      error: error.message
-    });
-  }
 };
 
 export const ticketDetailsAsAdminOrAssignee = async (req, res) => {
