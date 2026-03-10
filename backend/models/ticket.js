@@ -2,8 +2,8 @@ import mongoose from 'mongoose';
 
 const ticketSchema = new mongoose.Schema(
     {
-        email: { type: String, required: true },
-        issue: { type: String, required: true },
+        email: { type: String },
+        issue: { type: String },
         title: { type: String, required: true },
         summary: { type: String, required: true },
         category: { type: String, required: true },
@@ -25,6 +25,9 @@ const ticketSchema = new mongoose.Schema(
         }, 
         followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
         assignees: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+        mergedTickets: [{
+            type: mongoose.Schema.Types.ObjectId, ref: 'Ticket'    
+        }],
         deadline: { type: Date },
     },
     { timestamps: true },
