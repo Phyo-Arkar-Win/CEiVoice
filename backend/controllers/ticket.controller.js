@@ -211,8 +211,8 @@ export const ticketDetailsAsAdminOrAssignee = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
         const assignees = await User.find({ role: 'assignee' });
-        const publicComments = await Comment.find({ ticket: ticketId, visibility: 'Public' }).populate('user', 'name email role').sort({ createdAt: -1 }); //edtbyRomulus
-        const internalComments = await Comment.find({ ticket: ticketId, visibility: 'Internal' }).populate('user', 'name email role').sort({ createdAt: -1 }); //edtbyRomulus
+        const publicComments = await Comment.find({ ticket: ticketId, visibility: 'Public' }).populate('user', 'name email role').sort({ createdAt: -1 });
+        const internalComments = await Comment.find({ ticket: ticketId, visibility: 'Internal' }).populate('user', 'name email role').sort({ createdAt: -1 });
         const scopes = await Scope.find();
 
         if (user.role === 'admin') {

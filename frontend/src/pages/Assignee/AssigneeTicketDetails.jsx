@@ -1,45 +1,56 @@
+// ─── Imports ─────────────────────────────────────────────────────────────────
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import AssigneeNavbar from "@/components/AssigneeNavbar";
 import api from "@/api/axios";
 
+// ─── Component ───────────────────────────────────────────────────────────────
 export default function Assignee_Ticket_Details() {
+  // ── Navigation & Route Params ──────────────────────────────────────────────
   const navigate = useNavigate();
   const { routeTicketId } = useParams();
   const location = useLocation();
   const ticketId = routeTicketId || location.state?.ticketId || "";
   const initialTicket = location.state?.ticket || null;
 
+  // ── UI State ───────────────────────────────────────────────────────────────
   const [collapsed, setCollapsed] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [commentSubmitting, setCommentSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [saveMessage, setSaveMessage] = useState("");
+  const [commentError, setCommentError] = useState("");
 
+  // ── Ticket Data State ──────────────────────────────────────────────────────
   const [ticket, setTicket] = useState(initialTicket);
+  const [status, setStatus] = useState("New");
+  const [savedStatus, setSavedStatus] = useState("New"); // Tracks the last-saved status for transition rules
+  const [selectedAssignee, setSelectedAssignee] = useState("");
+  const [allAssignees, setAllAssignees] = useState([]); // All assignees from DB (for reassign dropdown)
+  const [followersCount, setFollowersCount] = useState(0);
+
+  // ── Comment State ──────────────────────────────────────────────────────────
   const [publicComments, setPublicComments] = useState([]);
   const [internalComments, setInternalComments] = useState([]);
-  const [status, setStatus] = useState("New");
-  const [savedStatus, setSavedStatus] = useState("New");
-  const [selectedAssignee, setSelectedAssignee] = useState("");
-  const [allAssignees, setAllAssignees] = useState([]);
   const [commentText, setCommentText] = useState("");
   const [commentType, setCommentType] = useState("Internal");
   const [activeTab, setActiveTab] = useState("Public");
 
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [saveMessage, setSaveMessage] = useState("");
-  const [commentSubmitting, setCommentSubmitting] = useState(false);
-  const [commentError, setCommentError] = useState("");
-  const [followersCount, setFollowersCount] = useState(0);
-
+  // ── Current User Info ──────────────────────────────────────────────────────
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userEmail = user?.email || "assignee@gmail.com";
 
+  // ─── Helper Functions ──────────────────────────────────────────────────────
+
+  /** Returns a display label for a user value (object, string, or null). */
   const getUserLabel = (value, fallback = "-") => {
     if (!value) return fallback;
     if (typeof value === "object") return value?.name || value?.email || fallback;
     return String(value);
   };
 
+  /** Extracts the sender display name from a comment object. */
   const getCommentSender = (comment) => {
     const commentUser = comment?.user;
 
@@ -53,9 +64,13 @@ export default function Assignee_Ticket_Details() {
     return comment?.email || comment?.senderEmail || comment?.name || "Unknown user";
   };
 
+  /** Extracts the role label from a comment object. */
   const getCommentRole = (comment) =>
     comment?.user?.role || comment?.role || comment?.senderRole || "Unknown";
 
+  // ─── Data Fetching ─────────────────────────────────────────────────────────
+
+  /** Fetches ticket details, all assignees, and comments on mount. */
   useEffect(() => {
     const fetchTicketAndComments = async () => {
       if (!ticketId) {
@@ -80,7 +95,7 @@ export default function Assignee_Ticket_Details() {
         const assigneesFromDb = Array.isArray(response.data.assignees) ? response.data.assignees : [];
         setAllAssignees(assigneesFromDb);
 
-        // Resolve names on unpopulated ticket assignees
+        // Resolve names on unpopulated ticket assignees (when populate returns plain IDs)
         if (assigneesFromDb.length && Array.isArray(ticketData.assignees)) {
           ticketData.assignees = ticketData.assignees.map((a) => {
             if (typeof a === 'string' || (a && !a.name && !a.email)) {
@@ -93,24 +108,25 @@ export default function Assignee_Ticket_Details() {
           setTicket({ ...ticketData });
         }
 
+        // Merge API-level comments with embedded ticket.comments
         const apiPublic = Array.isArray(response.data.publicComments) ? response.data.publicComments : [];
         const apiInternal = Array.isArray(response.data.internalComments) ? response.data.internalComments : [];
 
-        // Also include embedded ticket.comments and merge with API comments
         const embedded = Array.isArray(ticketData.comments) ? ticketData.comments : [];
         const embeddedPublic = embedded.filter((c) => c.type === "Public" || c.visibility === "Public");
         const embeddedInternal = embedded.filter((c) => c.type === "Internal" || c.visibility === "Internal");
 
         setPublicComments([...apiPublic, ...embeddedPublic].sort((a, b) => new Date(a.createdAt || a.timestamp) - new Date(b.createdAt || b.timestamp)));
         setInternalComments([...apiInternal, ...embeddedInternal].sort((a, b) => new Date(a.createdAt || a.timestamp) - new Date(b.createdAt || b.timestamp)));
+
+        // Sync status and follower count from backend
         setStatus(ticketData.status || "New");
         setSavedStatus(ticketData.status || "New");
         setFollowersCount(response.data.followersCount ?? 0);
         setCommentError("");
       } catch (error) {
         console.error("Error fetching ticket and comments:", error);
-        const backendMessage = error?.response?.data?.message;
-        setErrorMessage(backendMessage || "Failed to load ticket details.");
+        setErrorMessage(error?.response?.data?.message || "Failed to load ticket details.");
       } finally {
         setLoading(false);
       }
@@ -121,13 +137,18 @@ export default function Assignee_Ticket_Details() {
     }
   }, [ticketId]);
 
+  // ─── Computed / Derived Values ─────────────────────────────────────────────
+
+  /** Map all DB assignees into dropdown-friendly options. */
   const assigneeOptions = useMemo(() => {
     if (!allAssignees.length) return [];
     return allAssignees.map((a) => ({ _id: a._id, label: a.name || a.email || 'Unknown' }));
   }, [allAssignees]);
 
+  /** Show public or internal comments based on the active tab. */
   const filteredComments = activeTab === "Public" ? publicComments : internalComments;
 
+  /** Formats a deadline date string for display. */
   const formatDeadline = (deadline) => {
     if (!deadline) return "-";
     const date = new Date(deadline);
@@ -135,12 +156,16 @@ export default function Assignee_Ticket_Details() {
     return date.toLocaleDateString();
   };
 
+  // Creator display – fall back to the email prefix if the user object isn't populated
   const creatorFallback = ticket?.email ? ticket.email.split("@")[0] : "-";
   const creatorText = getUserLabel(ticket?.creator, creatorFallback);
 
+  // Assignees and followers text for the detail panel
   const assigneesText = Array.isArray(ticket?.assignees)
     ? ticket.assignees.map((a) => a?.name || a?.email || 'Unknown').join(", ")
     : "-";
+
+  /** Key-value pairs rendered in the ticket info section. */
   const details = [
     { label: "Title", value: ticket?.title || "-" },
     { label: "Category", value: ticket?.category || "-" },
@@ -149,8 +174,12 @@ export default function Assignee_Ticket_Details() {
     { label: "Creator", value: creatorText },
     { label: "Assignees", value: assigneesText },
   ];
+
   const commentTabs = ["Public", "Internal"];
 
+  // ─── Event Handlers ────────────────────────────────────────────────────────
+
+  /** Saves the current status and optional reassignment to the backend. */
   const handleSaveTicket = async () => {
     setSaveMessage("");
 
@@ -165,16 +194,21 @@ export default function Assignee_Ticket_Details() {
         ticketId: ticket._id,
         status,
       };
+
+      // Only include reassignment if the assignee dropdown was changed
       if (selectedAssignee) {
         payload.reassignedAssigneeId = selectedAssignee;
       }
+
       const response = await api.post("/assignee/saveTicket", payload);
       const updatedTicket = response.data.ticket;
+
       if (updatedTicket) {
         setTicket(updatedTicket);
         setStatus(updatedTicket.status || status);
         setSavedStatus(updatedTicket.status || status);
       }
+
       setSaveMessage("Ticket updated successfully.");
     } catch (error) {
       console.error("Error saving ticket:", error);
@@ -184,6 +218,7 @@ export default function Assignee_Ticket_Details() {
     }
   };
 
+  /** Posts a new public or internal comment on this ticket. */
   const handleSubmitComment = async () => {
     const message = commentText.trim();
     if (!message) return;
@@ -198,6 +233,7 @@ export default function Assignee_Ticket_Details() {
         visibility: commentType,
       });
 
+      // Build the new comment object for optimistic UI update
       const newComment = {
         ...response.data.comment,
         user: {
@@ -207,11 +243,13 @@ export default function Assignee_Ticket_Details() {
         role: response.data.role || user?.role || "assignee",
         visibility: commentType,
       };
+
       if (commentType === "Public") {
         setPublicComments((prev) => [...prev, newComment]);
       } else {
         setInternalComments((prev) => [...prev, newComment]);
       }
+
       setCommentText("");
     } catch (error) {
       console.error("Error submitting comment:", error);
@@ -221,16 +259,21 @@ export default function Assignee_Ticket_Details() {
     }
   };
 
+
+  // ─── JSX Render ───────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen flex bg-gray-100">
+      {/* ── Sidebar Navigation ──────────────────────────────────────────────── */}
       <AssigneeNavbar collapsed={collapsed} setCollapsed={setCollapsed} />
 
+      {/* ── Main Content Area ───────────────────────────────────────────────── */}
       <div
         className={`flex-1 transition-all duration-300 p-4 md:p-6 ${
           collapsed ? "ml-20" : "ml-64"
         }`}
       >
         <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6">
+          {/* Back button */}
           <button
             onClick={() => navigate("/assignee_dashboard")}
             className="text-orange-500 text-lg hover:text-orange-600 mb-2"
@@ -238,19 +281,24 @@ export default function Assignee_Ticket_Details() {
             ← Back
           </button>
 
-          <h1 className="text-xl font-semibold text-center mb-6">{ticket?.title || ticket?._id || "Ticket-001"}</h1>
+          <h1 className="text-xl font-semibold text-center mb-6">
+            {ticket?.title || ticket?._id || "Ticket-001"}
+          </h1>
 
           {loading ? (
             <p className="text-gray-600 text-center text-sm">Loading ticket...</p>
           ) : (
             <>
-              {errorMessage ? (
+              {/* Error banner */}
+              {errorMessage && (
                 <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                   {errorMessage}
                 </div>
-              ) : null}
+              )}
 
+              {/* ── Ticket Details + Status ─────────────────────────────────── */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Detail fields (title, category, deadline, etc.) */}
                 <div className="lg:col-span-2 text-sm space-y-2">
                   {details.map((item) => (
                     <p key={item.label}>
@@ -259,6 +307,10 @@ export default function Assignee_Ticket_Details() {
                   ))}
                 </div>
 
+                {/* Status dropdown with transition rules:
+                    New    → New, Solving, Solved, Failed
+                    Solving → Solving, Solved, Failed
+                    Solved / Failed → locked (disabled) */}
                 <div>
                   <label className="font-semibold text-sm block mb-1">Status</label>
                   <select
@@ -289,12 +341,14 @@ export default function Assignee_Ticket_Details() {
                 </div>
               </div>
 
+              {/* Issue description */}
               <div className="mt-6">
                 <p className="text-sm">
                   <span className="font-semibold">Issue:</span> {ticket?.issue || "-"}
                 </p>
               </div>
 
+              {/* ── Reassign & Save ─────────────────────────────────────────── */}
               <div className="mt-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <label className="font-semibold text-sm">Reassign to</label>
@@ -321,13 +375,16 @@ export default function Assignee_Ticket_Details() {
                 </button>
               </div>
 
-              {saveMessage ? (
+              {/* Save feedback message */}
+              {saveMessage && (
                 <p className="mt-3 text-sm text-amber-700">{saveMessage}</p>
-              ) : null}
+              )}
 
+              {/* ── Comments Section ────────────────────────────────────────── */}
               <div className="border-t border-gray-300 mt-8 pt-6">
                 <h2 className="text-lg font-semibold mb-3">Comments</h2>
 
+                {/* Tab buttons: Public / Internal */}
                 <div className="flex gap-2">
                   {commentTabs.map((tab) => (
                     <button
@@ -344,6 +401,7 @@ export default function Assignee_Ticket_Details() {
                   ))}
                 </div>
 
+                {/* Comment list */}
                 <div className="border border-gray-300 bg-white rounded-b-lg rounded-tr-lg p-4 h-[240px] overflow-y-auto">
                   {filteredComments.length === 0 ? (
                     <p className="text-gray-500 text-sm">
@@ -354,6 +412,7 @@ export default function Assignee_Ticket_Details() {
                       const sender = getCommentSender(comment);
                       const role = getCommentRole(comment);
 
+                      // Align own comments to the right, others to the left
                       const isAssignee =
                         sender.toLowerCase() === String(userEmail).toLowerCase() ||
                         sender.toLowerCase() === String(user?.name || "").toLowerCase();
@@ -377,10 +436,12 @@ export default function Assignee_Ticket_Details() {
                   )}
                 </div>
 
-                {commentError ? (
+                {/* Comment error message */}
+                {commentError && (
                   <p className="mt-3 text-sm text-red-600">{commentError}</p>
-                ) : null}
+                )}
 
+                {/* Comment input bar: text input + visibility selector + submit */}
                 <div className="mt-4 flex">
                   <input
                     type="text"
