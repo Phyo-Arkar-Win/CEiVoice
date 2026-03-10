@@ -1,4 +1,4 @@
-export const updateStatusEmailTemplate = (ticket) => {
+export const updateNewEmailTemplate = (ticket) => {
   return `
 
     <h2>Your Ticket Has Been Updated</h2>
