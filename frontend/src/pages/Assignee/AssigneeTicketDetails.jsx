@@ -476,3 +476,5 @@ export default function Assignee_Ticket_Details() {
     </div>
   );
 }
+
+console.log("Rendered Assignee_Ticket_Details with ticketId:", ticketId);
