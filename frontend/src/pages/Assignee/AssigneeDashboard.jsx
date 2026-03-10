@@ -49,13 +49,13 @@ export default function Assignee_Dashboard() {
   }, []);
 
   return (
-  <div className="bg-gray-100 min-h-screen">
+  <div className="flex bg-gray-100 min-h-screen">
 
     {/* Sidebar */}
     <AssigneeNavbar />
 
     {/* Main Content */}
-    <div className="ml-64 p-8">
+    <div className="flex-1 p-8 overflow-hidden">
 
       {/* Statistics */}
       <div className="bg-white shadow rounded-xl p-6 mb-6">

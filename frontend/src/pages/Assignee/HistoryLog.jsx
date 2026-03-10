@@ -47,7 +47,7 @@ export default function Assignee_Historylog() {
   }, []);
 
   return (
-  <div className="bg-gray-200 min-h-screen">
+  <div className="flex bg-gray-200 min-h-screen">
 
     {/* Sidebar */}
     <AssigneeNavbar
@@ -56,11 +56,7 @@ export default function Assignee_Historylog() {
     />
 
     {/* Main Content */}
-    <div
-      className={`transition-all duration-300 p-10 ${
-        collapsed ? "ml-20" : "ml-64"
-      }`}
-    >
+    <div className="flex-1 p-10 overflow-hidden">
 
       {/* PAGE TITLE */}
       <h1 className="text-2xl font-semibold mb-6">

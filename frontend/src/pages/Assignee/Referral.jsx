@@ -6,7 +6,7 @@ export default function Assignee_Referral() {
     <>
     <div className='min-h-screen flex'>
     <AssigneeNavbar></AssigneeNavbar>
-    <div className='m-6 text-2xl'> Sate Nyit Sayr </div>
+    <div className='flex-1 m-6 text-2xl'> Sate Nyit Sayr </div>
     </div>
     </>
   )
