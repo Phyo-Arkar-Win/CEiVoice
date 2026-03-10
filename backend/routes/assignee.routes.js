@@ -7,8 +7,8 @@ import { get } from 'mongoose';
 
 const router = Router();
 router.get('/dashboard', authController.protect, getAssigneeDashboardData);
-router.get('/ticketDetailsAsAdminOrAssignee', ticketDetailsAsAdminOrAssignee);
-router.post('/commentAsAdminOrAssignee', submitCommentAsAdminOrAssignee);
+router.get('/ticketDetailsAsAdminOrAssignee', authController.protect, ticketDetailsAsAdminOrAssignee);
+router.post('/commentAsAdminOrAssignee', authController.protect, submitCommentAsAdminOrAssignee);
 router.get('/history', authController.protect, authController.restrictTo('assignee'), getHistoryLog);
 router.get('/ticketDetails/:id', authController.protect, ticketDetailsAsAdminOrAssignee); 
 router.post('/submitComment', authController.protect, submitCommentAsAdminOrAssignee); 

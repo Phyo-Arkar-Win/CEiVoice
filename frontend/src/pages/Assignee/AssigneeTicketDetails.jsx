@@ -10,7 +10,7 @@ export default function Assignee_Ticket_Details() {
   const navigate = useNavigate();
   const { routeTicketId } = useParams();
   const location = useLocation();
-  const ticketId = routeTicketId || location.state?.ticketId || "";
+  const finalTicketId = routeTicketId || location.state?.ticketId || "";
   const initialTicket = location.state?.ticket || null;
 
   // ── UI State ───────────────────────────────────────────────────────────────
@@ -73,21 +73,18 @@ export default function Assignee_Ticket_Details() {
   /** Fetches ticket details, all assignees, and comments on mount. */
   useEffect(() => {
     const fetchTicketAndComments = async () => {
-      if (!ticketId) {
-        setErrorMessage("Missing ticket id. Open this page from the assignee dashboard with a valid database ticket id.");
-        setLoading(false);
-        return;
-      }
 
-      try {
-        setErrorMessage("");
-        const response = await api.get(`/assignee/ticketDetails/${ticketId}`);
-        const ticketData = response.data.ticket;
+  if (!finalTicketId) {
+    setErrorMessage("Missing ticket id.");
+    setLoading(false);
+    return;
+  }
 
-        if (!ticketData) {
-          setErrorMessage("Ticket details request returned no ticket.");
-          return;
-        }
+  try {
+
+    const response = await api.get(`/assignee/ticketDetails/${finalTicketId}`);
+
+    const ticketData = response.data.ticket;
 
         setTicket(ticketData);
 
@@ -132,8 +129,11 @@ export default function Assignee_Ticket_Details() {
       }
     };
 
-      fetchTicket();
-    }, [ticketId]);
+    console.log(finalTicketId)
+    if (finalTicketId) {
+      fetchTicketAndComments();
+    }
+  }, [finalTicketId]);
 
   // ─── Computed / Derived Values ─────────────────────────────────────────────
 
@@ -364,48 +364,12 @@ export default function Assignee_Ticket_Details() {
                   </select>
                 </div>
 
-              <button
-              onClick={handleSave}
-              className="bg-orange-500 text-white px-6 py-1 rounded">
-                Save
-              </button>
-
-            </div>
-
-
-
-            {/* COMMENTS */}
-
-            <div className="border-t mt-8 pt-6">
-
-              <h2 className="text-lg font-semibold mb-3">
-                Comments
-              </h2>
-
-
-              {/* TABS */}
-
-              <div className="flex gap-2">
                 <button
-                  onClick={() => setActiveTab("Public")}
-                  className={`px-3 py-1 border ${
-                    activeTab === "Public"
-                      ? "border-orange-500"
-                      : ""
-                  }`}
+                  onClick={handleSaveTicket}
+                  disabled={saving || !ticket}
+                  className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-1 rounded-md text-sm"
                 >
-                  Public
-                </button>
-
-                <button
-                  onClick={() => setActiveTab("Internal")}
-                  className={`px-3 py-1 border ${
-                    activeTab === "Internal"
-                      ? "border-orange-500"
-                      : ""
-                  }`}
-                >
-                  Internal
+                  {saving ? "Saving..." : "Save"}
                 </button>
               </div>
 
@@ -485,31 +449,28 @@ export default function Assignee_Ticket_Details() {
                     className="flex-1 border border-orange-400 rounded-l-md px-4 py-2 text-sm outline-none"
                   />
 
-                <select
-                  value={commentType}
-                  onChange={(e) =>
-                    setCommentType(e.target.value)
-                  }
-                  className="border px-3"
-                >
-                  <option value="Public">Public</option>
-                  <option value="Internal">Internal</option>
-                </select>
+                  <select
+                    value={commentType}
+                    onChange={(e) => setCommentType(e.target.value)}
+                    className="border-y border-l border-gray-300 px-3 text-sm"
+                  >
+                    <option value="Internal">Internal</option>
+                    <option value="Public">Public</option>
+                  </select>
 
-                <button
-                  onClick={handleSubmitComment}
-                  className="bg-orange-500 text-white px-6"
-                >
-                  Submit
-                </button>
-
+                  <button
+                    onClick={handleSubmitComment}
+                    disabled={commentSubmitting || !ticket}
+                    className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-r-md text-sm"
+                  >
+                    {commentSubmitting ? "Submitting..." : "Submit"}
+                  </button>
+                </div>
               </div>
-
-            </div>
-
-          </div>
-
+            </>
+          )}
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
