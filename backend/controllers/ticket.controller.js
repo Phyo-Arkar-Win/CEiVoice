@@ -78,10 +78,11 @@ export const viewTicketAsUser = async (req, res) => {
     }
     try {
         const ticket = await Ticket.findById(ticketId);
-        if (ticket.email !== email || ticket.creator !== email) {
+        let creator  = await User.findById(ticket.creator);
+        if (ticket.email !== email || creator.email !== email) {
             return res.status(403).json({ message: 'Incorrect Email or Ticket ID' });
         }
-        res.status(200).json({ id: ticket.id, status: ticket.status, title: ticket.title, issue: ticket.issue });
+        res.status(200).json({ id: ticket.id, status: ticket.status, title: ticket.title, issue: ticket.issue, category: ticket.category, updatedAt: ticket.updatedAt.toLocaleString() });
     } catch (error) {
         res.status(500).json({
             message: `Error viewing ticket: ${error.message}`,
@@ -109,7 +110,6 @@ export const getIndividualTicket = async (req, res) => {
 export const handleMergeSelection = async (req, res) => {
     const { tickets } = req.body;
     let mergedTicket = await AIMergeDraftTickets(tickets);
-    // console.log(mergedTicket);
     res.status(200).json({ message: 'Tickets merged successfully', mergedTicket: mergedTicket });
 };
 
@@ -144,12 +144,17 @@ export const handleUnlinkTickets = async (req, res) => {
 
 export const mergeDraftTickets = async (req, res) => {
     try {
-        const { mergedTicketId } = req.body;
-        const mergedTicket = new Ticket(mergedTicketId);
-        mergedTicket.status = "New";
-        // await Ticket.deleteMany({ _id: { $in: mergedTicket.mergedTickets } });
-        // await mergedTicket.updateOne({ $set: { status: 'New' } });
-        await mergedTicket.save();
+        const { mergedTicket } = req.body;
+        const mergedTicketDoc = new Ticket(mergedTicket);
+        mergedTicketDoc.status = "New";
+
+        const ticketsToMerge = await Ticket.find ({ _id: { $in: mergedTicketDoc.mergedTickets } })
+        const creatorList = ticketsToMerge.map(ticket => ticket.creator)
+        await mergedTicketDoc.updateOne({ $set: { status: 'New' } });
+        mergedTicketDoc.followers.push(...creatorList);
+        console.log(mergedTicketDoc)
+        await Ticket.deleteMany({ _id: { $in: mergedTicketDoc.mergedTickets.map(id => id._id) } });
+        await mergedTicketDoc.save();
         res.status(200).json({ message: 'Tickets merged successfully', data: mergedTicket });
     } catch (error) {
         res.status(500).json({

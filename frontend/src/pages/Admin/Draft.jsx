@@ -17,39 +17,39 @@ export default function Draft() {
 
   // Fetch assignees from backend
   const fetchAssignees = async () => {
-  try {
-    const res = await api.get("/admin/assignee");
-    setAssignees(res.data.data || res.data);
-  } catch (err) {
-    console.error("Error fetching assignees:", err);
-  }
-};
+    try {
+      const res = await api.get("/admin/assignee");
+      setAssignees(res.data.data || res.data);
+    } catch (err) {
+      console.error("Error fetching assignees:", err);
+    }
+  };
 
- const updateTicket = async (ticket) => {
-  try {
-    const updates = {
-      title: ticket.title,
-      summary: ticket.summary,
-      category: ticket.category,
-      resolution_path: ticket.resolution_path,
-      deadline: ticket.deadline,
-      assignees: ticket.assignee ? [ticket.assignee] : undefined,
-    };
+  const updateTicket = async (ticket) => {
+    try {
+      const updates = {
+        title: ticket.title,
+        summary: ticket.summary,
+        category: ticket.category,
+        resolution_path: ticket.resolution_path,
+        deadline: ticket.deadline,
+        assignees: ticket.assignee ? [ticket.assignee] : undefined,
+      };
 
-    // remove undefined values so only changed fields are sent
-    Object.keys(updates).forEach(
-      (key) => updates[key] === undefined && delete updates[key]
-    );
+      // remove undefined values so only changed fields are sent
+      Object.keys(updates).forEach(
+        (key) => updates[key] === undefined && delete updates[key]
+      );
 
-    await api.patch(`/tickets/${ticket._id}`, updates);
+      await api.patch(`/tickets/${ticket._id}`, updates);
 
-    alert("Draft updated successfully");
-    fetchDraftTickets(); // refresh list
+      alert("Draft updated successfully");
+      fetchDraftTickets(); // refresh list
 
-  } catch (err) {
-    console.error("Update error:", err);
-  }
-};
+    } catch (err) {
+      console.error("Update error:", err);
+    }
+  };
 
   // Fetch Draft Tickets
   const fetchDraftTickets = async () => {
@@ -136,43 +136,43 @@ export default function Draft() {
     <div className="h-screen flex bg-gray-200 overflow-hidden">
       <AdminNavbar />
 
-      <div className="flex-1 p-8 overflow-y-auto">
-        <h1 className="text-3xl font-bold mb-4">Draft Tickets</h1>
+      <div className="flex-1 p-4 md:p-8 min-w-0 overflow-y-auto">
+        <h1 className="text-xl md:text-3xl font-bold mb-4">Draft Tickets</h1>
 
-        <div className="bg-gray-100 rounded-2xl shadow p-4 mb-4">
+        <div className="bg-gray-100 rounded-2xl shadow p-4 md:p-6 mb-4 w-full">
           {tickets.map((ticket, index) => (
             <div
               key={ticket._id}
-              className="border-b border-gray-300 py-2 last:border-b-0"
+              className="border-b border-gray-300 py-3 md:py-4 last:border-b-0"
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
+                <div className="flex items-start md:items-center gap-3">
                   <input
                     type="checkbox"
                     checked={ticket.checked}
                     onChange={() => toggleCheck(index)}
-                    className="w-5 h-5"
+                    className="w-5 h-5 flex-shrink-0 mt-1 md:mt-0"
                   />
 
                   <button
                     onClick={() => toggleExpand(index)}
-                    className="font-semibold hover:text-orange-600"
+                    className="font-semibold text-left text-sm md:text-base hover:text-orange-600 break-words line-clamp-2 md:line-clamp-none"
                   >
-                    {ticket.title}
+                    {ticket.title || "Untitled Ticket"}
                   </button>
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex gap-2 w-full md:w-auto mt-2 md:mt-0 pl-8 md:pl-0">
                   <button
                     onClick={() => toggleExpand(index)}
-                    className="bg-gray-300 px-4 py-2 rounded-md hover:bg-gray-400"
+                    className="flex-1 md:flex-none bg-gray-300 px-3 py-1.5 md:px-4 md:py-2 rounded-md hover:bg-gray-400 text-sm md:text-base transition-colors"
                   >
                     Edit
                   </button>
 
                   <button
                     onClick={() => updateTicket(ticket)}
-                    className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600"
+                    className="flex-1 md:flex-none bg-orange-500 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-md hover:bg-orange-600 text-sm md:text-base transition-colors"
                   >
                     Save
                   </button>
@@ -180,7 +180,7 @@ export default function Draft() {
               </div>
 
               {ticket.expanded && (
-                <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-4">
+                <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
 
                   <div>
                     <label className="font-semibold block mb-1">Title</label>
@@ -204,6 +204,7 @@ export default function Draft() {
                     />
                   </div>
 
+                  {/* Summary & Resolution Path Side-by-Side on Desktop */}
                   <div>
                     <label className="font-semibold block mb-1">Summary</label>
                     <textarea
@@ -265,20 +266,20 @@ export default function Draft() {
           ))}
         </div>
 
-        <div className="bg-gray-100 rounded-2xl shadow p-5">
-          <h2 className="text-xl font-bold mb-3">Merge Selected Requests</h2>
+        <div className="bg-gray-100 rounded-2xl shadow p-4 md:p-5 mt-4 md:mt-6">
+          <h2 className="text-lg md:text-xl font-bold mb-3">Merge Selected Requests</h2>
 
-          <div className="grid grid-cols-2 font-semibold mb-2">
+          <div className="hidden md:grid grid-cols-2 font-semibold mb-2">
             <span>Ticket ID</span>
             <span>Title</span>
           </div>
 
-          <div className="space-y-1">
+          <div className="flex flex-col space-y-3 md:space-y-1 md:block">
             {tickets
               .filter((ticket) => ticket.checked)
               .map((ticket) => (
-                <div key={ticket._id} className="grid grid-cols-2 text-sm">
-                  <span>{ticket._id}</span>
+                <div key={ticket._id} className="flex flex-col md:grid md:grid-cols-2 text-sm bg-white md:bg-transparent p-3 md:p-0 rounded border border-gray-200 md:border-none">
+                  <span className="font-semibold text-gray-500 md:text-gray-900 md:font-normal mb-1 md:mb-0">{ticket._id}</span>
                   <span>{ticket.title || "-"}</span>
                 </div>
               ))}
@@ -286,48 +287,47 @@ export default function Draft() {
 
           <div className="flex justify-end mt-4">
             <button
-  disabled={merging}
-  onClick={async () => {
+              disabled={merging}
+              onClick={async () => {
 
-    const selectedTickets = tickets.filter(ticket => ticket.checked);
+                const selectedTickets = tickets.filter(ticket => ticket.checked);
 
-    if (selectedTickets.length < 2) {
-      alert("Select at least 2 tickets to merge.");
-      return;
-    }
+                if (selectedTickets.length < 2) {
+                  alert("Select at least 2 tickets to merge.");
+                  return;
+                }
 
-    try {
+                try {
 
-      setMerging(true);
+                  setMerging(true);
 
-      const res = await api.post("/tickets/merge/selection", {
-        tickets: selectedTickets
-      });
+                  const res = await api.post("/tickets/merge/selection", {
+                    tickets: selectedTickets
+                  });
+                  console.log(tickets)
+                  navigate("/drafts/merge", {
+                    state: {
+                      mergedTicket: res.data.mergedTicket,
+                      tickets: selectedTickets
+                    }
+                  });
 
-      navigate("/drafts/merge", {
-        state: {
-          mergedTicket: res.data.mergedTicket,
-          tickets: selectedTickets
-        }
-      });
-      
+                } catch (err) {
 
-    } catch (err) {
+                  console.error("Merge selection error:", err);
 
-      console.error("Merge selection error:", err);
+                } finally {
 
-    } finally {
+                  setMerging(false);
 
-      setMerging(false);
+                }
 
-    }
-
-  }}
-  className={`px-4 py-2 rounded text-white cursor-pointer 
+              }}
+              className={`px-4 py-2 rounded text-white cursor-pointer 
   ${merging ? "bg-gray-400" : "bg-orange-600"}`}
->
-  {merging ? "Merging..." : "+ Merge"}
-</button>
+            >
+              {merging ? "Merging..." : "+ Merge"}
+            </button>
           </div>
         </div>
       </div>

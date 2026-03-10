@@ -122,16 +122,14 @@
       <div className="min-h-screen flex bg-gray-100">
         <AssigneeNavbar />
 
-        <div className="flex-1 p-6 ml-64">
-
-          <div className="bg-white border rounded-lg shadow-sm p-6">
-
-            <button
-              onClick={() => navigate("/assignee_dashboard")}
-              className="text-orange-500 mb-3"
-            >
-              ← Back
-            </button>
+      <div className="flex-1 p-4 md:p-6 overflow-hidden">
+        <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6">
+          <button
+            onClick={() => navigate("/assignee_dashboard")}
+            className="text-orange-500 text-lg hover:text-orange-600 mb-2"
+          >
+            ← Back
+          </button>
 
             <h1 className="text-xl font-semibold text-center mb-6">
               {ticket.title}

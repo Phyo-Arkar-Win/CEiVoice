@@ -14,7 +14,7 @@ export default function Assignee_Historylog() {
     const fetchLogs = async () => {
       try {
 
-        const res = await api.get("/tickets/history");
+        const res = await api.get("/assignee/history");
 
         // FORMAT STATUS LOGS
         const formattedStatus = res.data.statusHistoryLog.map((log) => ({
@@ -47,7 +47,7 @@ export default function Assignee_Historylog() {
   }, []);
 
   return (
-  <div className="bg-gray-200 min-h-screen">
+  <div className="flex bg-gray-100 min-h-screen">
 
     {/* Sidebar */}
     <AssigneeNavbar
@@ -56,107 +56,131 @@ export default function Assignee_Historylog() {
     />
 
     {/* Main Content */}
-    <div
-      className={`transition-all duration-300 p-10 ${
-        collapsed ? "ml-20" : "ml-64"
-      }`}
-    >
+    <div className="flex-1 p-4 md:p-10 min-w-0 overflow-hidden">
 
       {/* PAGE TITLE */}
-      <h1 className="text-2xl font-semibold mb-6">
+      <h1 className="text-xl md:text-2xl font-semibold mb-4 md:mb-6">
         History Log
       </h1>
 
       {/* TWO COLUMN LAYOUT */}
-      <div className="grid grid-cols-1 gap-8">
+      <div className="grid grid-cols-1 gap-6 md:gap-8">
 
         {/* STATUS HISTORY */}
-        <div className="bg-gray-100 rounded-xl shadow p-6 overflow-x-auto">
+        <div className="bg-gray-100 rounded-xl shadow p-4 md:p-6 w-full flex flex-col">
 
-          <h2 className="text-xl font-semibold mb-4">Status Change</h2>
+          <h2 className="text-lg md:text-xl font-semibold mb-3 md:mb-4">Status Change</h2>
 
-          <table className="w-full">
+          <div className="overflow-x-auto rounded-lg border border-gray-200 w-full bg-white">
+            <table className="w-full text-left min-w-[600px]">
 
-            <thead>
-              <tr>
-                <th className="text-left py-2">Ticket ID</th>
-                <th className="text-left">Date/Time</th>
-                <th className="text-left">Old Status</th>
-                <th className="text-left">New Status</th>
-                <th className="text-left">By</th>
-              </tr>
-            </thead>
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr className="text-sm md:text-base text-gray-700">
+                  <th className="py-3 px-4 font-semibold whitespace-nowrap">Ticket ID</th>
+                  <th className="py-3 px-4 font-semibold whitespace-nowrap">Date/Time</th>
+                  <th className="py-3 px-4 font-semibold whitespace-nowrap">Old Status</th>
+                  <th className="py-3 px-4 font-semibold whitespace-nowrap">New Status</th>
+                  <th className="py-3 px-4 font-semibold whitespace-nowrap">By</th>
+                </tr>
+              </thead>
 
-            <tbody>
+              <tbody>
 
-              {statusLogs.map((log, index) => {
+                {statusLogs.length > 0 ? (
+                  statusLogs.map((log, index) => {
 
-                const [oldStatus, newStatus] = log.change.split(" to ");
+                    const [oldStatus, newStatus] = log.change.split(" to ");
 
-                return (
+                    return (
 
-                  <tr key={index} className="border-t hover:bg-gray-50">
+                      <tr key={index} className="border-b last:border-0 hover:bg-gray-50 transition-colors">
 
-                    <td className="py-3">{log.ticketId}</td>
-                    <td>{log.datetime}</td>
-                    <td>{oldStatus}</td>
-                    <td>{newStatus}</td>
-                    <td>{log.by}</td>
+                        <td className="py-3 px-4 text-xs md:text-sm font-medium whitespace-nowrap">{log.ticketId}</td>
+                        <td className="py-3 px-4 text-xs md:text-sm text-gray-600 whitespace-nowrap">{log.datetime}</td>
+                        <td className="py-3 px-4 text-xs md:text-sm whitespace-nowrap">
+                          <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-md">{oldStatus}</span>
+                        </td>
+                        <td className="py-3 px-4 text-xs md:text-sm whitespace-nowrap">
+                          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-md">{newStatus}</span>
+                        </td>
+                        <td className="py-3 px-4 text-xs md:text-sm text-gray-800 whitespace-nowrap">{log.by}</td>
 
+                      </tr>
+
+                    );
+
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan="5" className="py-6 text-center text-sm text-gray-500">
+                      No status logs found.
+                    </td>
                   </tr>
+                )}
 
-                );
+              </tbody>
 
-              })}
-
-            </tbody>
-
-          </table>
+            </table>
+          </div>
 
         </div>
 
         {/* ASSIGNEE HISTORY */}
-        <div className="bg-gray-100 rounded-xl shadow p-6 overflow-x-auto">
+        <div className="bg-gray-100 rounded-xl shadow p-4 md:p-6 w-full flex flex-col">
 
-          <h2 className="text-xl font-semibold mb-4">Assignee Change</h2>
+          <h2 className="text-lg md:text-xl font-semibold mb-3 md:mb-4">Assignee Change</h2>
 
-          <table className="w-full">
+          <div className="overflow-x-auto rounded-lg border border-gray-200 w-full bg-white">
+            <table className="w-full text-left min-w-[600px]">
 
-            <thead>
-              <tr>
-                <th className="text-left py-2">Ticket ID</th>
-                <th className="text-left">Date/Time</th>
-                <th className="text-left">Old Assignee</th>
-                <th className="text-left">New Assignee</th>
-                <th className="text-left">By</th>
-              </tr>
-            </thead>
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr className="text-sm md:text-base text-gray-700">
+                  <th className="py-3 px-4 font-semibold whitespace-nowrap">Ticket ID</th>
+                  <th className="py-3 px-4 font-semibold whitespace-nowrap">Date/Time</th>
+                  <th className="py-3 px-4 font-semibold whitespace-nowrap">Old Assignee</th>
+                  <th className="py-3 px-4 font-semibold whitespace-nowrap">New Assignee</th>
+                  <th className="py-3 px-4 font-semibold whitespace-nowrap">By</th>
+                </tr>
+              </thead>
 
-            <tbody>
+              <tbody>
 
-              {assigneeLogs.map((log, index) => {
+                {assigneeLogs.length > 0 ? (
+                  assigneeLogs.map((log, index) => {
 
-                const [oldAssignee, newAssignee] = log.change.split(" to ");
+                    const [oldAssignee, newAssignee] = log.change.split(" to ");
 
-                return (
+                    return (
 
-                  <tr key={index} className="border-t hover:bg-gray-50">
+                      <tr key={index} className="border-b last:border-0 hover:bg-gray-50 transition-colors">
 
-                    <td className="py-3">{log.ticketId}</td>
-                    <td>{log.datetime}</td>
-                    <td>{oldAssignee}</td>
-                    <td>{newAssignee}</td>
-                    <td>{log.by}</td>
+                        <td className="py-3 px-4 text-xs md:text-sm font-medium whitespace-nowrap">{log.ticketId}</td>
+                        <td className="py-3 px-4 text-xs md:text-sm text-gray-600 whitespace-nowrap">{log.datetime}</td>
+                        <td className="py-3 px-4 text-xs md:text-sm whitespace-nowrap">
+                           <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-md">{oldAssignee || "None"}</span>
+                        </td>
+                        <td className="py-3 px-4 text-xs md:text-sm whitespace-nowrap">
+                           <span className="px-2 py-1 bg-green-100 text-green-800 rounded-md">{newAssignee || "None"}</span>
+                        </td>
+                        <td className="py-3 px-4 text-xs md:text-sm text-gray-800 whitespace-nowrap">{log.by}</td>
 
+                      </tr>
+
+                    );
+
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan="5" className="py-6 text-center text-sm text-gray-500">
+                      No assignee logs found.
+                    </td>
                   </tr>
+                )}
 
-                );
+              </tbody>
 
-              })}
-
-            </tbody>
-
-          </table>
+            </table>
+          </div>
 
         </div>
 
