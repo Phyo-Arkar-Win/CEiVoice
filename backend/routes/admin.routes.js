@@ -7,7 +7,7 @@ import { ticketDetailsAsAdminOrAssignee, submitCommentAsAdminOrAssignee  } from 
 const router = Router();
 router.get('/dashboard', getAdminDashboardData);
 router.get('/assignee', getAssignee);
-router.get('/ticketDetails', ticketDetailsAsAdminOrAssignee);
-router.post('/commentAsAdminOrAssignee', submitCommentAsAdminOrAssignee );
+router.get('/ticketDetails/:id', ticketDetailsAsAdminOrAssignee);
+router.post('/submitComment', submitCommentAsAdminOrAssignee );
 
 export default router;
