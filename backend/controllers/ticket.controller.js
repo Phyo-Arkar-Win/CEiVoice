@@ -138,7 +138,7 @@ export const handleUnlinkTickets = async (req, res) => {
 export const mergeDraftTickets = async (req, res) => {
     try {
         const { mergedTicketId } = req.body;
-        const mergedTicket = new Ticket(mergedTicket);
+        const mergedTicket = new Ticket(mergedTicketId);
         mergedTicket.status = "New";
         // await Ticket.deleteMany({ _id: { $in: mergedTicket.mergedTickets } });
         // await mergedTicket.updateOne({ $set: { status: 'New' } });

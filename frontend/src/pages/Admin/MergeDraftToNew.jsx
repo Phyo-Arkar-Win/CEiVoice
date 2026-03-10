@@ -109,7 +109,7 @@ export default function MergeDraftToNew() {
   // Submit merged ticket
   const handleSubmit = async () => {
 
-    const payload = {
+    const mergedTicketData = {
       title,
       category,
       deadline,
@@ -119,11 +119,21 @@ export default function MergeDraftToNew() {
       mergedTickets: mergedUsers.map(u => u.id)
     };
 
+    const payload = {
+      mergedTicketId: mergedTicketData
+    }
+
+    console.log("payload:", payload)
+
     try {
 
-      await api.post("/tickets/merge", payload);
+      const res = await api.post("/tickets/merge", payload);
+
+      console.log("merge result:", res.data)
 
       alert("Merged ticket submitted!");
+
+      navigate("/tickets")
 
     } catch (error) {
 
