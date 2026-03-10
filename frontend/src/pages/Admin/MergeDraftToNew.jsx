@@ -86,7 +86,7 @@ export default function MergeDraftToNew() {
       mergedTicket: mergedTicket,
       ticketToUnlink: selectedTickets
     });
-
+    
     const updatedMergedTicket = res.data.mergedTicket;
 
     // rebuild merged users list from backend result

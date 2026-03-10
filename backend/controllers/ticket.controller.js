@@ -101,8 +101,8 @@ export const getIndividualTicket = async (req, res) => {
 
 export const handleMergeSelection = async (req, res) => {
     const { tickets } = req.body;
-
     let mergedTicket = await AIMergeDraftTickets(tickets);
+    // console.log(mergedTicket);
     res.status(200).json({ message: 'Tickets merged successfully', mergedTicket: mergedTicket });
 };
 
@@ -116,12 +116,14 @@ export const handleUnlinkTickets = async (req, res) => {
 
         const mergedTicketDoc = new Ticket(mergedTicket);
 
-        // Use Mongoose pull to remove the ticket ID and its creator from references
-        mergedTicketDoc.mergedTickets.pull(ticketToUnlinkId);
+        console.log(mergedTicketDoc);
 
-        if (ticketToUnlink.creator) {
-            mergedTicketDoc.followers.pull(ticketToUnlink.creator);
-        }
+        // Use Mongoose pull to remove the ticket ID and its creator from references
+        // mergedTicketDoc.mergedTickets.pull(ticketToUnlinkId);
+
+        // if (ticketToUnlink.creator) {
+        //     mergedTicketDoc.followers.pull(ticketToUnlink.creator);
+        // }
 
         return res.status(200).json({
             mergedTicket: mergedTicketDoc,
