@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import UserNavbar from "@/components/userNavbar";
 import api from "../../api/axios";
 import { Search } from "lucide-react";
 
 export default function Dashboard() {
+
+  const navigate = useNavigate();
 
   const [tickets, setTickets] = useState([]);
 
@@ -12,22 +15,16 @@ export default function Dashboard() {
 
     try {
 
-      const res = await api.get("/tickets/user");
+      const res = await api.get("/user/tickets");
 
-      setTickets(res.data);
+      setTickets(res.data.tickets);
 
     } catch (error) {
 
       console.log("Backend not ready yet");
 
       // mock data for now
-      setTickets([
-        {
-          id: "Ticket-001",
-          title: "My mouse is not working",
-          status: "Solving"
-        }
-      ]);
+      setTickets([]);
     }
   };
 
@@ -54,7 +51,10 @@ export default function Dashboard() {
             Submit feedback, requests, or track your tickets easily.
           </p>
 
-          <button className="bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700">
+          <button 
+            onClick={() => navigate("/submit")}
+            className="bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 font-medium transition-colors cursor-pointer"
+          >
             Submit Request
           </button>
 
@@ -88,14 +88,17 @@ export default function Dashboard() {
 
                 <tr key={index} className="border-t">
 
-                  <td className="py-4">{ticket.id}</td>
+                  <td className="py-4">{ticket._id}</td>
 
                   <td>{ticket.title}</td>
 
                   <td>{ticket.status}</td>
 
                   <td>
-                    <button className="hover:text-orange-600">
+                    <button 
+                      className="hover:text-orange-600 cursor-pointer"
+                      onClick={() => navigate(`/user_ticket_details/${encodeURIComponent(ticket._id)}`, { state: { ticket } })}
+                    >
                       <Search size={20}/>
                     </button>
                   </td>
