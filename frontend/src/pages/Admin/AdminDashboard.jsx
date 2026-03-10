@@ -80,7 +80,8 @@ export default function Admin_Dashboard() {
 
 
   return (
-
+    <>
+    <div className="h-screen overflow-hidden">
     <div className="flex bg-gray-200 min-h-screen">
 
       <AdminNavbar collapsed={collapsed} setCollapsed={setCollapsed} />
@@ -205,6 +206,8 @@ export default function Admin_Dashboard() {
       </div>
 
     </div>
+    </div>
+    </>
 
   );
 }

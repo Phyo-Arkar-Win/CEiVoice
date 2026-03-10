@@ -116,7 +116,9 @@ export default function StaffManagement() {
   }, []);
 
   return (
-    <div className="min-h-screen flex bg-gray-100">
+    <>
+    <div>
+    <div className="min-h-screen flex bg-gray-100 overflow-hidden">
 
       <AdminNavbar />
 
@@ -301,5 +303,7 @@ export default function StaffManagement() {
       </div>
 
     </div>
+    </div>
+    </>
   );
 }

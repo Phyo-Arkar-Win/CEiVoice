@@ -134,8 +134,7 @@ export default function MergeDraftToNew() {
   };
 
   return (
-
-    <div className="min-h-screen flex bg-gray-200">
+    <div className="min-h-screen flex bg-gray-200 overflow-hidden">
 
       <AdminNavbar />
 
