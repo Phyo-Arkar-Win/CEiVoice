@@ -1,66 +1,63 @@
-import { useEffect, useMemo, useState } from "react";
+// ─── Imports ─────────────────────────────────────────────────────────────────
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import AdminNavbar from "@/components/AdminNavbar";
 import api from "@/api/axios";
 
-const isMongoId = (value) => /^[a-f\d]{24}$/i.test(String(value || "").trim());
-
-const getAssigneeLabel = (assignee) => {
-  if (!assignee) return "";
-  if (typeof assignee === "string") {
-    return isMongoId(assignee) ? "Unknown assignee" : assignee;
-  }
-  if (assignee?.name) return assignee.name;
-  if (assignee?.email) return assignee.email.split("@")[0];
-  return "Unknown assignee";
-};
-
+// ─── Constants ───────────────────────────────────────────────────────────────
 const COMMENT_TABS = ["Public", "Internal"];
 
+// ─── Component ───────────────────────────────────────────────────────────────
 export default function AdminTicketDetails() {
+  // ── Navigation & Route Params ──────────────────────────────────────────────
   const navigate = useNavigate();
   const { routeTicketId } = useParams();
   const location = useLocation();
   const ticketId = decodeURIComponent(routeTicketId || location.state?.ticketId || "");
   const initialTicket = location.state?.ticket || null;
 
+  // ── Ticket Data State ──────────────────────────────────────────────────────
   const [ticket, setTicket] = useState(initialTicket);
+  const [followersCount, setFollowersCount] = useState(0);
+
+  // ── Comment State ──────────────────────────────────────────────────────────
   const [publicComments, setPublicComments] = useState([]);
   const [internalComments, setInternalComments] = useState([]);
   const [commentText, setCommentText] = useState("");
   const [commentType, setCommentType] = useState("Internal");
   const [activeTab, setActiveTab] = useState("Public");
+
+  // ── UI State ───────────────────────────────────────────────────────────────
   const [loading, setLoading] = useState(true);
   const [commentSubmitting, setCommentSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [commentError, setCommentError] = useState("");
 
+  // ── Current User Info ──────────────────────────────────────────────────────
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userEmail = user?.email || "admin@gmail.com";
 
+  // ─── Helper Functions ──────────────────────────────────────────────────────
+
+  /** Returns a display label for a user value (object, string, or null). */
   const getUserLabel = (value, fallback = "-") => {
     if (!value) return fallback;
-    if (typeof value === "string") {
-      return isMongoId(value) ? fallback : value;
-    }
-    return value?.name || value?.email || fallback;
+    if (typeof value === "object") return value?.name || value?.email || fallback;
+    return String(value);
   };
 
+  /** Extracts the sender display name from a comment object. */
   const getCommentSender = (comment) => {
     const commentUser = comment?.user;
-
     if (commentUser && typeof commentUser === "object") {
       if (commentUser.name) return commentUser.name;
       if (commentUser.email) return commentUser.email;
     }
-
-    if (typeof commentUser === "string" && !isMongoId(commentUser)) {
-      return commentUser;
-    }
-
+    if (typeof commentUser === "string") return commentUser;
     return comment?.email || comment?.senderEmail || comment?.name || "Unknown user";
   };
 
+  /** Formats a deadline date string for display. */
   const formatDeadline = (deadline) => {
     if (!deadline) return "-";
     const date = new Date(deadline);
@@ -68,6 +65,9 @@ export default function AdminTicketDetails() {
     return date.toLocaleDateString();
   };
 
+  // ─── Data Fetching ─────────────────────────────────────────────────────────
+
+  /** Fetches ticket details and comments on mount. */
   useEffect(() => {
     const fetchTicketAndComments = async () => {
       if (!ticketId) {
@@ -78,21 +78,29 @@ export default function AdminTicketDetails() {
 
       try {
         setErrorMessage("");
-        const response = await api.get(`/assignee/ticketDetailsAsAdminOrAssignee/${encodeURIComponent(ticketId)}`);
+        const response = await api.get(`/admin/ticketDetails/${encodeURIComponent(ticketId)}`);
         const ticketData = response.data.ticket;
 
         if (!ticketData) {
-          setErrorMessage(
-            isMongoId(ticketId)
-              ? "Ticket details request returned no ticket."
-              : "This page is receiving a display ticket id instead of the database _id required by the backend."
-          );
+          setErrorMessage("Ticket details request returned no ticket.");
           return;
         }
 
         setTicket(ticketData);
-        setPublicComments(Array.isArray(response.data.publicComments) ? response.data.publicComments : []);
-        setInternalComments(Array.isArray(response.data.internalComments) ? response.data.internalComments : []);
+
+        // Merge API-level comments with embedded ticket.comments
+        const apiPublic = Array.isArray(response.data.publicComments) ? response.data.publicComments : [];
+        const apiInternal = Array.isArray(response.data.internalComments) ? response.data.internalComments : [];
+
+        const embedded = Array.isArray(ticketData.comments) ? ticketData.comments : [];
+        const embeddedPublic = embedded.filter((c) => c.type === "Public" || c.visibility === "Public");
+        const embeddedInternal = embedded.filter((c) => c.type === "Internal" || c.visibility === "Internal");
+
+        setPublicComments([...apiPublic, ...embeddedPublic].sort((a, b) => new Date(a.createdAt || a.timestamp) - new Date(b.createdAt || b.timestamp)));
+        setInternalComments([...apiInternal, ...embeddedInternal].sort((a, b) => new Date(a.createdAt || a.timestamp) - new Date(b.createdAt || b.timestamp)));
+
+        // Follower count comes from a raw .lean() query to avoid populate issues
+        setFollowersCount(response.data.followersCount ?? 0);
         setCommentError("");
       } catch (error) {
         console.error("Error fetching ticket and comments:", error);
@@ -105,24 +113,22 @@ export default function AdminTicketDetails() {
     fetchTicketAndComments();
   }, [ticketId]);
 
-  const assigneeOptions = useMemo(() => {
-    if (!Array.isArray(ticket?.assignees)) return [];
-    return ticket.assignees.map(getAssigneeLabel).filter(Boolean);
-  }, [ticket]);
+  // ─── Computed / Derived Values ─────────────────────────────────────────────
 
+  /** Show public or internal comments based on the active tab. */
   const filteredComments = activeTab === "Public" ? publicComments : internalComments;
 
+  // Creator display – fall back to the email prefix if the user object isn't populated
   const creatorFallback = ticket?.email ? ticket.email.split("@")[0] : "-";
   const creatorText = getUserLabel(ticket?.creator, creatorFallback);
 
-  const followersText = Array.isArray(ticket?.followers)
-    ? `${ticket.followers.length} users`
-    : `${ticket?.followers ?? 0} users`;
+  const followersText = `${followersCount} user${followersCount !== 1 ? 's' : ''}`;
 
   const assigneesText = Array.isArray(ticket?.assignees)
-    ? ticket.assignees.map(getAssigneeLabel).filter(Boolean).join(", ")
+    ? ticket.assignees.map((a) => a?.name || a?.email || 'Unknown').join(", ")
     : "-";
 
+  /** Key-value pairs rendered in the ticket info section. */
   const details = [
     { label: "Title", value: ticket?.title || "-" },
     { label: "Category", value: ticket?.category || "-" },
@@ -132,6 +138,9 @@ export default function AdminTicketDetails() {
     { label: "Assignees", value: assigneesText },
   ];
 
+  // ─── Event Handlers ────────────────────────────────────────────────────────
+
+  /** Posts a new public or internal comment on this ticket. */
   const handleSubmitComment = async () => {
     const message = commentText.trim();
     if (!message) return;
@@ -140,26 +149,27 @@ export default function AdminTicketDetails() {
     setCommentError("");
 
     try {
-      const response = await api.post("/admin/commentAsAdminOrAssignee", {
+      const response = await api.post("/admin/submitComment", {
         ticketId: ticket?._id || ticketId,
         commentText: message,
         visibility: commentType,
       });
 
+      // Build the new comment object for optimistic UI update
       const newComment = {
         ...response.data.comment,
-        user: response.data.comment?.user || {
+        user: {
           email: userEmail,
-          name: user?.name,
+          name: response.data.name || user?.name,
         },
         role: response.data.role || user?.role || "admin",
         visibility: commentType,
       };
 
       if (commentType === "Public") {
-        setPublicComments((prev) => [newComment, ...prev]);
+        setPublicComments((prev) => [...prev, newComment]);
       } else {
-        setInternalComments((prev) => [newComment, ...prev]);
+        setInternalComments((prev) => [...prev, newComment]);
       }
 
       setCommentText("");
@@ -171,12 +181,17 @@ export default function AdminTicketDetails() {
     }
   };
 
+  // ─── JSX Render ───────────────────────────────────────────────────────────
   return (
+    
     <div className="min-h-screen flex bg-gray-100">
+      {/* ── Sidebar Navigation ──────────────────────────────────────────────── */}
       <AdminNavbar />
 
+      {/* ── Main Content Area ───────────────────────────────────────────────── */}
       <div className="flex-1 transition-all duration-300 p-4 md:p-6">
         <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6">
+          {/* Back button */}
           <button
             onClick={() => navigate("/tickets")}
             className="text-orange-500 text-lg hover:text-orange-600 mb-2"
@@ -184,48 +199,42 @@ export default function AdminTicketDetails() {
             ← Back
           </button>
 
-          <h1 className="text-xl font-semibold text-center mb-6">{ticket?.title || "Ticket"}</h1>
+          <h1 className="text-xl font-semibold text-center mb-6">
+            {ticket?.title || ticket?._id || "Ticket"}
+          </h1>
 
           {loading ? (
             <p className="text-gray-600 text-center text-sm">Loading ticket...</p>
           ) : (
-            <>
-              {errorMessage ? (
+            <div>
+              {/* Error banner */}
+              {errorMessage && (
                 <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                   {errorMessage}
                 </div>
-              ) : null}
+              )}
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 text-sm space-y-2">
-                  {details.map((item) => (
-                    <p key={item.label}>
-                      <span className="font-semibold">{item.label}:</span> {item.value}
-                    </p>
-                  ))}
-                </div>
-
-                <div>
-                  <label className="font-semibold text-sm block mb-1">Reassign to</label>
-                  <select
-                    value=""
-                    readOnly
-                    className="w-full border border-gray-400 rounded-md px-3 py-1 text-sm max-w-[220px]"
-                  >
-                    <option>{assigneeOptions[0] || "No assignee"}</option>
-                  </select>
-                </div>
+              {/* ── Ticket Details ──────────────────────────────────────────── */}
+              <div className="text-sm space-y-2">
+                {details.map((item) => (
+                  <p key={item.label}>
+                    <span className="font-semibold">{item.label}:</span> {item.value}
+                  </p>
+                ))}
               </div>
 
+              {/* Issue description */}
               <div className="mt-6">
                 <p className="text-sm">
                   <span className="font-semibold">Issue:</span> {ticket?.issue || "-"}
                 </p>
               </div>
 
+              {/* ── Comments Section ────────────────────────────────────────── */}
               <div className="border-t border-gray-300 mt-8 pt-6">
                 <h2 className="text-lg font-semibold mb-3">Comments</h2>
 
+                {/* Tab buttons: Public / Internal */}
                 <div className="flex gap-2">
                   {COMMENT_TABS.map((tab) => (
                     <button
@@ -242,13 +251,16 @@ export default function AdminTicketDetails() {
                   ))}
                 </div>
 
+                {/* Comment list */}
                 <div className="border border-gray-300 bg-white rounded-b-lg rounded-tr-lg p-4 h-[240px] overflow-y-auto">
                   {filteredComments.length === 0 ? (
                     <p className="text-gray-500 text-sm">No {activeTab.toLowerCase()} comments yet.</p>
                   ) : (
                     filteredComments.map((comment, index) => {
                       const sender = getCommentSender(comment);
-                      const role = comment?.role || comment?.senderRole || "Admin";
+                      const role = comment?.user?.role || comment?.role || comment?.senderRole || "Unknown";
+
+                      // Align own comments to the right, others to the left
                       const isAdmin =
                         sender.toLowerCase() === String(userEmail).toLowerCase() ||
                         sender.toLowerCase() === String(user?.name || "").toLowerCase();
@@ -272,10 +284,12 @@ export default function AdminTicketDetails() {
                   )}
                 </div>
 
-                {commentError ? (
+                {/* Comment error message */}
+                {commentError && (
                   <p className="mt-3 text-sm text-red-600">{commentError}</p>
-                ) : null}
+                )}
 
+                {/* Comment input bar: text input + visibility selector + submit */}
                 <div className="mt-4 flex">
                   <input
                     type="text"
@@ -303,7 +317,7 @@ export default function AdminTicketDetails() {
                   </button>
                 </div>
               </div>
-            </>
+            </div>
           )}
         </div>
       </div>

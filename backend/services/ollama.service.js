@@ -158,6 +158,9 @@ SELECTED TICKETS
 ${ticketList}
 `;
 
+    const assignees = await User.find({ role: "assignee" }, 'name');
+    const assigneesList = assignees.map(assignee => `(${assignee.name}, ${assignee.role})`).join(', ');
+
     const ollama = new Ollama({ host: 'http://localhost:11434' });
 
     const response = await ollama.generate({
@@ -171,19 +174,13 @@ ${ticketList}
 
     const parsed = JSON.parse(response.response);
 
-    const followers = [
-    ...new Map(
-        tickets.map(ticket => [ticket.creator.toString(), ticket.creator])
-    ).values()
-    ];
-
     const mergedTicket = new Ticket({
         issue: parsed.issue,
         title: parsed.title,
         summary: parsed.summary,
         category: parsed.category,
         resolution_path: parsed.resolution_path,
-        followers,
+        followers: [],
         mergedTickets: tickets.map(t=>t._id)
     });
     
