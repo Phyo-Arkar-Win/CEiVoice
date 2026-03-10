@@ -8,6 +8,7 @@ export default function Draft() {
 
   const [tickets, setTickets] = useState([]);
   const [assignees, setAssignees] = useState([]);
+  const [merging, setMerging] = useState(false);
 
   useEffect(() => {
     fetchDraftTickets();
@@ -285,11 +286,47 @@ export default function Draft() {
 
           <div className="flex justify-end mt-4">
             <button
-              onClick={handleMerge}
-              className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600"
-            >
-              + Merge
-            </button>
+  disabled={merging}
+  onClick={async () => {
+
+    const selectedTickets = tickets.filter(ticket => ticket.checked);
+
+    if (selectedTickets.length < 2) {
+      alert("Select at least 2 tickets to merge.");
+      return;
+    }
+
+    try {
+
+      setMerging(true);
+
+      const res = await api.post("/tickets/merge/selection", {
+        tickets: selectedTickets
+      });
+
+      navigate("/drafts/merge", {
+        state: {
+          mergedTicket: res.data.mergedTicket,
+          tickets: selectedTickets
+        }
+      });
+
+    } catch (err) {
+
+      console.error("Merge selection error:", err);
+
+    } finally {
+
+      setMerging(false);
+
+    }
+
+  }}
+  className={`px-4 py-2 rounded text-white cursor-pointer 
+  ${merging ? "bg-gray-400" : "bg-orange-600"}`}
+>
+  {merging ? "Merging..." : "+ Merge"}
+</button>
           </div>
         </div>
       </div>

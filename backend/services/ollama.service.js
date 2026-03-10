@@ -84,6 +84,8 @@ ${issue}
 
 
 export const AIMergeDraftTickets = async (tickets) => {
+    // const email = tickets[0].email || tickets[0].creator?.email || "";
+    // const issue = tickets.map(t => t.summary).join("\n");
     const scopes = await Scope.find({}, 'name');
     const users = await User.find({ role: "assignee" }, 'name');
     const scopeList = scopes.map(scope => scope.name).join(', ');
@@ -161,7 +163,7 @@ ${ticketList}
     const ollama = new Ollama({ host: 'http://localhost:11434' });
 
     const response = await ollama.generate({
-        model: "llama3.2",
+        model: "llama3:latest",
         prompt,
         format: "json",
         options: {
