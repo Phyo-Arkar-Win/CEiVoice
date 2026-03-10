@@ -34,6 +34,7 @@ export default function AdminTicketDetails() {
   const [commentSubmitting, setCommentSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [commentError, setCommentError] = useState("");
+  const [followersCount, setFollowersCount] = useState(0);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userEmail = user?.email || "admin@gmail.com";
@@ -78,7 +79,7 @@ export default function AdminTicketDetails() {
 
       try {
         setErrorMessage("");
-        const response = await api.get(`/assignee/ticketDetailsAsAdminOrAssignee/${encodeURIComponent(ticketId)}`);
+        const response = await api.get(`/admin/ticketDetails/${encodeURIComponent(ticketId)}`);
         const ticketData = response.data.ticket;
 
         if (!ticketData) {
@@ -91,8 +92,17 @@ export default function AdminTicketDetails() {
         }
 
         setTicket(ticketData);
-        setPublicComments(Array.isArray(response.data.publicComments) ? response.data.publicComments : []);
-        setInternalComments(Array.isArray(response.data.internalComments) ? response.data.internalComments : []);
+
+        const apiPublic = Array.isArray(response.data.publicComments) ? response.data.publicComments : [];
+        const apiInternal = Array.isArray(response.data.internalComments) ? response.data.internalComments : [];
+
+        const embedded = Array.isArray(ticketData.comments) ? ticketData.comments : [];
+        const embeddedPublic = embedded.filter((c) => c.type === "Public" || c.visibility === "Public");
+        const embeddedInternal = embedded.filter((c) => c.type === "Internal" || c.visibility === "Internal");
+
+        setPublicComments([...apiPublic, ...embeddedPublic].sort((a, b) => new Date(a.createdAt || a.timestamp) - new Date(b.createdAt || b.timestamp)));
+        setInternalComments([...apiInternal, ...embeddedInternal].sort((a, b) => new Date(a.createdAt || a.timestamp) - new Date(b.createdAt || b.timestamp)));
+        setFollowersCount(response.data.followersCount ?? 0);
         setCommentError("");
       } catch (error) {
         console.error("Error fetching ticket and comments:", error);
@@ -115,9 +125,7 @@ export default function AdminTicketDetails() {
   const creatorFallback = ticket?.email ? ticket.email.split("@")[0] : "-";
   const creatorText = getUserLabel(ticket?.creator, creatorFallback);
 
-  const followersText = Array.isArray(ticket?.followers)
-    ? `${ticket.followers.length} users`
-    : `${ticket?.followers ?? 0} users`;
+  const followersText = `${followersCount} user${followersCount !== 1 ? 's' : ''}`;
 
   const assigneesText = Array.isArray(ticket?.assignees)
     ? ticket.assignees.map(getAssigneeLabel).filter(Boolean).join(", ")
@@ -140,7 +148,7 @@ export default function AdminTicketDetails() {
     setCommentError("");
 
     try {
-      const response = await api.post("/admin/commentAsAdminOrAssignee", {
+      const response = await api.post("/admin/submitComment", {
         ticketId: ticket?._id || ticketId,
         commentText: message,
         visibility: commentType,
@@ -148,18 +156,18 @@ export default function AdminTicketDetails() {
 
       const newComment = {
         ...response.data.comment,
-        user: response.data.comment?.user || {
+        user: {
           email: userEmail,
-          name: user?.name,
+          name: response.data.name || user?.name,
         },
         role: response.data.role || user?.role || "admin",
         visibility: commentType,
       };
 
       if (commentType === "Public") {
-        setPublicComments((prev) => [newComment, ...prev]);
+        setPublicComments((prev) => [...prev, newComment]);
       } else {
-        setInternalComments((prev) => [newComment, ...prev]);
+        setInternalComments((prev) => [...prev, newComment]);
       }
 
       setCommentText("");
@@ -196,26 +204,13 @@ export default function AdminTicketDetails() {
                 </div>
               ) : null}
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 text-sm space-y-2">
+              <div className="text-sm space-y-2">
                   {details.map((item) => (
                     <p key={item.label}>
                       <span className="font-semibold">{item.label}:</span> {item.value}
                     </p>
                   ))}
                 </div>
-
-                <div>
-                  <label className="font-semibold text-sm block mb-1">Reassign to</label>
-                  <select
-                    value=""
-                    readOnly
-                    className="w-full border border-gray-400 rounded-md px-3 py-1 text-sm max-w-[220px]"
-                  >
-                    <option>{assigneeOptions[0] || "No assignee"}</option>
-                  </select>
-                </div>
-              </div>
 
               <div className="mt-6">
                 <p className="text-sm">
@@ -248,7 +243,7 @@ export default function AdminTicketDetails() {
                   ) : (
                     filteredComments.map((comment, index) => {
                       const sender = getCommentSender(comment);
-                      const role = comment?.role || comment?.senderRole || "Admin";
+                      const role = comment?.user?.role || comment?.role || comment?.senderRole || "Unknown";
                       const isAdmin =
                         sender.toLowerCase() === String(userEmail).toLowerCase() ||
                         sender.toLowerCase() === String(user?.name || "").toLowerCase();

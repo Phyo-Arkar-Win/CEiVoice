@@ -3,20 +3,6 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 import AssigneeNavbar from "@/components/AssigneeNavbar";
 import api from "@/api/axios";
 
-const isMongoId = (value) => /^[a-f\d]{24}$/i.test(String(value || "").trim());
-
-const getAssigneeLabel = (assignee) => {
-  if (!assignee) return "";
-  if (typeof assignee === "string") {
-    return isMongoId(assignee) ? "Unknown assignee" : assignee;
-  }
-
-  if (assignee?.name) return assignee.name;
-  if (assignee?.email) return assignee.email.split("@")[0];
-
-  return "Unknown assignee";
-};
-
 export default function Assignee_Ticket_Details() {
   const navigate = useNavigate();
   const { routeTicketId } = useParams();
@@ -30,7 +16,9 @@ export default function Assignee_Ticket_Details() {
   const [publicComments, setPublicComments] = useState([]);
   const [internalComments, setInternalComments] = useState([]);
   const [status, setStatus] = useState("New");
+  const [savedStatus, setSavedStatus] = useState("New");
   const [selectedAssignee, setSelectedAssignee] = useState("");
+  const [allAssignees, setAllAssignees] = useState([]);
   const [commentText, setCommentText] = useState("");
   const [commentType, setCommentType] = useState("Internal");
   const [activeTab, setActiveTab] = useState("Public");
@@ -47,10 +35,8 @@ export default function Assignee_Ticket_Details() {
 
   const getUserLabel = (value, fallback = "-") => {
     if (!value) return fallback;
-    if (typeof value === "string") {
-      return isMongoId(value) ? fallback : value;
-    }
-    return value?.email || value?.name || fallback;
+    if (typeof value === "object") return value?.name || value?.email || fallback;
+    return String(value);
   };
 
   const getCommentSender = (comment) => {
@@ -61,15 +47,13 @@ export default function Assignee_Ticket_Details() {
       if (commentUser.email) return commentUser.email;
     }
 
-    if (typeof commentUser === "string" && !isMongoId(commentUser)) {
-      return commentUser;
-    }
+    if (typeof commentUser === "string") return commentUser;
 
     return comment?.email || comment?.senderEmail || comment?.name || "Unknown user";
   };
 
   const getCommentRole = (comment) =>
-    comment?.role || comment?.senderRole || (commentType === "Internal" ? "Assignee" : "User");
+    comment?.user?.role || comment?.role || comment?.senderRole || "Unknown";
 
   useEffect(() => {
     const fetchTicketAndComments = async () => {
@@ -81,22 +65,46 @@ export default function Assignee_Ticket_Details() {
 
       try {
         setErrorMessage("");
-        const response = await api.get(`/assignee/ticketDetailsAsAdminOrAssignee/${ticketId}`);
+        const response = await api.get(`/assignee/ticketDetails/${ticketId}`);
         const ticketData = response.data.ticket;
 
         if (!ticketData) {
-          setErrorMessage(
-            isMongoId(ticketId)
-              ? "Ticket details request returned no ticket."
-              : "This page is receiving a display ticket id instead of the database _id required by the backend."
-          );
+          setErrorMessage("Ticket details request returned no ticket.");
           return;
         }
 
         setTicket(ticketData);
-        setPublicComments(Array.isArray(response.data.publicComments) ? response.data.publicComments : []);
-        setInternalComments(Array.isArray(response.data.internalComments) ? response.data.internalComments : []);
+
+        // Store all assignees from DB for the reassign dropdown
+        const assigneesFromDb = Array.isArray(response.data.assignees) ? response.data.assignees : [];
+        setAllAssignees(assigneesFromDb);
+
+        // Resolve names on unpopulated ticket assignees
+        if (assigneesFromDb.length && Array.isArray(ticketData.assignees)) {
+          ticketData.assignees = ticketData.assignees.map((a) => {
+            if (typeof a === 'string' || (a && !a.name && !a.email)) {
+              const id = typeof a === 'string' ? a : a._id;
+              const found = assigneesFromDb.find((u) => String(u._id) === String(id));
+              return found || a;
+            }
+            return a;
+          });
+          setTicket({ ...ticketData });
+        }
+
+        const apiPublic = Array.isArray(response.data.publicComments) ? response.data.publicComments : [];
+        const apiInternal = Array.isArray(response.data.internalComments) ? response.data.internalComments : [];
+
+        // Also include embedded ticket.comments and merge with API comments
+        const embedded = Array.isArray(ticketData.comments) ? ticketData.comments : [];
+        const embeddedPublic = embedded.filter((c) => c.type === "Public" || c.visibility === "Public");
+        const embeddedInternal = embedded.filter((c) => c.type === "Internal" || c.visibility === "Internal");
+
+        setPublicComments([...apiPublic, ...embeddedPublic].sort((a, b) => new Date(a.createdAt || a.timestamp) - new Date(b.createdAt || b.timestamp)));
+        setInternalComments([...apiInternal, ...embeddedInternal].sort((a, b) => new Date(a.createdAt || a.timestamp) - new Date(b.createdAt || b.timestamp)));
         setStatus(ticketData.status || "New");
+        setSavedStatus(ticketData.status || "New");
+        setFollowersCount(response.data.followersCount ?? 0);
         setCommentError("");
 
         // const res = await api.get("/admin/assignee/");
@@ -104,12 +112,7 @@ export default function Assignee_Ticket_Details() {
       } catch (error) {
         console.error("Error fetching ticket and comments:", error);
         const backendMessage = error?.response?.data?.message;
-        setErrorMessage(
-          backendMessage ||
-            (isMongoId(ticketId)
-              ? "Failed to load ticket details."
-              : "Failed to load ticket details. The current route/state ticket id does not match the backend findById contract.")
-        );
+        setErrorMessage(backendMessage || "Failed to load ticket details.");
       } finally {
         setLoading(false);
       }
@@ -121,9 +124,9 @@ export default function Assignee_Ticket_Details() {
   }, [ticketId]);
 
   const assigneeOptions = useMemo(() => {
-    if (!Array.isArray(ticket?.assignees)) return [];
-    return ticket.assignees.map(getAssigneeLabel).filter(Boolean);
-  }, [ticket]);
+    if (!allAssignees.length) return [];
+    return allAssignees.map((a) => ({ _id: a._id, label: a.name || a.email || 'Unknown' }));
+  }, [allAssignees]);
 
   const filteredComments = activeTab === "Public" ? publicComments : internalComments;
 
@@ -134,21 +137,19 @@ export default function Assignee_Ticket_Details() {
     return date.toLocaleDateString();
   };
 
-  const followersText = Array.isArray(ticket?.followers)
-    ? `${ticket.followers.length} users`
-    : `${ticket?.followers ?? 0} users`;
+  const [followersCount, setFollowersCount] = useState(0);
 
   const creatorFallback = ticket?.email ? ticket.email.split("@")[0] : "-";
   const creatorText = getUserLabel(ticket?.creator, creatorFallback);
 
   const assigneesText = Array.isArray(ticket?.assignees)
-    ? ticket.assignees.map(getAssigneeLabel).filter(Boolean).join(", ")
+    ? ticket.assignees.map((a) => a?.name || a?.email || 'Unknown').join(", ")
     : "-";
   const details = [
     { label: "Title", value: ticket?.title || "-" },
     { label: "Category", value: ticket?.category || "-" },
     { label: "Deadline", value: formatDeadline(ticket?.deadline) },
-    { label: "Followers", value: followersText },
+    { label: "Followers", value: `${followersCount} user${followersCount !== 1 ? 's' : ''}` },
     { label: "Creator", value: creatorText },
     { label: "Assignees", value: assigneesText },
   ];
@@ -164,16 +165,24 @@ export default function Assignee_Ticket_Details() {
 
     setSaving(true);
     try {
-      setTicket((prev) =>
-        prev
-          ? {
-              ...prev,
-              status,
-              assignees: selectedAssignee ? [selectedAssignee] : prev.assignees,
-            }
-          : prev
-      );
-      setSaveMessage("Updated locally only.");
+      const payload = {
+        ticketId: ticket._id,
+        status,
+      };
+      if (selectedAssignee) {
+        payload.reassignedAssigneeId = selectedAssignee;
+      }
+      const response = await api.post("/assignee/saveTicket", payload);
+      const updatedTicket = response.data.ticket;
+      if (updatedTicket) {
+        setTicket(updatedTicket);
+        setStatus(updatedTicket.status || status);
+        setSavedStatus(updatedTicket.status || status);
+      }
+      setSaveMessage("Ticket updated successfully.");
+    } catch (error) {
+      console.error("Error saving ticket:", error);
+      setSaveMessage(error?.response?.data?.message || "Failed to save ticket.");
     } finally {
       setSaving(false);
     }
@@ -195,17 +204,17 @@ export default function Assignee_Ticket_Details() {
 
       const newComment = {
         ...response.data.comment,
-        user: response.data.comment?.user || {
-          email: response.data.email || userEmail,
+        user: {
+          email: userEmail,
           name: response.data.name || user?.name,
         },
         role: response.data.role || user?.role || "assignee",
         visibility: commentType,
       };
       if (commentType === "Public") {
-        setPublicComments((prev) => [newComment, ...prev]);
+        setPublicComments((prev) => [...prev, newComment]);
       } else {
-        setInternalComments((prev) => [newComment, ...prev]);
+        setInternalComments((prev) => [...prev, newComment]);
       }
       setCommentText("");
     } catch (error) {
@@ -260,12 +269,27 @@ export default function Assignee_Ticket_Details() {
                   <select
                     value={status}
                     onChange={(e) => setStatus(e.target.value)}
-                    className="w-full border border-gray-400 rounded-md px-3 py-1 text-sm max-w-[200px]"
+                    disabled={savedStatus === 'Solved' || savedStatus === 'Failed'}
+                    className="w-full border border-gray-400 rounded-md px-3 py-1 text-sm max-w-[200px] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <option>New</option>
-                    <option>In Progress</option>
-                    <option>Resolved</option>
-                    <option>Closed</option>
+                    {savedStatus === 'New' && (
+                      <>
+                        <option value="New">New</option>
+                        <option value="Solving">Solving</option>
+                        <option value="Solved">Solved</option>
+                        <option value="Failed">Failed</option>
+                      </>
+                    )}
+                    {savedStatus === 'Solving' && (
+                      <>
+                        <option value="Solving">Solving</option>
+                        <option value="Solved">Solved</option>
+                        <option value="Failed">Failed</option>
+                      </>
+                    )}
+                    {(savedStatus === 'Solved' || savedStatus === 'Failed') && (
+                      <option value={savedStatus}>{savedStatus}</option>
+                    )}
                   </select>
                 </div>
               </div>
@@ -284,9 +308,10 @@ export default function Assignee_Ticket_Details() {
                     onChange={(e) => setSelectedAssignee(e.target.value)}
                     className="border border-gray-400 rounded-md px-3 py-1 text-sm min-w-[200px]"
                   >
-                    {assigneeOptions.map((assignee, index) => (
-                      <option key={`${assignee}-${index}`} value={assignee}>
-                        {assignee}
+                    <option value="">Select assignee</option>
+                    {assigneeOptions.map((assignee) => (
+                      <option key={assignee._id} value={assignee._id}>
+                        {assignee.label}
                       </option>
                     ))}
                   </select>
@@ -348,7 +373,7 @@ export default function Assignee_Ticket_Details() {
                               {sender} | {role}
                             </p>
                             <div className="bg-gray-200 rounded-md px-3 py-1 text-sm">
-                              {comment?.comment}
+                              {comment?.comment || comment?.message}
                             </div>
                           </div>
                         </div>

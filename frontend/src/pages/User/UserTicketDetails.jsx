@@ -29,6 +29,7 @@ export default function UserTicketDetails() {
   const [commentSubmitting, setCommentSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [commentError, setCommentError] = useState("");
+  const [followersCount, setFollowersCount] = useState(0);
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const userEmail = user?.email || "user@gmail.com";
@@ -73,7 +74,7 @@ export default function UserTicketDetails() {
 
       try {
         setErrorMessage("");
-        const response = await api.get(`/assignee/ticketDetailsAsAdminOrAssignee/${encodeURIComponent(ticketId)}`);
+        const response = await api.get(`/user/ticketDetails/${encodeURIComponent(ticketId)}`);
         const ticketData = response.data.ticket;
 
         if (!ticketData) {
@@ -86,7 +87,14 @@ export default function UserTicketDetails() {
         }
 
         setTicket(ticketData);
-        setPublicComments(Array.isArray(response.data.publicComments) ? response.data.publicComments : []);
+
+        const apiPublic = Array.isArray(response.data.publicComments) ? response.data.publicComments : [];
+
+        const embedded = Array.isArray(ticketData.comments) ? ticketData.comments : [];
+        const embeddedPublic = embedded.filter((c) => c.type === "Public" || c.visibility === "Public");
+
+        setPublicComments([...apiPublic, ...embeddedPublic].sort((a, b) => new Date(a.createdAt || a.timestamp) - new Date(b.createdAt || b.timestamp)));
+        setFollowersCount(response.data.followersCount ?? 0);
         setCommentError("");
       } catch (error) {
         console.error("Error fetching ticket and comments:", error);
@@ -102,9 +110,7 @@ export default function UserTicketDetails() {
   const creatorFallback = ticket?.email ? ticket.email.split("@")[0] : "-";
   const creatorText = getUserLabel(ticket?.creator, creatorFallback);
 
-  const followersText = Array.isArray(ticket?.followers)
-    ? `${ticket.followers.length} users`
-    : `${ticket?.followers ?? 0} users`;
+  const followersText = `${followersCount} user${followersCount !== 1 ? 's' : ''}`;
 
   const assigneesText = Array.isArray(ticket?.assignees)
     ? ticket.assignees.map(getAssigneeLabel).filter(Boolean).join(", ")
@@ -134,15 +140,15 @@ export default function UserTicketDetails() {
 
       const newComment = {
         ...response.data.comment,
-        user: response.data.comment?.user || {
+        user: {
           email: userEmail,
-          name: user?.name,
+          name: response.data.name || user?.name,
         },
         role: response.data.role || user?.role || "user",
         visibility: "Public",
       };
 
-      setPublicComments((prev) => [newComment, ...prev]);
+      setPublicComments((prev) => [...prev, newComment]);
       setCommentText("");
     } catch (error) {
       console.error("Error submitting comment:", error);
@@ -209,7 +215,7 @@ export default function UserTicketDetails() {
               ) : (
                 publicComments.map((comment, index) => {
                   const sender = getCommentSender(comment);
-                  const role = comment?.role || comment?.senderRole || "User";
+                  const role = comment?.user?.role || comment?.role || comment?.senderRole || "Unknown";
                   const isUser =
                     sender.toLowerCase() === String(userEmail).toLowerCase() ||
                     sender.toLowerCase() === String(user?.name || "").toLowerCase();

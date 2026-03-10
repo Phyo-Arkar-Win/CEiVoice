@@ -109,7 +109,6 @@ export const getIndividualTicket = async (req, res) => {
 export const handleMergeSelection = async (req, res) => {
     const { tickets } = req.body;
     let mergedTicket = await AIMergeDraftTickets(tickets);
-    // console.log(mergedTicket);
     res.status(200).json({ message: 'Tickets merged successfully', mergedTicket: mergedTicket });
 };
 
@@ -144,12 +143,17 @@ export const handleUnlinkTickets = async (req, res) => {
 
 export const mergeDraftTickets = async (req, res) => {
     try {
-        const { mergedTicketId } = req.body;
-        const mergedTicket = new Ticket(mergedTicketId);
-        mergedTicket.status = "New";
-        // await Ticket.deleteMany({ _id: { $in: mergedTicket.mergedTickets } });
-        // await mergedTicket.updateOne({ $set: { status: 'New' } });
-        await mergedTicket.save();
+        const { mergedTicket } = req.body;
+        const mergedTicketDoc = new Ticket(mergedTicket);
+        mergedTicketDoc.status = "New";
+
+        const ticketsToMerge = await Ticket.find ({ _id: { $in: mergedTicketDoc.mergedTickets } })
+        const creatorList = ticketsToMerge.map(ticket => ticket.creator)
+        await mergedTicketDoc.updateOne({ $set: { status: 'New' } });
+        mergedTicketDoc.followers.push(...creatorList);
+        console.log(mergedTicketDoc)
+        await Ticket.deleteMany({ _id: { $in: mergedTicketDoc.mergedTickets.map(id => id._id) } });
+        await mergedTicketDoc.save();
         res.status(200).json({ message: 'Tickets merged successfully', data: mergedTicket });
     } catch (error) {
         res.status(500).json({
@@ -193,23 +197,28 @@ export const ticketDetailsAsAdminOrAssignee = async (req, res) => {
     const userId = req.user.id;
     const ticketId = req.params.id;
     try {
-        const ticket = await Ticket.findById(ticketId);
+        const ticket = await Ticket.findById(ticketId).populate('assignees', 'name email').populate('creator', 'name email');
         if (!ticket) {
             return res.status(404).json({ message: "Ticket not found" });
         }
+
+        // Get raw follower count from the unpopulated document (followers may contain emails, not ObjectIds)
+        const rawTicket = await Ticket.findById(ticketId).lean();
+        const followersCount = Array.isArray(rawTicket?.followers) ? rawTicket.followers.length : 0;
+
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
         const assignees = await User.find({ role: 'assignee' });
-        const publicComments = await Comment.find({ ticket: ticketId, visibility: 'Public' }).sort({ createdAt: -1 });
-        const internalComments = await Comment.find({ ticket: ticketId, visibility: 'Internal' }).sort({ createdAt: -1 });
+        const publicComments = await Comment.find({ ticket: ticketId, visibility: 'Public' }).populate('user', 'name email role').sort({ createdAt: -1 }); //edtbyRomulus
+        const internalComments = await Comment.find({ ticket: ticketId, visibility: 'Internal' }).populate('user', 'name email role').sort({ createdAt: -1 }); //edtbyRomulus
         const scopes = await Scope.find();
 
         if (user.role === 'admin') {
-            res.status(200).json({ ticket, publicComments, internalComments, scopes });
+            res.status(200).json({ ticket, publicComments, internalComments, scopes, followersCount });
         } else if (user.role === 'assignee') {
-            res.status(200).json({ ticket, publicComments, internalComments, scopes, assignees });
+            res.status(200).json({ ticket, publicComments, internalComments, scopes, assignees, followersCount });
         }
     } catch (error) {
         res.status(500).json({
@@ -221,12 +230,14 @@ export const ticketDetailsAsAdminOrAssignee = async (req, res) => {
 export const ticketDetailsAsUser = async (req, res) => {
     const ticketId = req.params.id;
     try {
-        const ticket = await Ticket.findById(ticketId);
+        const ticket = await Ticket.findById(ticketId).populate('assignees', 'name email').populate('creator', 'name email'); //edtbyRomulus
         if (!ticket) {
             return res.status(404).json({ message: 'Ticket not found' });
         }
-        const publicComments = await Comment.find({ ticket: ticketId, visibility: 'Public' }).sort({ createdAt: -1 });
-        res.status(200).json({ ticket, publicComments });
+        const rawTicket = await Ticket.findById(ticketId).lean();
+        const followersCount = Array.isArray(rawTicket?.followers) ? rawTicket.followers.length : 0;
+        const publicComments = await Comment.find({ ticket: ticketId, visibility: 'Public' }).populate('user', 'name email role').sort({ createdAt: -1 }); //edtbyRomulus
+        res.status(200).json({ ticket, publicComments, followersCount });
     } catch (error) {
         res.status(500).json({
             message: `Error viewing ticket: ${error.message}`,
@@ -241,27 +252,32 @@ export const saveAsAssignee = async (req, res) => {
         if (!ticket) {
             return res.status(404).json({ message: "Ticket not found" });
         }
-        const reassignedAssignee = await User.findById(reassignedAssigneeId);
 
-        if (status !== "Solved") {
-            ticket.status = status;
-        } else if (status === "Solved") {
+        const updateFields = {};
+
+        if (status === "Solved") {
             const commented = await Comment.find({ ticket: ticketId, user: req.user.id });
-
             if (!commented.length) {
                 return res.status(400).json({ message: 'You must comment before marking the ticket as solved' });
             }
-            ticket.status = status;
+        }
+        if (status) {
+            updateFields.status = status;
         }
 
-        if (reassignedAssignee) {
-            if (!ticket.assignees.includes(reassignedAssignee)) {
-                ticket.assignees.push(reassignedAssignee);
+        if (reassignedAssigneeId) {
+            const reassignedAssignee = await User.findById(reassignedAssigneeId);
+            if (reassignedAssignee && !ticket.assignees.map(String).includes(String(reassignedAssignee._id))) {
+                updateFields.$push = { assignees: reassignedAssignee._id };
             }
         }
 
-        await ticket.save();
-        res.status(200).json({ ticket });
+        const updatedTicket = await Ticket.findByIdAndUpdate(ticketId, updateFields, { new: true, runValidators: true })
+            .populate('assignees', 'name email')
+            .populate('creator', 'name email')
+            .populate('followers', 'name email');
+
+        res.status(200).json({ ticket: updatedTicket });
     } catch (error) {
         res.status(500).json({
             message: `Error updating ticket: ${error.message}`,
@@ -309,9 +325,8 @@ export const submitCommentAsAdminOrAssignee = async (req, res) => {
         });
         if ( visibility === 'Public' && user.role === 'assignee' ) {
             if ( ticket.status !== 'Solved' ) {
-                ticket.status = 'Solving';
+                await Ticket.findByIdAndUpdate(ticketId, { status: 'Solving' });
              }
-            await ticket.save();
         }
         await newComment.save();
         res.status(201).json({ message: 'Comment added successfully', comment: newComment, name: user.name, role: user.role });
