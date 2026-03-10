@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import UserNavbar from "@/components/userNavbar";
 import api from "../../api/axios";
 import { Search } from "lucide-react";
 
 export default function Dashboard() {
+
+  const navigate = useNavigate();
 
   const [tickets, setTickets] = useState([]);
 
@@ -54,7 +57,10 @@ export default function Dashboard() {
             Submit feedback, requests, or track your tickets easily.
           </p>
 
-          <button className="bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700">
+          <button 
+            onClick={() => navigate("/submit")}
+            className="bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 font-medium transition-colors cursor-pointer"
+          >
             Submit Request
           </button>
 
