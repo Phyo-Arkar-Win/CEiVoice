@@ -15,7 +15,7 @@ export default function Navbar({ title }) {
     };
     return (
         <>
-            <div className='navbar w-full flex justify-between items-center bg-surface px-4 py-3 border border-b-2 border-primary-500'>
+            <div className='w-full flex justify-between items-center bg-white px-4 py-3 border-b-2 border-orange-500'>
                 <div className='flex items-center gap-2'>
                     <img src={ceiLogo} alt='CEi Logo' className='w-15 h-15 object-contain' />
                     <h1 className='text-black text text-2xl font-semibold font-inter'>CEiVoice</h1>

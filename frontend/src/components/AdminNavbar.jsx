@@ -5,31 +5,22 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { BsGraphUp } from "react-icons/bs";
 import { IoMailOpenSharp, IoTicket, IoPerson } from "react-icons/io5";
 import { MdManageAccounts } from "react-icons/md";
-import { HiMenu, HiX } from "react-icons/hi";
 
 export default function AdminNavbar() {
-
   const [name, setName] = useState("");
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(true);
-
   const navigate = useNavigate();
 
   useEffect(() => {
-
     const user = JSON.parse(localStorage.getItem("user"));
-
-    if (user) setName(user.name);
-
+    if (user) {
+      setName(user.name);
+    }
   }, []);
 
   const handleLogout = () => {
-
     localStorage.removeItem("user");
     localStorage.removeItem("token");
-
     navigate("/login");
-
   };
 
   const linkStyle = ({ isActive }) =>
@@ -44,8 +35,15 @@ export default function AdminNavbar() {
       <div>
         {/* LOGO */}
         <div className="flex items-center gap-3 px-4 py-4 border-b border-orange-500">
-          <img src={ceiLogo} className="w-10 h-10"/>
-          <h1 className="font-bold text-lg">CEiVoice</h1>
+          <img
+            src={ceiLogo}
+            alt="CEi Logo"
+            className="w-10 h-10 object-contain"
+          />
+
+          <h1 className="text-xl font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            CEiVoice
+          </h1>
         </div>
 
         {/* USER */}
@@ -89,16 +87,7 @@ export default function AdminNavbar() {
             </span>
           </NavLink>
 
-        </nav>
-
-        <div
-          onClick={handleLogout}
-          className="mt-auto flex items-center gap-2 px-6 py-4 hover:bg-gray-200 cursor-pointer"
-        >
-          <IoIosLogOut className="text-xl"/>
-          {!collapsed && "Logout"}
         </div>
-
       </div>
 
       {/* LOGOUT */}

@@ -4,7 +4,6 @@ import AdminNavbar from "@/components/AdminNavbar";
 import api from "@/api/axios";
 
 export default function Draft() {
-
   const navigate = useNavigate();
 
   const [tickets, setTickets] = useState([]);
@@ -16,6 +15,7 @@ export default function Draft() {
     fetchAssignees();
   }, []);
 
+  // Fetch assignees from backend
   const fetchAssignees = async () => {
     try {
       const res = await api.get("/admin/assignee");
@@ -64,64 +64,35 @@ export default function Draft() {
       }));
 
       setTickets(formatted);
-
     } catch (err) {
       console.error("Error fetching drafts:", err);
     }
   };
 
+  // Toggle checkbox
   const toggleCheck = (index) => {
     const updated = [...tickets];
     updated[index].checked = !updated[index].checked;
     setTickets(updated);
   };
 
+  // Expand ticket
   const toggleExpand = (index) => {
     const updated = [...tickets];
     updated[index].expanded = !updated[index].expanded;
     setTickets(updated);
   };
 
+  // Handle form change
   const handleChange = (index, field, value) => {
     const updated = [...tickets];
     updated[index][field] = value;
     setTickets(updated);
   };
 
-  const updateTicket = async (ticket) => {
-
-    try {
-
-      const updates = {
-        title: ticket.title,
-        summary: ticket.summary,
-        category: ticket.category,
-        resolution_path: ticket.resolution_path,
-        deadline: ticket.deadline,
-        assignees: ticket.assignee ? [ticket.assignee] : undefined,
-      };
-
-      Object.keys(updates).forEach(
-        (key) => updates[key] === undefined && delete updates[key]
-      );
-
-      await api.patch(`/tickets/${ticket._id}`, updates);
-
-      alert("Draft updated successfully");
-
-      fetchDraftTickets();
-
-    } catch (err) {
-
-      console.error("Update error:", err);
-
-    }
-  };
-
+  // Submit Draft Ticket
   const submitTicket = async (ticket) => {
-
     try {
-
       const res = await api.put(`/tickets/${ticket._id}/submit`, {
         title: ticket.title,
         summary: ticket.summary,
@@ -132,20 +103,37 @@ export default function Draft() {
       });
 
       alert(res.data.message);
-
       fetchDraftTickets();
-
     } catch (err) {
-
       console.error("Submit error:", err);
+    }
+  };
 
+  // Merge Tickets
+  const handleMerge = async () => {
+    const selected = tickets
+      .filter((ticket) => ticket.checked)
+      .map((ticket) => ticket._id);
+
+    if (selected.length < 2) {
+      alert("Select at least 2 tickets to merge.");
+      return;
+    }
+
+    try {
+      const res = await api.put("/tickets/merge", {
+        ticketIds: selected,
+      });
+
+      alert(res.data.message);
+      fetchDraftTickets();
+    } catch (err) {
+      console.error("Merge error:", err);
     }
   };
 
   return (
-
-    <div className="flex flex-col md:flex-row min-h-screen bg-gray-200">
-
+    <div className="h-screen flex bg-gray-200 overflow-hidden">
       <AdminNavbar />
 
       <div className="flex-1 p-4 md:p-8 min-w-0 overflow-y-auto">
@@ -153,7 +141,6 @@ export default function Draft() {
 
         <div className="bg-gray-100 rounded-2xl shadow p-4 md:p-6 mb-4 w-full">
           {tickets.map((ticket, index) => (
-
             <div
               key={ticket._id}
               className="border-b border-gray-300 py-3 md:py-4 last:border-b-0"
@@ -173,7 +160,6 @@ export default function Draft() {
                   >
                     {ticket.title || "Untitled Ticket"}
                   </button>
-
                 </div>
 
                 <div className="flex gap-2 w-full md:w-auto mt-2 md:mt-0 pl-8 md:pl-0">
@@ -190,13 +176,8 @@ export default function Draft() {
                   >
                     Save
                   </button>
-
                 </div>
-
               </div>
-
-
-              {/* EXPANDED FORM */}
 
               {ticket.expanded && (
                 <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
@@ -262,7 +243,6 @@ export default function Draft() {
 
                   <div>
                     <label className="font-semibold block mb-1">Assignee</label>
-
                     <select
                       value={ticket.assignee}
                       onChange={(e) =>
@@ -270,7 +250,6 @@ export default function Draft() {
                       }
                       className="w-full border border-orange-400 rounded-full px-4 py-2"
                     >
-
                       <option value="">Select Assignee</option>
 
                       {assignees.map((person) => (
@@ -278,19 +257,13 @@ export default function Draft() {
                           {person.name}
                         </option>
                       ))}
-
                     </select>
-
                   </div>
 
                 </div>
-
               )}
-
             </div>
-
           ))}
-
         </div>
 
         <div className="bg-gray-100 rounded-2xl shadow p-4 md:p-5 mt-4 md:mt-6">
@@ -309,14 +282,10 @@ export default function Draft() {
                   <span className="font-semibold text-gray-500 md:text-gray-900 md:font-normal mb-1 md:mb-0">{ticket._id}</span>
                   <span>{ticket.title || "-"}</span>
                 </div>
-
               ))}
-
           </div>
 
-
-          <div className="flex justify-end mt-6">
-
+          <div className="flex justify-end mt-4">
             <button
               disabled={merging}
               onClick={async () => {
@@ -360,11 +329,8 @@ export default function Draft() {
               {merging ? "Merging..." : "+ Merge"}
             </button>
           </div>
-
         </div>
-
       </div>
-
     </div>
   );
 }

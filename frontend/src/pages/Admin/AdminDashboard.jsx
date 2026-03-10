@@ -37,12 +37,17 @@ export default function Admin_Dashboard() {
         const res = await api.get(`/admin/dashboard?period=${period}`);
         const data = res.data;
 
+        /* ---------- STATS ---------- */
+
         setStats({
           totalTickets: data.ticketsCreated,
           avgResolution: data.avgResolutionTime,
           activeTickets: data.activeTickets,
           topCategory: data.topCategory?.name || "-"
         });
+
+
+        /* ---------- CATEGORY CHART (dynamic but same design) ---------- */
 
         const categoryRow = { name: "Category" };
 
@@ -51,6 +56,9 @@ export default function Admin_Dashboard() {
         });
 
         setCategoryChart([categoryRow]);
+
+
+        /* ---------- STATUS CHART (dynamic but same design) ---------- */
 
         const statusRow = { name: "Status" };
 
@@ -72,6 +80,7 @@ export default function Admin_Dashboard() {
 
 
   return (
+    <>
     <div className="h-screen overflow-hidden">
     <div className="flex bg-gray-200 min-h-screen">
 
@@ -96,10 +105,11 @@ export default function Admin_Dashboard() {
             <option value={30}>Last 30 Days</option>
             <option value={90}>Last 3 Months</option>
           </select>
+
         </div>
 
+
         {/* STATS */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-10">
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8 md:mb-10">
 
@@ -199,7 +209,10 @@ export default function Admin_Dashboard() {
         </div>
 
       </div>
+
     </div>
-  </div>
+    </div>
+    </>
+
   );
 }

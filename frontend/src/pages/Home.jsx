@@ -1,16 +1,16 @@
 import React from "react";
 import Navbar from "../components/Navbar";
 import ceiLogo from "../assets/cei.png";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 
 export default function Home() {
   const navigate = useNavigate();
 
   return (
-    <>
+    <div className="w-full overflow-x-hidden">
       <Navbar title="Log in" />
 
-      <div className="min-h-screen bg-gray-200 p-8">
+      <div className="min-h-screen bg-gray-200 p-4 md:p-8">
 
         {/* Welcome Card */}
         <div className="bg-white rounded-2xl shadow p-6 mb-6 max-w-4xl mx-auto">
@@ -20,7 +20,10 @@ export default function Home() {
               alt="CEi Logo"
               className="w-12 h-12 object-contain"
             />
-            <h2 className="text-2xl font-bold">Welcome to CEi Voice</h2>
+
+            <h2 className="text-2xl font-bold">
+              Welcome to CEi Voice
+            </h2>
           </div>
 
           <p className="text-gray-600 mb-4">
@@ -38,11 +41,13 @@ export default function Home() {
         {/* Need Help Card */}
         <div className="max-w-4xl mx-auto">
           <div className="bg-white rounded-2xl shadow p-6 flex flex-col justify-between">
-            
+
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-2xl">❓</span>
-                <h3 className="text-xl font-bold">Need Help?</h3>
+                <h3 className="text-xl font-bold">
+                  Need Help?
+                </h3>
               </div>
 
               <p className="text-gray-600">
@@ -63,6 +68,6 @@ export default function Home() {
         </div>
 
       </div>
-    </>
+    </div>
   );
 }
