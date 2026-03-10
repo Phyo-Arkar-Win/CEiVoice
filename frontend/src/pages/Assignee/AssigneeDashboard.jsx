@@ -7,13 +7,14 @@ import api from "../../api/axios";
 export default function Assignee_Dashboard() {
 
   const navigate = useNavigate();
+  // const [ expanded, setExpanded ] = useState(false);
 
   const [tickets, setTickets] = useState([]);
   const [stats, setStats] = useState({
-    activeTickets: 0,
-    nearDeadlineTickets: 0,
-    dueTodayTickets: 0,
-    overdueTickets: 0,
+    active: 0,
+    nearDeadline: 0,
+    dueToday: 0,
+    pastDue: 0,
   });
 
   useEffect(() => {
@@ -44,7 +45,7 @@ export default function Assignee_Dashboard() {
     <AssigneeNavbar />
 
     {/* Main Content */}
-    <div className="flex-1 p-4 md:p-8 min-w-0 overflow-hidden">
+    <div className="ml-64 p-8">
 
       {/* Statistics */}
       <div className="bg-white shadow rounded-xl p-4 md:p-6 mb-6">
@@ -126,18 +127,11 @@ export default function Assignee_Dashboard() {
                       </button>
                     </td>
 
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="6" className="p-6 text-center text-gray-500 text-sm">
-                    No tickets found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+              </tr>
+            ))}
+          </tbody>
+
+        </table>
 
       </div>
 
