@@ -139,11 +139,14 @@ export const mergeDraftTickets = async (req, res) => {
         const { mergedTicket } = req.body;
         const mergedTicketDoc = new Ticket(mergedTicket);
         mergedTicketDoc.status = "New";
-        console.log(mergedTicketDoc)
-        // await Ticket.deleteMany({ _id: { $in: mergedTicket.mergedTickets } });
 
-        // await mergedTicket.updateOne({ $set: { status: 'New' } });
-        // await mergedTicket.save();
+        const ticketsToMerge = await Ticket.find ({ _id: { $in: mergedTicketDoc.mergedTickets } })
+        const creatorList = ticketsToMerge.map(ticket => ticket.creator)
+        await mergedTicketDoc.updateOne({ $set: { status: 'New' } });
+        mergedTicketDoc.followers.push(...creatorList);
+        console.log(mergedTicketDoc)
+        await Ticket.deleteMany({ _id: { $in: mergedTicketDoc.mergedTickets.map(id => id._id) } });
+        await mergedTicketDoc.save();
         res.status(200).json({ message: 'Tickets merged successfully', data: mergedTicket });
     } catch (error) {
         res.status(500).json({
