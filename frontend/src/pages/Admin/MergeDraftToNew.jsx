@@ -77,9 +77,6 @@ export default function MergeDraftToNew() {
   // Unmerge
   const unmergeUser = async (ticketId) => {
 
-    // console.log("Attempting to unmerge ticket ID:", ticketId);
-    // console.log("Current merged ticket ID:", mergedTicket._id);
-
   try {
     const res = await api.post("/tickets/merge/unlink", {
       mergedTicket: mergedTicket,
@@ -99,7 +96,7 @@ export default function MergeDraftToNew() {
         description: ticket.summary || ""
       }));
 
-    setMergedUsers(updatedUsers);
+    setMergedUsers(prev => prev.filter(user => user.id !== ticketId));
 
   } catch (error) {
 
@@ -112,7 +109,7 @@ export default function MergeDraftToNew() {
   // Submit merged ticket
   const handleSubmit = async () => {
 
-    const payload = {
+    const mergedTicketData = {
       title,
       category,
       deadline,
@@ -122,11 +119,21 @@ export default function MergeDraftToNew() {
       mergedTickets: mergedUsers.map(u => u.id)
     };
 
+    const payload = {
+      mergedTicket: mergedTicketData
+    }
+
+    console.log("payload:", payload)
+
     try {
 
-      await api.post("/tickets/merge", payload);
+      const res = await api.post("/tickets/merge", payload);
+
+      console.log("merge result:", res.data)
 
       alert("Merged ticket submitted!");
+
+      navigate("/tickets")
 
     } catch (error) {
 

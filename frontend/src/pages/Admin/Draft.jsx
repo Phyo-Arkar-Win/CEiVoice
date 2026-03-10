@@ -303,7 +303,7 @@ export default function Draft() {
       const res = await api.post("/tickets/merge/selection", {
         tickets: selectedTickets
       });
-
+      console.log(tickets)
       navigate("/drafts/merge", {
         state: {
           mergedTicket: res.data.mergedTicket,
