@@ -4,6 +4,7 @@ import AdminNavbar from "@/components/AdminNavbar";
 import api from "@/api/axios";
 
 export default function Draft() {
+
   const navigate = useNavigate();
 
   const [tickets, setTickets] = useState([]);
@@ -15,43 +16,15 @@ export default function Draft() {
     fetchAssignees();
   }, []);
 
-  // Fetch assignees from backend
   const fetchAssignees = async () => {
-  try {
-    const res = await api.get("/admin/assignee");
-    setAssignees(res.data.data || res.data);
-  } catch (err) {
-    console.error("Error fetching assignees:", err);
-  }
-};
+    try {
+      const res = await api.get("/admin/assignee");
+      setAssignees(res.data.data || res.data);
+    } catch (err) {
+      console.error("Error fetching assignees:", err);
+    }
+  };
 
- const updateTicket = async (ticket) => {
-  try {
-    const updates = {
-      title: ticket.title,
-      summary: ticket.summary,
-      category: ticket.category,
-      resolution_path: ticket.resolution_path,
-      deadline: ticket.deadline,
-      assignees: ticket.assignee ? [ticket.assignee] : undefined,
-    };
-
-    // remove undefined values so only changed fields are sent
-    Object.keys(updates).forEach(
-      (key) => updates[key] === undefined && delete updates[key]
-    );
-
-    await api.patch(`/tickets/${ticket._id}`, updates);
-
-    alert("Draft updated successfully");
-    fetchDraftTickets(); // refresh list
-
-  } catch (err) {
-    console.error("Update error:", err);
-  }
-};
-
-  // Fetch Draft Tickets
   const fetchDraftTickets = async () => {
     try {
       const res = await api.get("/tickets/drafts");
@@ -64,35 +37,64 @@ export default function Draft() {
       }));
 
       setTickets(formatted);
+
     } catch (err) {
       console.error("Error fetching drafts:", err);
     }
   };
 
-  // Toggle checkbox
   const toggleCheck = (index) => {
     const updated = [...tickets];
     updated[index].checked = !updated[index].checked;
     setTickets(updated);
   };
 
-  // Expand ticket
   const toggleExpand = (index) => {
     const updated = [...tickets];
     updated[index].expanded = !updated[index].expanded;
     setTickets(updated);
   };
 
-  // Handle form change
   const handleChange = (index, field, value) => {
     const updated = [...tickets];
     updated[index][field] = value;
     setTickets(updated);
   };
 
-  // Submit Draft Ticket
-  const submitTicket = async (ticket) => {
+  const updateTicket = async (ticket) => {
+
     try {
+
+      const updates = {
+        title: ticket.title,
+        summary: ticket.summary,
+        category: ticket.category,
+        resolution_path: ticket.resolution_path,
+        deadline: ticket.deadline,
+        assignees: ticket.assignee ? [ticket.assignee] : undefined,
+      };
+
+      Object.keys(updates).forEach(
+        (key) => updates[key] === undefined && delete updates[key]
+      );
+
+      await api.patch(`/tickets/${ticket._id}`, updates);
+
+      alert("Draft updated successfully");
+
+      fetchDraftTickets();
+
+    } catch (err) {
+
+      console.error("Update error:", err);
+
+    }
+  };
+
+  const submitTicket = async (ticket) => {
+
+    try {
+
       const res = await api.put(`/tickets/${ticket._id}/submit`, {
         title: ticket.title,
         summary: ticket.summary,
@@ -103,50 +105,46 @@ export default function Draft() {
       });
 
       alert(res.data.message);
+
       fetchDraftTickets();
+
     } catch (err) {
+
       console.error("Submit error:", err);
-    }
-  };
 
-  // Merge Tickets
-  const handleMerge = async () => {
-    const selected = tickets
-      .filter((ticket) => ticket.checked)
-      .map((ticket) => ticket._id);
-
-    if (selected.length < 2) {
-      alert("Select at least 2 tickets to merge.");
-      return;
-    }
-
-    try {
-      const res = await api.put("/tickets/merge", {
-        ticketIds: selected,
-      });
-
-      alert(res.data.message);
-      fetchDraftTickets();
-    } catch (err) {
-      console.error("Merge error:", err);
     }
   };
 
   return (
-    <div className="h-screen flex bg-gray-200 overflow-hidden">
+
+    <div className="flex flex-col md:flex-row min-h-screen bg-gray-200">
+
       <AdminNavbar />
 
-      <div className="flex-1 p-8 overflow-y-auto">
-        <h1 className="text-3xl font-bold mb-4">Draft Tickets</h1>
+      <div className="flex-1 p-4 md:p-8 overflow-y-auto">
 
-        <div className="bg-gray-100 rounded-2xl shadow p-4 mb-4">
+        <h1 className="text-2xl md:text-3xl font-bold mb-6">
+          Draft Tickets
+        </h1>
+
+
+        {/* ================== DRAFT LIST ================== */}
+
+        <div className="bg-gray-100 rounded-2xl shadow p-4 mb-6">
+
           {tickets.map((ticket, index) => (
+
             <div
               key={ticket._id}
-              className="border-b border-gray-300 py-2 last:border-b-0"
+              className="border-b border-gray-300 py-4 last:border-b-0"
             >
-              <div className="flex items-center justify-between">
+
+              {/* HEADER */}
+
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+
                 <div className="flex items-center gap-3">
+
                   <input
                     type="checkbox"
                     checked={ticket.checked}
@@ -156,31 +154,39 @@ export default function Draft() {
 
                   <button
                     onClick={() => toggleExpand(index)}
-                    className="font-semibold hover:text-orange-600"
+                    className="font-semibold hover:text-orange-600 text-left"
                   >
                     {ticket.title}
                   </button>
+
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex gap-2">
+
                   <button
                     onClick={() => toggleExpand(index)}
-                    className="bg-gray-300 px-4 py-2 rounded-md hover:bg-gray-400"
+                    className="bg-gray-300 px-3 py-2 rounded-md hover:bg-gray-400 text-sm"
                   >
                     Edit
                   </button>
 
                   <button
                     onClick={() => updateTicket(ticket)}
-                    className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600"
+                    className="bg-orange-500 text-white px-3 py-2 rounded-md hover:bg-orange-600 text-sm"
                   >
                     Save
                   </button>
+
                 </div>
+
               </div>
 
+
+              {/* EXPANDED FORM */}
+
               {ticket.expanded && (
-                <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-4">
+
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
 
                   <div>
                     <label className="font-semibold block mb-1">Title</label>
@@ -242,6 +248,7 @@ export default function Draft() {
 
                   <div>
                     <label className="font-semibold block mb-1">Assignee</label>
+
                     <select
                       value={ticket.assignee}
                       onChange={(e) =>
@@ -249,6 +256,7 @@ export default function Draft() {
                       }
                       className="w-full border border-orange-400 rounded-full px-4 py-2"
                     >
+
                       <option value="">Select Assignee</option>
 
                       {assignees.map((person) => (
@@ -256,80 +264,104 @@ export default function Draft() {
                           {person.name}
                         </option>
                       ))}
+
                     </select>
+
                   </div>
 
                 </div>
+
               )}
+
             </div>
+
           ))}
+
         </div>
 
+
+        {/* ================== MERGE SECTION ================== */}
+
         <div className="bg-gray-100 rounded-2xl shadow p-5">
-          <h2 className="text-xl font-bold mb-3">Merge Selected Requests</h2>
+
+          <h2 className="text-xl font-bold mb-4">
+            Merge Selected Requests
+          </h2>
 
           <div className="grid grid-cols-2 font-semibold mb-2">
             <span>Ticket ID</span>
             <span>Title</span>
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-1 text-sm">
+
             {tickets
               .filter((ticket) => ticket.checked)
               .map((ticket) => (
-                <div key={ticket._id} className="grid grid-cols-2 text-sm">
-                  <span>{ticket._id}</span>
-                  <span>{ticket.title || "-"}</span>
+
+                <div key={ticket._id} className="grid grid-cols-2">
+                  <span className="truncate">{ticket._id}</span>
+                  <span className="truncate">{ticket.title || "-"}</span>
                 </div>
+
               ))}
+
           </div>
 
-          <div className="flex justify-end mt-4">
+
+          <div className="flex justify-end mt-6">
+
             <button
-  disabled={merging}
-  onClick={async () => {
+              disabled={merging}
+              onClick={async () => {
 
-    const selectedTickets = tickets.filter(ticket => ticket.checked);
+                const selectedTickets = tickets.filter(ticket => ticket.checked);
 
-    if (selectedTickets.length < 2) {
-      alert("Select at least 2 tickets to merge.");
-      return;
-    }
+                if (selectedTickets.length < 2) {
+                  alert("Select at least 2 tickets to merge.");
+                  return;
+                }
 
-    try {
+                try {
 
-      setMerging(true);
+                  setMerging(true);
 
-      const res = await api.post("/tickets/merge/selection", {
-        tickets: selectedTickets
-      });
-      console.log(tickets)
-      navigate("/drafts/merge", {
-        state: {
-          mergedTicket: res.data.mergedTicket,
-          tickets: selectedTickets
-        }
-      });
+                  const res = await api.post("/tickets/merge/selection", {
+                    tickets: selectedTickets
+                  });
 
-    } catch (err) {
+                  navigate("/drafts/merge", {
+                    state: {
+                      mergedTicket: res.data.mergedTicket,
+                      tickets: selectedTickets
+                    }
+                  });
 
-      console.error("Merge selection error:", err);
+                } catch (err) {
 
-    } finally {
+                  console.error("Merge selection error:", err);
 
-      setMerging(false);
+                } finally {
 
-    }
+                  setMerging(false);
 
-  }}
-  className={`px-4 py-2 rounded text-white cursor-pointer 
-  ${merging ? "bg-gray-400" : "bg-orange-600"}`}
->
-  {merging ? "Merging..." : "+ Merge"}
-</button>
+                }
+
+              }}
+              className={`px-5 py-2 rounded text-white 
+              ${merging ? "bg-gray-400" : "bg-orange-600 hover:bg-orange-700"}`}
+            >
+
+              {merging ? "Merging..." : "+ Merge"}
+
+            </button>
+
           </div>
+
         </div>
+
       </div>
+
     </div>
   );
 }

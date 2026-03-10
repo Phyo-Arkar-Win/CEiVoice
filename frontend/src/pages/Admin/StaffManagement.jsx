@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import AdminNavbar from "@/components/AdminNavbar";
+import AdminNavbar from "../../components/AdminNavbar";
 import api from "../../api/axios";
 import { LuPencil } from "react-icons/lu";
 
@@ -34,9 +34,7 @@ export default function StaffManagement() {
     try {
       const res = await api.get("/scopes");
 
-      // Backend returns array of scope objects
       const scopeNames = res.data.map((s) => s.name);
-
       setOptions(scopeNames);
 
     } catch (err) {
@@ -48,6 +46,7 @@ export default function StaffManagement() {
   // Select Scope
   // =========================
   const handleSelect = (e) => {
+
     const value = e.target.value;
 
     if (value === "NEW_SCOPE") {
@@ -61,7 +60,7 @@ export default function StaffManagement() {
   };
 
   // =========================
-  // Add Scope (save to DB)
+  // Add Scope
   // =========================
   const addScope = async () => {
 
@@ -88,6 +87,7 @@ export default function StaffManagement() {
   // Assign User
   // =========================
   const assignUser = async () => {
+
     try {
 
       await api.post("/recruit", {
@@ -116,29 +116,29 @@ export default function StaffManagement() {
   }, []);
 
   return (
-    <div className="min-h-screen flex bg-gray-100">
+
+    <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
 
       <AdminNavbar />
 
-      <div className="flex-1 p-6">
+      <div className="flex-1 p-4 md:p-8">
 
-        <h1 className="text-3xl font-bold mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold mb-6">
           Staff Management
         </h1>
 
-        {/* =========================
-           Add Assignee
-        ========================== */}
+        {/* ================= Add Assignee ================= */}
 
-        <div className="bg-white rounded-xl shadow p-6 mb-6">
+        <div className="bg-white rounded-xl shadow p-6 mb-8">
 
-          <h2 className="font-semibold text-2xl mb-6">
+          <h2 className="font-semibold text-xl mb-6">
             Add new Assignee
           </h2>
 
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
             {/* Name */}
+
             <div>
               <label className="text-sm text-gray-600">
                 Full Name
@@ -147,12 +147,13 @@ export default function StaffManagement() {
               <input
                 type="text"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e)=>setName(e.target.value)}
                 className="w-full mt-1 px-3 py-2 bg-gray-200 rounded"
               />
             </div>
 
             {/* Email */}
+
             <div>
               <label className="text-sm text-gray-600">
                 Email
@@ -161,12 +162,13 @@ export default function StaffManagement() {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e)=>setEmail(e.target.value)}
                 className="w-full mt-1 px-3 py-2 bg-gray-200 rounded"
               />
             </div>
 
             {/* Scope */}
+
             <div className="space-y-3">
 
               <label className="text-sm text-gray-600">
@@ -180,7 +182,7 @@ export default function StaffManagement() {
 
                 <option>Select Scope</option>
 
-                {options.map((opt, index) => (
+                {options.map((opt, index)=>(
                   <option key={index} value={opt}>
                     {opt}
                   </option>
@@ -193,22 +195,22 @@ export default function StaffManagement() {
               </select>
 
               {/* Selected Tags */}
+
               <div className="flex flex-wrap gap-2">
 
-                {selected.map((item, index) => (
-
+                {selected.map((item,index)=>(
                   <span
                     key={index}
                     className="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-sm"
                   >
                     {item}
                   </span>
-
                 ))}
 
               </div>
 
               {/* New Scope Input */}
+
               {showInput && (
 
                 <div className="flex gap-2">
@@ -216,7 +218,7 @@ export default function StaffManagement() {
                   <input
                     type="text"
                     value={newScope}
-                    onChange={(e) => setNewScope(e.target.value)}
+                    onChange={(e)=>setNewScope(e.target.value)}
                     placeholder="Enter new scope"
                     className="border px-3 py-2 rounded w-full"
                   />
@@ -238,16 +240,14 @@ export default function StaffManagement() {
 
           <button
             onClick={assignUser}
-            className="mt-6 bg-orange-500 text-white px-5 py-2 rounded hover:bg-orange-600"
+            className="mt-6 bg-orange-500 text-white px-6 py-2 rounded hover:bg-orange-600"
           >
             Assign
           </button>
 
         </div>
 
-        {/* =========================
-           Existing Assignees
-        ========================== */}
+        {/* ================= Existing Assignees ================= */}
 
         <div className="bg-white rounded-xl shadow p-6">
 
@@ -255,51 +255,54 @@ export default function StaffManagement() {
             Existing Assignees
           </h2>
 
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
 
-            <thead className="text-gray-600">
-              <tr className="text-left">
-                <th className="pb-3">Name</th>
-                <th className="pb-3">Email</th>
-                <th className="pb-3">Scope</th>
-                <th className="pb-3">Actions</th>
-              </tr>
-            </thead>
+            <table className="w-full text-sm min-w-[600px]">
 
-            <tbody>
-
-              {assignees.map((user) => (
-
-                <tr key={user._id} className="border-t text-lg">
-
-                  <td className="py-2">
-                    {user.name}
-                  </td>
-
-                  <td>
-                    {user.email}
-                  </td>
-
-                  <td>
-                    {user.scopes?.map(scope => scope.name).join(", ")}
-                  </td>
-
-                  <td>
-                    <LuPencil className="text-xl cursor-pointer" />
-                  </td>
-
+              <thead className="text-gray-600">
+                <tr className="text-left">
+                  <th className="pb-3">Name</th>
+                  <th className="pb-3">Email</th>
+                  <th className="pb-3">Scope</th>
+                  <th className="pb-3">Actions</th>
                 </tr>
+              </thead>
 
-              ))}
+              <tbody>
 
-            </tbody>
+                {assignees.map((user)=>(
+                  <tr key={user._id} className="border-t">
 
-          </table>
+                    <td className="py-3">
+                      {user.name}
+                    </td>
+
+                    <td>
+                      {user.email}
+                    </td>
+
+                    <td>
+                      {user.scopes?.map(s=>s.name).join(", ")}
+                    </td>
+
+                    <td>
+                      <LuPencil className="text-xl cursor-pointer"/>
+                    </td>
+
+                  </tr>
+                ))}
+
+              </tbody>
+
+            </table>
+
+          </div>
 
         </div>
 
       </div>
 
     </div>
+
   );
 }
