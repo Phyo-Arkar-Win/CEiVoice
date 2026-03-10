@@ -1,256 +1,323 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import AssigneeNavbar from "@/components/AssigneeNavbar";
+  import { useEffect, useState } from "react";
+  import { useNavigate, useParams } from "react-router-dom";
+  import AssigneeNavbar from "@/components/AssigneeNavbar";
+  import api from "@/api/axios";
 
-export default function Assignee_Ticket_Details() {
-  const navigate = useNavigate();
-  const [collapsed, setCollapsed] = useState(false);
+  export default function Assignee_Ticket_Details() {
 
-  const [ticket, setTicket] = useState(null);
-  const [comments, setComments] = useState([]);
-  const [status, setStatus] = useState("New");
-  const [selectedAssignee, setSelectedAssignee] = useState("");
-  const [commentText, setCommentText] = useState("");
-  const [commentType, setCommentType] = useState("Internal");
-  const [activeTab, setActiveTab] = useState("Public");
+    const navigate = useNavigate();
+    const { ticketId } = useParams();
+    const [scopes, setScopes] = useState([]);
 
-  const [loading, setLoading] = useState(true);
+    const [ticket, setTicket] = useState(null);
+    const [publicComments, setPublicComments] = useState([]);
+    const [internalComments, setInternalComments] = useState([]);
+    const [assignees, setAssignees] = useState([]);
 
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const userEmail = user?.email || "assignee@gmail.com";
+    const [status, setStatus] = useState("");
+    const [selectedAssignee, setSelectedAssignee] = useState("");
+
+    const [commentText, setCommentText] = useState("");
+    const [commentType, setCommentType] = useState("Public");
+    const [activeTab, setActiveTab] = useState("Public");
+
+    const [originalStatus, setOriginalStatus] = useState("");
+
+    const [loading, setLoading] = useState(true);
+
+    const getScopeNames = (scopeIds) => {
+  if (!scopeIds || scopeIds.length === 0) return "No Scope";
+
+  const names = scopes
+    .filter((s) => scopeIds.includes(s._id.toString()))
+    .map((s) => s.name);
+
+  return names.length ? names.join(", ") : "No Scope";
+};
+    // FETCH DATA
+    useEffect(() => {
+      const fetchTicket = async () => {
+        try {
+          const res = await api.get(`/assignee/ticketDetails/${ticketId}`);
+          console.log(res.data)
+          setTicket(res.data.ticket);
+          setPublicComments(res.data.publicComments || []);
+          setInternalComments(res.data.internalComments || []);
+          setAssignees(res.data.assignees || []);
+
+          setStatus(res.data.ticket.status);
+          setScopes(res.data.scopes || []);
+
+          setStatus(res.data.ticket.status);
+          setOriginalStatus(res.data.ticket.status);
+          
+
+        } catch (err) {
+          console.log(err);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchTicket();
+    }, [ticketId]);
 
 
-  const getAssigneeLabel = (assignee) =>
-    typeof assignee === "string" ? assignee : assignee?.email || assignee?.name || "";
+    // COMMENTS LIST
+    const comments =
+      activeTab === "Public" ? publicComments : internalComments;
 
-  const getUserLabel = (value, fallback = "-") =>
-    typeof value === "string" ? value : value?.email || value?.name || fallback;
+    
 
-  const applyTicketData = (data) => {
-    setTicket(data);
-    setComments(Array.isArray(data.comments) ? data.comments : []);
-    setStatus(data.status || "New");
-    setSelectedAssignee(getAssigneeLabel(data.assignees?.[0]));
-  };
+    // SUBMIT COMMENT
+    const handleSubmitComment = async () => {
+      if (!commentText) return;
 
-  useEffect(() => {
-    applyTicketData(fallbackTicket);
-    setLoading(false);
-  }, []);
+      try {
+        const res = await api.post("/assignee/submitComment", {
+          ticketId,
+          commentText,
+          visibility: commentType,
+        });
 
-  const assigneeOptions = useMemo(() => {
-    if (!Array.isArray(ticket?.assignees)) return [];
-    return ticket.assignees.map(getAssigneeLabel).filter(Boolean);
-  }, [ticket]);
+        if (commentType === "Public") {
+          setPublicComments([res.data.comment, ...publicComments]);
+        } else {
+          setInternalComments([res.data.comment, ...internalComments]);
+        }
 
-  const filteredComments = comments.filter(
-    (comment) => (comment?.type || "Public").toLowerCase() === activeTab.toLowerCase()
-  );
+        setCommentText("");
 
-  const followersText = Array.isArray(ticket?.followers)
-    ? `${ticket.followers.length} users`
-    : `${ticket?.followers ?? 0} users`;
-
-  const creatorText = getUserLabel(ticket?.creator);
-
-  const assigneesText = Array.isArray(ticket?.assignees)
-    ? ticket.assignees.map(getAssigneeLabel).filter(Boolean).join(", ")
-    : "-";
-  const details = [
-    { label: "Title", value: ticket?.title || "-" },
-    { label: "Category", value: ticket?.category || "-" },
-    { label: "Deadline", value: ticket?.deadline || "-" },
-    { label: "Followers", value: followersText },
-    { label: "Creator", value: creatorText },
-    { label: "Assignees", value: assigneesText },
-  ];
-  const commentTabs = ["Public", "Internal"];
-
-  const handleSaveTicket = () => {
-    setTicket((prev) =>
-      prev
-        ? {
-            ...prev,
-            status,
-            assignees: selectedAssignee ? [selectedAssignee] : prev.assignees,
-          }
-        : prev
-    );
-  };
-
-  const handleSubmitComment = () => {
-    const message = commentText.trim();
-    if (!message) return;
-    const newComment = {
-      message,
-      type: commentType,
-      senderEmail: userEmail,
-      senderRole: "Assignee",
-      id: `temp-${Date.now()}`,
+      } catch (err) {
+        console.log(err);
+      }
     };
-    setComments((prev) => [...prev, newComment]);
-    setCommentText("");
-  };
+
+    const handleSave = async () => {
+  try {
+
+    await api.post("/assignee/saveTicket", {
+      ticketId,
+      status,
+      reassignedAssigneeId: selectedAssignee
+    });
+    alert("Ticket updated successfully");
+
+  } catch (err) {
+    console.log(err);
+  }
+};
+  const statusFlow = {
+  New: ["New", "Solving", "Solved", "Failed"],
+  Solving: ["Solving", "Solved", "Failed"],
+  Solved: ["Solved", "Failed"],
+  Failed: ["Failed"],
+};
+
+    if (loading) return <p>Loading...</p>;
+    if (!ticket) {
+    return <div className="p-6 text-lg">Loading ticket...</div>;
+  }
+    return (
+      <div className="min-h-screen flex bg-gray-100">
+        <AssigneeNavbar />
+
+        <div className="flex-1 p-6 ml-64">
+
+          <div className="bg-white border rounded-lg shadow-sm p-6">
+
+            <button
+              onClick={() => navigate("/assignee_dashboard")}
+              className="text-orange-500 mb-3"
+            >
+              ← Back
+            </button>
+
+            <h1 className="text-xl font-semibold text-center mb-6">
+              {ticket.title}
+            </h1>
 
 
-  return (
-    <div className="min-h-screen flex bg-gray-100">
-      <AssigneeNavbar collapsed={collapsed} setCollapsed={setCollapsed} />
+            {/* Ticket Details */}
 
-      <div
-        className={`flex-1 transition-all duration-300 p-4 md:p-6 ${
-          collapsed ? "ml-20" : "ml-64"
-        }`}
-      >
-        <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6">
-          <button
-            onClick={() => navigate("/assignee_dashboard")}
-            className="text-orange-500 text-lg hover:text-orange-600 mb-2"
-          >
-            ← Back
-          </button>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-sm">
 
-          <h1 className="text-xl font-semibold text-center mb-6">{fallbackTicket.id}</h1>
-
-          {loading ? (
-            <p className="text-gray-600 text-center text-sm">Loading ticket...</p>
-          ) : (
-            <>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 text-sm space-y-2">
-                  {details.map((item) => (
-                    <p key={item.label}>
-                      <span className="font-semibold">{item.label}:</span> {item.value}
-                    </p>
-                  ))}
-                </div>
-
-                <div>
-                  <label className="font-semibold text-sm block mb-1">Status</label>
-                  <select
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value)}
-                    className="w-full border border-gray-400 rounded-md px-3 py-1 text-sm max-w-[200px]"
-                  >
-                    <option>New</option>
-                    <option>In Progress</option>
-                    <option>Resolved</option>
-                    <option>Closed</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="mt-6">
-                <p className="text-sm">
-                  <span className="font-semibold">Issue:</span> {ticket?.issue || "-"}
+              <div className="lg:col-span-2 space-y-2">
+                <p><b>Title:</b> {ticket.title}</p>
+                <p><b>Category:</b> {ticket.category}</p>
+                <p><b>Deadline:</b> {ticket.deadline}</p>
+                <p><b>Followers:</b> {ticket.followers?.length || 0}</p>
+                <p><b>Creator:</b> {ticket.creator?.email}</p>
+                <p>
+                  <b>Assignees:</b>{" "}
+                  {ticket.assignees?.map(a => a.name).join(", ")}
                 </p>
               </div>
 
-              <div className="mt-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <label className="font-semibold text-sm">Reassign to</label>
-                  <select
-                    value={selectedAssignee}
-                    onChange={(e) => setSelectedAssignee(e.target.value)}
-                    className="border border-gray-400 rounded-md px-3 py-1 text-sm min-w-[200px]"
-                  >
-                    {assigneeOptions.map((assignee, index) => (
-                      <option key={`${assignee}-${index}`} value={assignee}>
-                        {assignee}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+
+              {/* STATUS */}
+
+              <div>
+                <label className="font-semibold text-sm block mb-1">
+                  Status
+                </label>
+
+                <select
+  value={status}
+  onChange={(e) => setStatus(e.target.value)}
+  disabled={originalStatus === "Failed"}
+  className="border px-3 py-1 rounded"
+>
+
+  {statusFlow[originalStatus].map((s) => (
+    <option key={s} value={s}>
+      {s}
+    </option>
+  ))}
+
+</select>
+              </div>
+            </div>
+
+
+            {/* ISSUE */}
+
+            <div className="mt-6">
+              <p><b>Issue:</b> {ticket.issue}</p>
+            </div>
+
+
+            {/* REASSIGN */}
+
+            <div className="mt-6 flex justify-between items-center">
+
+              <div className="flex gap-3 items-center">
+                <label className="font-semibold text-sm">
+                  Reassign to
+                </label>
+
+                <select
+                  value={selectedAssignee}
+                  onChange={(e) => setSelectedAssignee(e.target.value)}
+                  className="border px-3 py-1 rounded"
+                >
+                  <option value="" disabled>
+                    Select Assignee
+                  </option>
+                  {assignees.map((a) => (
+                    <option key={a._id} value={a._id}>
+                      {a.name} - ({getScopeNames(a.scopes)})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <button
+              onClick={handleSave}
+              className="bg-orange-500 text-white px-6 py-1 rounded">
+                Save
+              </button>
+
+            </div>
+
+
+
+            {/* COMMENTS */}
+
+            <div className="border-t mt-8 pt-6">
+
+              <h2 className="text-lg font-semibold mb-3">
+                Comments
+              </h2>
+
+
+              {/* TABS */}
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setActiveTab("Public")}
+                  className={`px-3 py-1 border ${
+                    activeTab === "Public"
+                      ? "border-orange-500"
+                      : ""
+                  }`}
+                >
+                  Public
+                </button>
 
                 <button
-                  onClick={handleSaveTicket}
-                  className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-1 rounded-md text-sm"
+                  onClick={() => setActiveTab("Internal")}
+                  className={`px-3 py-1 border ${
+                    activeTab === "Internal"
+                      ? "border-orange-500"
+                      : ""
+                  }`}
                 >
-                  Save
+                  Internal
                 </button>
               </div>
 
-              <div className="border-t border-gray-300 mt-8 pt-6">
-                <h2 className="text-lg font-semibold mb-3">Comments</h2>
 
-                <div className="flex gap-2">
-                  {commentTabs.map((tab) => (
-                    <button
-                      key={tab}
-                      onClick={() => setActiveTab(tab)}
-                      className={`px-3 py-1 text-sm rounded-t border ${
-                        activeTab === tab
-                          ? "bg-white border-orange-500"
-                          : "bg-gray-200 border-gray-300"
-                      }`}
-                    >
-                      {tab}
-                    </button>
-                  ))}
-                </div>
+              {/* COMMENT LIST */}
 
-                <div className="border border-gray-300 bg-white rounded-b-lg rounded-tr-lg p-4 h-[240px] overflow-y-auto">
-                  {filteredComments.length === 0 ? (
-                    <p className="text-gray-500 text-sm">
-                      No {activeTab.toLowerCase()} comments yet.
+              <div className="border p-4 h-[240px] overflow-y-auto">
+
+                {comments.map((c) => (
+                  <div key={c._id} className="mb-3">
+
+                    <p className="text-xs text-gray-500">
+                      {c.user?.email}
                     </p>
-                  ) : (
-                    filteredComments.map((comment, index) => {
-                      const role = comment?.senderRole || comment?.role || "Follower";
-                      const sender = comment?.senderEmail || comment?.email || "someone@gmail.com";
-                      const isAssignee =
-                        String(role).toLowerCase() === "assignee" ||
-                        sender.toLowerCase() === String(userEmail).toLowerCase();
 
-                      return (
-                        <div
-                          key={comment?.id || index}
-                          className={`mb-3 flex ${isAssignee ? "justify-end" : "justify-start"}`}
-                        >
-                          <div className="max-w-[70%]">
-                            <p className="text-xs text-gray-600 mb-1">
-                              {sender} | {role}
-                            </p>
-                            <div className="bg-gray-200 rounded-md px-3 py-1 text-sm">
-                              {comment?.message}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
+                    <div className="bg-gray-200 px-3 py-1 rounded">
+                      {c.comment}
+                    </div>
 
-                <div className="mt-4 flex">
-                  <input
-                    type="text"
-                    value={commentText}
-                    onChange={(e) => setCommentText(e.target.value)}
-                    placeholder="Enter the comment to post it"
-                    className="flex-1 border border-orange-400 rounded-l-md px-4 py-2 text-sm outline-none"
-                  />
+                  </div>
+                ))}
 
-                  <select
-                    value={commentType}
-                    onChange={(e) => setCommentType(e.target.value)}
-                    className="border-y border-l border-gray-300 px-3 text-sm"
-                  >
-                    <option value="Internal">Internal</option>
-                    <option value="Public">Public</option>
-                  </select>
-
-                  <button
-                    onClick={handleSubmitComment}
-                    className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-r-md text-sm"
-                  >
-                    Submit
-                  </button>
-                </div>
               </div>
-            </>
-          )}
+
+
+              {/* COMMENT INPUT */}
+
+              <div className="mt-4 flex">
+
+                <input
+                  type="text"
+                  value={commentText}
+                  onChange={(e) =>
+                    setCommentText(e.target.value)
+                  }
+                  className="flex-1 border px-3 py-2"
+                  placeholder="Enter comment"
+                />
+
+                <select
+                  value={commentType}
+                  onChange={(e) =>
+                    setCommentType(e.target.value)
+                  }
+                  className="border px-3"
+                >
+                  <option value="Public">Public</option>
+                  <option value="Internal">Internal</option>
+                </select>
+
+                <button
+                  onClick={handleSubmitComment}
+                  className="bg-orange-500 text-white px-6"
+                >
+                  Submit
+                </button>
+
+              </div>
+
+            </div>
+
+          </div>
+
         </div>
       </div>
-    </div>
-  );
-}
+    );
+  }

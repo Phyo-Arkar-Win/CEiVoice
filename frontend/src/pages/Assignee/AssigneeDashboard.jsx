@@ -97,8 +97,7 @@ export default function Assignee_Dashboard() {
                   <FaSearch
                     onClick={() =>
                       navigate(
-                        `/assignee_ticket_details/${encodeURIComponent(ticket._id)}`,
-                        { state: { ticketId: ticket._id } }
+                        `/ticket_details/${ticket._id}` 
                       )
                     }
                     className="cursor-pointer text-gray-700"

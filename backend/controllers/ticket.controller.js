@@ -222,6 +222,7 @@ export const ticketDetailsAsUser = async (req, res) => {
     const ticketId = req.params.id;
     try {
         const ticket = await Ticket.findById(ticketId);
+        console.log(ticket)
         if (!ticket) {
             return res.status(404).json({ message: 'Ticket not found' });
         }
@@ -234,6 +235,48 @@ export const ticketDetailsAsUser = async (req, res) => {
     }
 };
 
+// export const saveAsAssignee = async (req, res) => {
+//     const { ticketId, status, reassignedAssigneeId } = req.body;
+//     try {
+//         let ticket = await Ticket.findById(ticketId);
+//         if (!ticket) {
+//             return res.status(404).json({ message: "Ticket not found" });
+//         }
+//         const reassignedAssignee = await User.findById(reassignedAssigneeId);
+
+//         // console.log(reassignedAssignee)
+        
+        
+//         if (status === "Solving") {
+//             ticket.status = status;
+//         } 
+//         else if (status === "Solved" || status === "Failed") {
+//             const commented = await Comment.find({ ticket: ticket, user: req.user.id });
+            
+            
+//             if (!commented.length) {
+//                 return res.status(400).json({ message: 'You must comment before marking the ticket as solved' });
+//             }
+//             ticket.status = status;
+//         }
+
+//         if (reassignedAssignee) {
+//             if (!ticket.assignees.includes(reassignedAssignee)) {
+//                 ticket.assignees.push(reassignedAssignee);
+//             }
+//         }
+//         console.log(ticket) 
+
+//         await ticket.save();
+//         console.log("What")
+//         res.status(200).json({ ticket });
+//     } catch (error) {
+//         res.status(500).json({
+//             message: `Error updating ticket: ${error.message}`,
+//         });
+//     }
+// }
+
 export const saveAsAssignee = async (req, res) => {
     const { ticketId, status, reassignedAssigneeId } = req.body;
     try {
@@ -241,23 +284,29 @@ export const saveAsAssignee = async (req, res) => {
         if (!ticket) {
             return res.status(404).json({ message: "Ticket not found" });
         }
-        const reassignedAssignee = await User.findById(reassignedAssigneeId);
-
-        if (status !== "Solved") {
-            ticket.status = status;
-        } else if (status === "Solved") {
-            const commented = await Comment.find({ ticket: ticketId, user: req.user.id });
-
-            if (!commented.length) {
-                return res.status(400).json({ message: 'You must comment before marking the ticket as solved' });
+        
+        if (reassignedAssigneeId) {
+            const reassignedAssignee = await User.findById(reassignedAssigneeId);
+            if (!reassignedAssignee) {
+                return res.status(404).json({ message: "Assignee not found" });
             }
-            ticket.status = status;
+            if (!ticket.assignees.some(id => id && id.toString() === reassignedAssigneeId)) {
+                ticket.assignees.push(reassignedAssigneeId);
+            }
         }
 
-        if (reassignedAssignee) {
-            if (!ticket.assignees.includes(reassignedAssignee)) {
-                ticket.assignees.push(reassignedAssignee);
+        if (status === "Solving" || status === "New" ) {
+            ticket.status = status;
+        } else if (status === "Solved" || status === "Failed") {
+            const commented = await Comment.find({
+                ticket: ticketId,
+                user: req.user._id || req.user.id
+            });
+
+            if (!commented.length) {
+                return res.status(400).json({ message: `You must comment before marking the ticket as ${status.toLowerCase()}` });
             }
+            ticket.status = status;
         }
 
         await ticket.save();

@@ -5,8 +5,8 @@ import { ticketDetailsAsAdminOrAssignee, submitCommentAsAdminOrAssignee, saveAsA
 
 const router = Router();
 router.get('/dashboard', authController.protect, getAssigneeDashboardData);
-router.get('/ticketDetails/:id', ticketDetailsAsAdminOrAssignee);
-router.post('/submitComment', submitCommentAsAdminOrAssignee);
-router.post('/saveTicket', saveAsAssignee);
+router.get('/ticketDetails/:id', authController.protect, ticketDetailsAsAdminOrAssignee);
+router.post('/submitComment', authController.protect, submitCommentAsAdminOrAssignee);
+router.post('/saveTicket',authController.protect, saveAsAssignee);
 
-export default router;  
+export default router;      
