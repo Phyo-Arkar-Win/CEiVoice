@@ -78,22 +78,24 @@ ${issue}
         original_message: issue,
         creator: user
     });
-    
+
     return newTicket
 };
 
 
-export const AIMergeDraftTicket = async (tickets) => {
-const scopes = await Scope.find({}, 'name');
-const scopeList = scopes.map(scope => scope.name).join(', ');
-const ticketList = tickets.map((ticket, index) => `
+export const AIMergeDraftTickets = async (tickets) => {
+    // const email = tickets[0].email || tickets[0].creator?.email || "";
+    // const issue = tickets.map(t => t.summary).join("\n");
+    const scopes = await Scope.find({}, 'name');
+    const scopeList = scopes.map(scope => scope.name).join(', ');
+    const ticketList = tickets.map((ticket, index) => `
     Ticket ${index + 1}
     Title: ${ticket.title}
     Summary: ${ticket.summary}
     Category: ${ticket.category}
     Resolution Path: ${(ticket.resolution_path)}
 `).join("\n");
-const prompt = `
+    const prompt = `
 You are an AI service desk assistant responsible for consolidating multiple helpdesk tickets into a single ticket draft.
 
 The tickets have already been selected by the user for merging. Your task is only to synthesize their information into one clear and coherent ticket.
@@ -153,7 +155,7 @@ ${ticketList}
     const ollama = new Ollama({ host: 'http://localhost:11434' });
 
     const response = await ollama.generate({
-        model: "llama3.2",
+        model: "llama3:latest",
         prompt,
         format: "json",
         options: {
@@ -163,19 +165,25 @@ ${ticketList}
 
     const parsed = JSON.parse(response.response);
 
-    // const newTicket = await Ticket.create({
-    //     email: email,
-    //     issue: issue,
-    //     title: parsed.title,
-    //     summary: parsed.summary,
-    //     category: parsed.category,
-    //     resolution_path: parsed.resolution_path,
-    //     original_message: issue,
-    //     creator: user
-    // });
+    const followers = [
+    ...new Map(
+        tickets.map(ticket => [ticket.creator.toString(), ticket.creator])
+    ).values()
+    ];
+
+    const mergedTicket = new Ticket({
+        email: "min amay",
+        issue: "min aphwar",
+        title: parsed.title,
+        summary: parsed.summary,
+        category: parsed.category,
+        resolution_path: parsed.resolution_path,
+        original_message: "min aphwar",
+        followers,
+        mergedTickets: tickets.map(t=>t._id)
+    });
     
-    // return newTicket
-    return ("Merged Ticket Draft:", parsed);
+    return mergedTicket
 };
 
 export default AIGenerateDraftTicket;

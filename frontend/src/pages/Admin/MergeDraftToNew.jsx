@@ -1,48 +1,116 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import AdminNavbar from "@/components/AdminNavbar";
 import api from "../../api/axios";
 
-export default function Tickets() {
+export default function MergeDraftToNew() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const mergedTicket = location.state?.mergedTicket || null;
+  const selectedTickets = location.state?.tickets || [];
+
+
+  const [mergedUsers, setMergedUsers] = useState([]);
+  const [assignees, setAssignees] = useState([]);
 
   const [deadline, setDeadline] = useState("");
-  const [assignee, setAssignee] = useState("Linn Hein Htet");
+  const [assignee, setAssignee] = useState("");
 
-  const assignees = [
-    "Linn Hein Htet",
-    "Phyo Arkar Win",
-    "Lu chit",
-    "Yu Yu Khaing",
-    "Hsaung Thet Htar",
-    "Aung Pyae Sone"
+  const [title, setTitle] = useState("");
+  const [category, setCategory] = useState("");
+  const [summary, setSummary] = useState("");
+  const [resolution, setResolution] = useState("");
 
-  ];
+  useEffect(() => {
 
-  const title = "";
-  const category = "";
-  const summary =
-    "";
-  const resolution =
-    "";
+  if (mergedTicket) {
 
-  const [mergedUsers, setMergedUsers] = useState([
-    {
-      id: "Ticket-001",
-      email: "",
-      description: "",
-    },
-    {
-      id: "Ticket-002",
-      email: "",
-      description: "",
-    },
-  ]);
+    setTitle(mergedTicket.title || "");
+    setCategory(mergedTicket.category || "");
+    setSummary(mergedTicket.summary || "");
 
-  const unmergeUser = (index) => {
-    const updated = [...mergedUsers];
-    updated.splice(index, 1);
-    setMergedUsers(updated);
-  };
+    setResolution(
+      Array.isArray(mergedTicket.resolution_path)
+        ? mergedTicket.resolution_path.join("\n")
+        : mergedTicket.resolution_path || ""
+    );
 
+  }
+
+}, [mergedTicket]);
+
+  // Load selected tickets
+  useEffect(() => {
+
+    const mapped = selectedTickets.map(ticket => ({
+      id: ticket._id,
+      email: ticket.email || "",
+      description: ticket.summary || ""
+    }));
+
+    setMergedUsers(mapped);
+
+  }, [selectedTickets]);
+
+  // Fetch assignees from DB
+  useEffect(() => {
+
+    const fetchAssignees = async () => {
+
+      try {
+
+        const res = await api.get("/admin/assignee");
+        setAssignees(res.data.data || res.data);
+
+      } catch (err) {
+
+        console.error("Error fetching assignees:", err);
+
+      }
+
+    };
+
+    fetchAssignees();
+
+  }, []);
+
+  // Unmerge
+  const unmergeUser = async (ticketId) => {
+
+    // console.log("Attempting to unmerge ticket ID:", ticketId);
+    // console.log("Current merged ticket ID:", mergedTicket._id);
+
+  try {
+
+    const res = await api.post("/tickets/merge/unlink", {
+      mergedTicket: mergedTicket,
+      ticketToUnlink: selectedTickets
+    });
+
+    const updatedMergedTicket = res.data.mergedTicket;
+
+    // rebuild merged users list from backend result
+    const updatedUsers = selectedTickets
+      .filter(ticket =>
+        updatedMergedTicket.mergedTickets.includes(ticket._id)
+      )
+      .map(ticket => ({
+        id: ticket._id,
+        email: ticket.email || "",
+        description: ticket.summary || ""
+      }));
+
+    setMergedUsers(updatedUsers);
+
+  } catch (error) {
+
+    console.error("Unmerge error:", error);
+
+  }
+
+};
+
+  // Submit merged ticket
   const handleSubmit = async () => {
 
     const payload = {
@@ -51,26 +119,26 @@ export default function Tickets() {
       deadline,
       assignee,
       summary,
-      resolutionPath: resolution,
-      mergedTickets: mergedUsers,
+      resolutionPath: resolution.split("\n"),
+      mergedTickets: mergedUsers.map(u => u.id)
     };
 
     try {
 
-      console.log("Submitting Ticket:", payload);
-
       await api.post("/tickets/merge", payload);
 
-      alert("Ticket submitted!");
+      alert("Merged ticket submitted!");
 
     } catch (error) {
 
-      console.log("Backend not ready yet", payload);
+      console.error("Submit error:", error);
 
     }
+
   };
 
   return (
+
     <div className="min-h-screen flex bg-gray-200">
 
       <AdminNavbar />
@@ -78,87 +146,92 @@ export default function Tickets() {
       <div className="flex-1 p-10">
 
         <h1 className="text-2xl font-semibold mb-6">
-          Merged Draft Ticket (AI Suggested)
+          Merge Drafts to New Ticket
         </h1>
 
-        {/* FORM CARD */}
-        <div className="bg-gray-100 rounded-xl shadow p-6 mb-8">
+        {/* FORM */}
 
-          <div className="flex justify-end mb-3">
-            <span className="bg-orange-200 text-orange-700 px-3 py-1 rounded-full text-sm">
-              AI Suggestion
-            </span>
-          </div>
+        <div className="bg-gray-100 rounded-xl shadow p-6 mb-8">
 
           <div className="grid grid-cols-2 gap-8">
 
-            {/* TITLE */}
             <div>
               <label className="font-semibold block mb-2">Title</label>
-              <div className="w-full h-10 border border-orange-400 rounded-full px-4 flex items-center bg-white">
-                {title}
-              </div>
+              <input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full h-10 border border-orange-400 rounded-full px-4"
+              />
             </div>
 
-            {/* CATEGORY */}
             <div>
               <label className="font-semibold block mb-2">Category</label>
-              <div className="w-full h-10 border border-orange-400 rounded-full px-4 flex items-center bg-white">
-                {category}
-              </div>
+              <input
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full h-10 border border-orange-400 rounded-full px-4"
+              />
             </div>
 
-            {/* SUMMARY */}
             <div>
               <label className="font-semibold block mb-2">Summary</label>
-              <div className="w-full h-32 border border-orange-400 rounded-xl px-4 py-2 bg-white">
-                {summary}
-              </div>
+              <textarea
+                value={summary}
+                onChange={(e) => setSummary(e.target.value)}
+                className="w-full h-32 border border-orange-400 rounded-xl px-4 py-2"
+              />
             </div>
 
-            {/* RESOLUTION */}
             <div>
               <label className="font-semibold block mb-2">Resolution Path</label>
-              <div className="w-full h-32 border border-orange-400 rounded-xl px-4 py-2 whitespace-pre-line bg-white">
-                {resolution}
-              </div>
+              <textarea
+                value={resolution}
+                onChange={(e) => setResolution(e.target.value)}
+                className="w-full h-32 border border-orange-400 rounded-xl px-4 py-2"
+              />
             </div>
 
-            {/* DEADLINE */}
             <div>
               <label className="font-semibold block mb-2">Deadline</label>
               <input
                 type="date"
                 value={deadline}
                 onChange={(e) => setDeadline(e.target.value)}
-                className="w-full h-10 border border-orange-400 rounded-full px-4 focus:outline-none focus:ring-2 focus:ring-orange-300"
+                className="w-full h-10 border border-orange-400 rounded-full px-4"
               />
             </div>
 
-            {/* ASSIGNEE */}
             <div>
               <label className="font-semibold block mb-2">Assignee</label>
+
               <select
                 value={assignee}
                 onChange={(e) => setAssignee(e.target.value)}
-                className="w-full h-10 border border-orange-400 rounded-full px-4 bg-white focus:outline-none focus:ring-2 focus:ring-orange-300"
+                className="w-full h-10 border border-orange-400 rounded-full px-4"
               >
-                {assignees.map((name, index) => (
-                  <option key={index} value={name}>
-                    {name}
+
+                <option value="">Select Assignee</option>
+
+                {assignees.map(person => (
+                  <option key={person._id} value={person._id}>
+                    {person.name}
                   </option>
                 ))}
+
               </select>
+
             </div>
 
           </div>
+
         </div>
 
-        {/* MERGED USERS */}
+        {/* MERGED USERS TABLE */}
+
         <div className="bg-gray-100 rounded-xl shadow p-6">
 
           <h2 className="text-lg font-semibold mb-4">
-            Merged Users:
+            Merged Users
           </h2>
 
           <table className="w-full">
@@ -173,6 +246,7 @@ export default function Tickets() {
             </thead>
 
             <tbody>
+
               {mergedUsers.map((user, index) => (
 
                 <tr key={index} className="border-t">
@@ -183,8 +257,8 @@ export default function Tickets() {
 
                   <td>
                     <button
-                      onClick={() => unmergeUser(index)}
-                      className="bg-gray-300 px-4 py-1 rounded hover:bg-gray-400"
+                      onClick={() => unmergeUser(user.id)}
+                      className="bg-gray-300 px-4 py-1 rounded cursor-pointer"
                     >
                       Unmerge
                     </button>
@@ -193,19 +267,22 @@ export default function Tickets() {
                 </tr>
 
               ))}
+
             </tbody>
 
           </table>
 
           <div className="flex justify-end gap-4 mt-6">
 
-            <button className="bg-gray-300 px-6 py-2 rounded hover:bg-gray-400">
+            <button
+            onClick={() => navigate('/drafts')}
+            className="bg-gray-300 px-6 py-2 rounded">
               Cancel
             </button>
 
             <button
               onClick={handleSubmit}
-              className="bg-orange-600 text-white px-6 py-2 rounded hover:bg-orange-700"
+              className="bg-orange-600 text-white px-6 py-2 rounded"
             >
               Submit Ticket
             </button>
@@ -215,6 +292,7 @@ export default function Tickets() {
         </div>
 
       </div>
+
     </div>
   );
 }
