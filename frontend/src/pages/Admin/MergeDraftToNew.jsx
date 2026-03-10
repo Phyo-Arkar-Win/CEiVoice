@@ -78,12 +78,11 @@ export default function MergeDraftToNew() {
   const unmergeUser = async (ticketId) => {
 
   try {
-
-  const res = await api.post("/tickets/merge/unlink", {
-  mergedTicket : mergedTicket,
-  ticketToUnlinkId: ticketId
-});
-
+    const res = await api.post("/tickets/merge/unlink", {
+      mergedTicket: mergedTicket,
+      ticketToUnlinkId: ticketId
+    });
+    
     const updatedMergedTicket = res.data.mergedTicket;
 
     // rebuild merged users list from backend result
