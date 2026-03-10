@@ -22,18 +22,9 @@ const ticketSchema = new mongoose.Schema(
         creator: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
-            // required: true,
-        }, // changed from { type: String }
-        followers: [{ type: String }],
+        }, 
+        followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
         assignees: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-        parentTicketId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Ticket',
-            default: null,
-        },
-        mergedRequestIds: [
-            { type: mongoose.Schema.Types.ObjectId, ref: 'Ticket' },
-        ],
         deadline: { type: Date },
     },
     { timestamps: true },

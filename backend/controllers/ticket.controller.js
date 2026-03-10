@@ -1,7 +1,8 @@
 import Ticket from '../models/ticket.js';
+import { AIMergeDraftTicket } from '../services/ollama.service.js';
 
-// GET : Get all draft tickets for admin
-export const getDraftTickets = async (req, res) => {
+// Get all draft tickets for admin
+export const getDraftTicketsAsAdmin = async (req, res) => {
     try {
         const draftTickets = await Ticket.find({ status: 'Draft' });
         res.status(200).json(draftTickets);
@@ -12,7 +13,7 @@ export const getDraftTickets = async (req, res) => {
     }
 };
 
-//PUT :  Merge tickets
+// Merge tickets
 export const mergeDraftTickets = async (req, res) => {
     try {
         const { ticketIds } = req.body;
@@ -32,38 +33,22 @@ export const mergeDraftTickets = async (req, res) => {
                 .status(404)
                 .json({ message: 'One or more tickets not found.' });
         }
-
-        for (let ticket of tickets) {
-            if (ticket.status !== 'Draft') {
-                return res.status(400).json({
-                    message: 'All selected tickets must be draft.',
-                });
-            }
-        }
-
-        const parent = tickets[0];
-        for (let i = 1; i < tickets.length; i++) {
-            const child = tickets[i];
-            child.parentTicketId = parent._id;
-            child.status = 'Merged';
-
-            await child.save();
-
-            parent.mergedRequestIds.push(child._id);
-        }
-
-        await parent.save();
-
-        res.status(200).json({
-            message: 'Tickets merged successfully',
-            parentTicket: parent,
-        });
+ 
+        const merged = await AIMergeDraftTicket(tickets);
+        
+        res.status(200).json({ merged });
     } catch (error) {
         res.status(500).json({
             message: `Error merging tickets: ${error.message}`,
         });
     }
 };
+
+// for (let i = 1; i < tickets.length; i++) {
+//             merged.followers.push(...tickets[i].creator);
+//             tickets[i].status = 'Merged';
+//             await tickets[i].save();
+//         }
 
 // PUT : Submit a new ticket from draft | submit draft ticket
 export const submitDraftTicket = async (req, res) => {
@@ -150,7 +135,7 @@ export const viewTicketAsUser = async (req, res) => {
     }
     try {
         const ticket = await Ticket.findById(ticketId);
-        if (ticket.email !== email) {
+        if (ticket.email !== email || ticket.creator !== email) {
             return res.status(403).json({ message: 'Incorrect Email or Ticket ID' });
         }
         res.status(200).json({ id: ticket.id, status: ticket.status, title: ticket.title, issue: ticket.issue });
@@ -161,3 +146,14 @@ export const viewTicketAsUser = async (req, res) => {
     }
 };
 
+export const getIndividualTicket = async (req, res) => {
+    const { ticketId } = req.body;
+    try {
+        const ticket = await Ticket.findById(ticketId);
+        res.status(200).json({ title: ticket.title, category: ticket.category, summary: ticket.summary, resolution_path: ticket.resolution_path });
+    } catch (error) {
+        res.status(500).json({
+            message: `Error viewing ticket: ${error.message}`,
+        });
+    }
+};
