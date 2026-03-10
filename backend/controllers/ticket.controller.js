@@ -102,7 +102,6 @@ export const getIndividualTicket = async (req, res) => {
 export const handleMergeSelection = async (req, res) => {
     const { tickets } = req.body;
     let mergedTicket = await AIMergeDraftTickets(tickets);
-    // console.log(mergedTicket);
     res.status(200).json({ message: 'Tickets merged successfully', mergedTicket: mergedTicket });
 };
 
@@ -137,12 +136,14 @@ export const handleUnlinkTickets = async (req, res) => {
 
 export const mergeDraftTickets = async (req, res) => {
     try {
-        const { mergedTicketId } = req.body;
-        const mergedTicket = new Ticket(mergedTicket);
-        mergedTicket.status = "New";
+        const { mergedTicket } = req.body;
+        const mergedTicketDoc = new Ticket(mergedTicket);
+        mergedTicketDoc.status = "New";
+        console.log(mergedTicketDoc)
         // await Ticket.deleteMany({ _id: { $in: mergedTicket.mergedTickets } });
+
         // await mergedTicket.updateOne({ $set: { status: 'New' } });
-        await mergedTicket.save();
+        // await mergedTicket.save();
         res.status(200).json({ message: 'Tickets merged successfully', data: mergedTicket });
     } catch (error) {
         res.status(500).json({
