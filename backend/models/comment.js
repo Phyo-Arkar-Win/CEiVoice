@@ -12,6 +12,7 @@ const commentSchema = new mongoose.Schema({
     visibility: {
         type: String,
         enum: ["Internal", "Public"],
+        default: "Public",
         required: true
     },
     comment: {

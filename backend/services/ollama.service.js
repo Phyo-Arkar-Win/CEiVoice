@@ -84,12 +84,12 @@ ${issue}
 
 
 export const AIMergeDraftTickets = async (tickets) => {
-    // const email = tickets[0].email || tickets[0].creator?.email || "";
-    // const issue = tickets.map(t => t.summary).join("\n");
     const scopes = await Scope.find({}, 'name');
+    // const users = await User.find({ role: "assignee" }, 'name');
     const scopeList = scopes.map(scope => scope.name).join(', ');
     const ticketList = tickets.map((ticket, index) => `
     Ticket ${index + 1}
+    Ticket Issue: ${ticket.issue}
     Title: ${ticket.title}
     Summary: ${ticket.summary}
     Category: ${ticket.category}
@@ -121,9 +121,11 @@ OUTPUT FORMAT
 ---------------------
 {
   "title": string,
+  "issue": string,
   "summary": string,
   "category": string,
-  "resolution_path": [string]
+  "resolution_path": [string],
+  "assignees": [string]
 }
 
 ---------------------
@@ -133,6 +135,10 @@ FIELD REQUIREMENTS
 title
 - Maximum 100 characters
 - Concise and clearly describe the merged issue.
+
+issue
+- 1-3 lines depending on issues of other tickets
+- Capture the core problem or request that unites the tickets.
 
 summary
 - Maximum 500 characters
@@ -172,13 +178,11 @@ ${ticketList}
     ];
 
     const mergedTicket = new Ticket({
-        email: "min amay",
-        issue: "min aphwar",
+        issue: parsed.issue,
         title: parsed.title,
         summary: parsed.summary,
         category: parsed.category,
         resolution_path: parsed.resolution_path,
-        original_message: "min aphwar",
         followers,
         mergedTickets: tickets.map(t=>t._id)
     });
