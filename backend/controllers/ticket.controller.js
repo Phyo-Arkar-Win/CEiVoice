@@ -136,16 +136,15 @@ export const handleMergeSelection = async (req, res) => {
 
 export const handleUnlinkTickets = async (req, res) => {
 
-    const { mergedTicket, ticketToUnlink } = req.body
+    const { mergedTicket, ticketToUnlinkId } = req.body
     try {
-        // console.log(mergedTicket, ticketToUnlink);
-        // const ticketToUnlink = await Ticket.findById(ticketToUnlinkId);
+        const ticketToUnlink = await Ticket.findById(ticketToUnlinkId);
         if (!mergedTicket || !ticketToUnlink) {
             return res.status(404).json({ message: 'One or both tickets not found' });
         }
         console.log("Updated merged ticket after unlinking:", mergedTicket);
         mergedTicket.mergedTickets = mergedTicket.mergedTickets.filter(
-            id => !id.equals(ticketToUnlink._id)
+            id => !id.toequals(ticketToUnlink._id)
         );
         mergedTicket.followers = mergedTicket.followers.filter(
             follower => follower !== ticketToUnlink.creator
