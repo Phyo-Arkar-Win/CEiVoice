@@ -14,7 +14,7 @@ export default function Assignee_Historylog() {
     const fetchLogs = async () => {
       try {
 
-        const res = await api.get("/tickets/history");
+        const res = await api.get("/assignee/history");
 
         // FORMAT STATUS LOGS
         const formattedStatus = res.data.statusHistoryLog.map((log) => ({

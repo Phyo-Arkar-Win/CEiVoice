@@ -12,7 +12,7 @@ router.patch(
   '/:id',
   authController.protect,
   authController.restrictTo('admin', 'assignee'),
-  updateDraftTicket
+  submitDraftTicket
 );
 
 router.post('/track/submit', viewTicketAsGuest);

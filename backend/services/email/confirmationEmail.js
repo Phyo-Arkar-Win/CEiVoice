@@ -1,4 +1,4 @@
-export const confirmationEmailTemplate = (issue) => {
+export const confirmationEmailTemplate = (ticket) => {
   return `
 
 <h2>Your Issue Has Been Reported</h2>
@@ -8,8 +8,11 @@ Thank you for contacting the CEiVoice Support Team.
 </p>
 
 <p>
+<strong>Ticket ID:</strong><br>
+${ticket._id}
+</p>
 <strong>Reported Issue:</strong><br>
-${issue}
+${ticket.issue}
 </p>
 
 <p>

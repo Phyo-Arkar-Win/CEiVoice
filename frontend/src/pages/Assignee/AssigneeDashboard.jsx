@@ -94,7 +94,6 @@ export default function Assignee_Dashboard() {
                 <th className="p-3 md:p-4 font-semibold">Title</th>
                 <th className="p-3 md:p-4 font-semibold whitespace-nowrap">Status</th>
                 <th className="p-3 md:p-4 font-semibold whitespace-nowrap">Deadline</th>
-                <th className="p-3 md:p-4 font-semibold whitespace-nowrap">Action</th>
                 <th className="p-3 md:p-4 font-semibold whitespace-nowrap text-center">View</th>
               </tr>
             </thead>
@@ -122,9 +121,6 @@ export default function Assignee_Dashboard() {
                         : "No deadline"}
                     </td>
 
-                    <td className="p-3 md:p-4 text-xs md:text-sm text-blue-600 font-medium cursor-pointer hover:underline whitespace-nowrap">
-                      Solving
-                    </td>
 
                     <td className="p-3 md:p-4 text-center">
                       <button 

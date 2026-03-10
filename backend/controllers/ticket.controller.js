@@ -74,10 +74,11 @@ export const viewTicketAsUser = async (req, res) => {
     }
     try {
         const ticket = await Ticket.findById(ticketId);
-        if (ticket.email !== email || ticket.creator !== email) {
+        let creator  = await User.findById(ticket.creator);
+        if (ticket.email !== email || creator.email !== email) {
             return res.status(403).json({ message: 'Incorrect Email or Ticket ID' });
         }
-        res.status(200).json({ id: ticket.id, status: ticket.status, title: ticket.title, issue: ticket.issue });
+        res.status(200).json({ id: ticket.id, status: ticket.status, title: ticket.title, issue: ticket.issue, category: ticket.category, updatedAt: ticket.updatedAt.toLocaleString() });
     } catch (error) {
         res.status(500).json({
             message: `Error viewing ticket: ${error.message}`,

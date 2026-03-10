@@ -122,12 +122,11 @@ export default function TrackTicket() {
 
           {status === "success" && ticket && (
             <div className="text-center space-y-3">
+              <p><strong>Title:</strong> {ticket.title}</p>
               <p><strong>Status:</strong> {ticket.status}</p>
               <p><strong>Category:</strong> {ticket.category}</p>
-              <p><strong>Priority:</strong> {ticket.priority}</p>
-              <p><strong>Last Updated:</strong> {ticket.updatedAt}</p>
               <p><strong>Issue:</strong> {ticket.issue}</p>
-              
+              <p><strong>Last Updated:</strong> {ticket.updatedAt}</p>
             </div>
           )}
 

@@ -12,13 +12,14 @@ const getTransporter = () => {
     });
 };
 
-const sendConfirmationEmail = async (email, issue) => {
+const sendConfirmationEmail = async (email, ticket) => {
+    console.log(ticket)
     const transporter = getTransporter();
     const mailOptions = {
         from: process.env.EMAIL_USER,
         to: email,
         subject: "Confirmation of Issue Report",
-        html: confirmationEmailTemplate(issue)
+        html: confirmationEmailTemplate(ticket)
     }
     await transporter.sendMail(mailOptions);
 }

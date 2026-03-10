@@ -45,7 +45,7 @@ export default function MergeDraftToNew() {
     const mapped = selectedTickets.map(ticket => ({
       id: ticket._id,
       email: ticket.email || "",
-      description: ticket.summary || ""
+      description: ticket.title || ""
     }));
 
     setMergedUsers(mapped);
@@ -93,7 +93,7 @@ export default function MergeDraftToNew() {
       .map(ticket => ({
         id: ticket._id,
         email: ticket.email || "",
-        description: ticket.summary || ""
+        description: ticket.title || ""
       }));
 
     setMergedUsers(prev => prev.filter(user => user.id !== ticketId));
@@ -246,7 +246,7 @@ export default function MergeDraftToNew() {
                 <tr>
                   <th className="text-left py-2 font-semibold pr-4 whitespace-nowrap">Request ID</th>
                   <th className="text-left font-semibold pr-4 whitespace-nowrap">User Email</th>
-                  <th className="text-left font-semibold">Description</th>
+                  <th className="text-left font-semibold">Title</th>
                   <th></th>
                 </tr>
               </thead>
