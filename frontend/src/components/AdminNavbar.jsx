@@ -2,6 +2,10 @@ import React, { useEffect, useState } from "react";
 import ceiLogo from "../assets/cei.png";
 import { IoIosLogOut } from "react-icons/io";
 import { NavLink, useNavigate } from "react-router-dom";
+import { BsGraphUp } from "react-icons/bs";
+import { IoMailOpenSharp } from "react-icons/io5";
+import { IoTicket } from "react-icons/io5";
+import { MdManageAccounts } from "react-icons/md";
 
 export default function AdminNavbar() {
   const [name, setName] = useState("");
@@ -27,7 +31,7 @@ export default function AdminNavbar() {
 
   return (
     <div
-      className="group h-screen w-20 hover:w-64 bg-gray-100 border-r-2 border-orange-500 flex flex-col justify-between transition-all duration-300 overflow-hidden"
+      className="group relative min-h-screen w-20 hover:w-64 bg-gray-100 border-r-2 border-orange-500 flex flex-col transition-all duration-300 overflow-hidden"
     >
       {/* TOP SECTION */}
       <div>
@@ -56,24 +60,28 @@ export default function AdminNavbar() {
         <div className="flex flex-col py-4 text-lg mt-4">
 
           <NavLink to="/admin_dashboard" className={linkStyle}>
+          <BsGraphUp className="text-2xl mr-3"/>
             <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               Dashboard
             </span>
           </NavLink>
 
           <NavLink to="/drafts" className={linkStyle}>
+          <IoMailOpenSharp className="text-2xl mr-3" />
             <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               Drafts
             </span>
           </NavLink>
 
           <NavLink to="/tickets" className={linkStyle}>
+          <IoTicket className="text-2xl mr-3" />
             <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               Tickets
             </span>
           </NavLink>
 
           <NavLink to="/staff" className={linkStyle}>
+          <MdManageAccounts className="text-3xl mr-3"/>
             <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               Staff Management
             </span>
@@ -85,7 +93,7 @@ export default function AdminNavbar() {
       {/* LOGOUT SECTION */}
       <div
         onClick={handleLogout}
-        className="flex items-center justify-center gap-2 px-6 py-4 cursor-pointer hover:bg-gray-200"
+        className="absolute bottom-0 left-0 w-full flex items-center justify-center gap-2 px-6 py-4 cursor-pointer hover:bg-gray-200"
       >
         <IoIosLogOut className="text-2xl" />
 
