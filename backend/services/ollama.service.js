@@ -155,7 +155,7 @@ ${ticketList}
     const ollama = new Ollama({ host: 'http://localhost:11434' });
 
     const response = await ollama.generate({
-        model: "llama3:latest",
+        model: "llama3.2",
         prompt,
         format: "json",
         options: {
