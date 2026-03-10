@@ -167,7 +167,7 @@ export default function UserTicketDetails() {
             </button>
 
             <h1 className="text-xl font-semibold mb-4">
-              {ticket?.id || ticket?._id || "Ticket-001"}
+              {ticket?.title || ticket?._id || "Ticket-001"}
             </h1>
 
             {loading ? (

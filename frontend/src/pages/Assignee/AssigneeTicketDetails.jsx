@@ -235,7 +235,7 @@ export default function Assignee_Ticket_Details() {
             ← Back
           </button>
 
-          <h1 className="text-xl font-semibold text-center mb-6">{ticket?.title || "Ticket"}</h1>
+          <h1 className="text-xl font-semibold text-center mb-6">{ticket?.title || ticket?._id || "Ticket-001"}</h1>
 
           {loading ? (
             <p className="text-gray-600 text-center text-sm">Loading ticket...</p>
