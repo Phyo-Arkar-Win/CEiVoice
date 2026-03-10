@@ -118,12 +118,11 @@ export const handleUnlinkTickets = async (req, res) => {
 
         console.log(mergedTicketDoc);
 
-        // Use Mongoose pull to remove the ticket ID and its creator from references
-        // mergedTicketDoc.mergedTickets.pull(ticketToUnlinkId);
+        mergedTicketDoc.mergedTickets.pull(ticketToUnlinkId);
 
-        // if (ticketToUnlink.creator) {
-        //     mergedTicketDoc.followers.pull(ticketToUnlink.creator);
-        // }
+        if (ticketToUnlink.creator) {
+            mergedTicketDoc.followers.pull(ticketToUnlink.creator);
+        }
 
         return res.status(200).json({
             mergedTicket: mergedTicketDoc,

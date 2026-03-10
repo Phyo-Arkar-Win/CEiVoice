@@ -81,10 +81,9 @@ export default function MergeDraftToNew() {
     // console.log("Current merged ticket ID:", mergedTicket._id);
 
   try {
-
     const res = await api.post("/tickets/merge/unlink", {
       mergedTicket: mergedTicket,
-      ticketToUnlink: selectedTickets
+      ticketToUnlinkId: ticketId
     });
     
     const updatedMergedTicket = res.data.mergedTicket;
