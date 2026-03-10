@@ -85,6 +85,7 @@ ${issue}
 
 export const AIMergeDraftTickets = async (tickets) => {
     const scopes = await Scope.find({}, 'name');
+    const users = await User.find({ role: "assignee" }, 'name');
     const scopeList = scopes.map(scope => scope.name).join(', ');
     const ticketList = tickets.map((ticket, index) => `
     Ticket ${index + 1}
@@ -123,7 +124,8 @@ OUTPUT FORMAT
   "issue": string,
   "summary": string,
   "category": string,
-  "resolution_path": [string]
+  "resolution_path": [string],
+  "assignees": [string]
 }
 
 ---------------------
