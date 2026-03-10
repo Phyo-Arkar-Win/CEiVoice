@@ -1,76 +1,124 @@
-import React, { useEffect, useState } from 'react';
-import ceiLogo from '../assets/cei.png';
-import { IoIosLogOut } from 'react-icons/io';
-import { NavLink, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import ceiLogo from "../assets/cei.png";
+import { IoIosLogOut } from "react-icons/io";
+import { NavLink, useNavigate } from "react-router-dom";
+import { HiMenu, HiX } from "react-icons/hi";
 
 export default function UserNavbar() {
-    const [name, setName] = useState('');
 
-    useEffect(() => {
-        const user = JSON.parse(localStorage.getItem('user'));
-        if (user) {
-            setName(user.name);
-        }
-    });
+  const [name, setName] = useState("");
+  const [open, setOpen] = useState(false);
 
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    const handleLogout = () => {
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user) setName(user.name);
+  }, []);
 
-        navigate('/login');
-    };
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
 
-    return (
-        <>
-            <div className='w-full flex justify-between items-center bg-white px-6 py-3 border-b-2 border-orange-500'>
-                {/* LEFT SIDE */}
-                <div className='flex items-center gap-4'>
-                    <img src={ceiLogo} alt='CEi Logo' className='w-10 h-10 object-contain' />
+  const linkStyle = ({ isActive }) =>
+    isActive ? "text-orange-500 font-semibold" : "text-gray-700";
 
-                    <h1 className='text-xl font-bold'>CEiVoice</h1>
+  return (
+    <div className="w-full bg-white border-b border-orange-500">
 
-                    {/* Navigation Links */}
-                    <div className='hidden md:flex items-center gap-8 ml-8 text-lg font-semibold'>
-                        <NavLink
-                            to='/dashboard'
-                            className={({ isActive }) => (isActive ? 'text-orange-500' : 'text-black')}
-                        >
-                            Dashboard
-                        </NavLink>
+      {/* TOP BAR */}
 
-                        <NavLink
-                            to='/submit'
-                            className={({ isActive }) => (isActive ? 'text-orange-500' : 'text-black')}
-                        >
-                            Submit Request
-                        </NavLink>
+      <div className="flex items-center justify-between px-4 py-3">
 
-                        <NavLink
-                            to='/track'
-                            className={({ isActive }) => (isActive ? 'text-orange-500' : 'text-black')}
-                        >
-                            Tracking Ticket
-                        </NavLink>
-                    </div>
-                </div>
+        {/* Logo */}
+        <div className="flex items-center gap-3">
+          <img src={ceiLogo} className="w-8 h-8"/>
+          <span className="font-bold text-lg">CEiVoice</span>
+        </div>
 
-                {/* RIGHT SIDE name/logout */}
-                <div className='flex items-center gap-6 text-sm md:text-base'>
-                    <div className='flex flex-col items-center'>
-                        <span className='border-b border-black px-2'>{name}</span>
-                        <span>User</span>
-                    </div>
+        {/* Desktop Links */}
+        <div className="hidden md:flex items-center gap-8 font-medium">
 
-                    <div className='flex items-center cursor-pointer'>
-                        <IoIosLogOut onClick={handleLogout} className='text-xl' />
-                        <button onClick={handleLogout} className='ml-2 cursor-pointer'>
-                            Logout
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </>
-    );
+          <NavLink to="/dashboard" className={linkStyle}>
+            Dashboard
+          </NavLink>
+
+          <NavLink to="/submit" className={linkStyle}>
+            Submit Request
+          </NavLink>
+
+          <NavLink to="/track" className={linkStyle}>
+            Track Ticket
+          </NavLink>
+
+        </div>
+
+        {/* Right side (desktop) */}
+        <div className="hidden md:flex items-center gap-6">
+
+          <div className="text-sm">
+            <span className="border-b border-black px-2">{name}</span>
+          </div>
+
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-1 text-gray-700 hover:text-orange-600"
+          >
+            <IoIosLogOut size={20}/>
+            Logout
+          </button>
+
+        </div>
+
+        {/* Mobile Menu Button */}
+        <button
+          className="md:hidden"
+          onClick={() => setOpen(!open)}
+        >
+          {open ? <HiX size={26}/> : <HiMenu size={26}/>}
+        </button>
+
+      </div>
+
+
+      {/* MOBILE MENU */}
+
+      {open && (
+
+        <div className="md:hidden border-t px-4 py-4 flex flex-col gap-4 font-medium">
+
+          <NavLink to="/dashboard" onClick={()=>setOpen(false)} className={linkStyle}>
+            Dashboard
+          </NavLink>
+
+          <NavLink to="/submit" onClick={()=>setOpen(false)} className={linkStyle}>
+            Submit Request
+          </NavLink>
+
+          <NavLink to="/track" onClick={()=>setOpen(false)} className={linkStyle}>
+            Track Ticket
+          </NavLink>
+
+          <div className="border-t pt-3 flex justify-between items-center">
+
+            <span className="text-sm">{name}</span>
+
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-1 text-gray-700"
+            >
+              <IoIosLogOut size={20}/>
+              Logout
+            </button>
+
+          </div>
+
+        </div>
+
+      )}
+
+    </div>
+  );
 }
