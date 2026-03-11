@@ -140,8 +140,7 @@ export const mergeDraftTickets = async (req, res) => {
         const { mergedTicket } = req.body;
         const mergedTicketDoc = new Ticket(mergedTicket);
         mergedTicketDoc.status = "New";
-
-        const ticketsToMerge = await Ticket.find ({ _id: { $in: mergedTicketDoc.mergedTickets } })
+        const ticketsToMerge = await Ticket.find({ _id: { $in: mergedTicketDoc.mergedTickets } })
         const creatorList = ticketsToMerge.map(ticket => ticket.creator)
         await mergedTicketDoc.updateOne({ $set: { status: 'New' } });
         mergedTicketDoc.followers.push(...creatorList);
