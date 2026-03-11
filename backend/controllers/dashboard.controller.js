@@ -120,7 +120,7 @@ const getAdminDashboardData = async (req, res) => {
             },
             {
                 $group: {
-                    _id: "$scope", // group by category
+                    _id: "$category", // group by category
                     count: { $sum: 1 } // count total tickets in each category
                 }
             },
