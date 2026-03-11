@@ -10,6 +10,7 @@ export default function Draft() {
   const [assignees, setAssignees] = useState([]);
   const [merging, setMerging] = useState(false);
 
+
   useEffect(() => {
     fetchDraftTickets();
     fetchAssignees();
@@ -19,6 +20,7 @@ export default function Draft() {
   const fetchAssignees = async () => {
     try {
       const res = await api.get("/admin/assignee");
+      console.log("Assignees fetched:", res.data);
       setAssignees(res.data.data || res.data);
     } catch (err) {
       console.error("Error fetching assignees:", err);
