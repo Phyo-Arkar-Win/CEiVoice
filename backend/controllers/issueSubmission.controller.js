@@ -10,6 +10,8 @@ const handleIssueSubmission = async (req, res) => {
     }
     try {
         const [ticket, suggestedAssignee] = await AIGenerateDraftTicket(email, issue, user);
+        console.log(suggestedAssignee)
+        
         await sendEmail(email, ticket);
         res.status(200).json({ ticket, suggestedAssignee, message: "Email sent successfully" });
     } catch (error) {

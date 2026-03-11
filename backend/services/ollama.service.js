@@ -98,6 +98,7 @@ ${issue}
 
 export const AIMergeDraftTickets = async (tickets) => {
     const scopes = await Scope.find({}, 'name');
+    // const users = await User.find({ role: "assignee" }, 'name');
     const assignees = await User.find({ role: 'assignee' }).populate('scopes');
     const assigneesList = assignees.map(a => `${a.name} (Scopes: ${a.scopes.map(s => s.name).join(', ')})`).join('\n');
     const scopeList = scopes.map(scope => scope.name).join(', ');
@@ -176,9 +177,6 @@ SELECTED TICKETS
 ---------------------
 ${ticketList}
 `;
-
-    // const suggestedassignees = await User.find({ role: "assignee" }, 'name');
-    // const assigneesList = assignees.map(assignee => `(${assignee.name}, ${assignee.role})`).join(', ');
 
     const ollama = new Ollama({ host: 'http://localhost:11434' });
 
