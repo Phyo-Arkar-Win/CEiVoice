@@ -2,6 +2,7 @@ import Ticket from '../models/ticket.js';
 import Comment from '../models/comment.js';
 import User from '../models/user.js';
 import { AIMergeDraftTickets } from '../services/ollama.service.js';
+import { sendUpdateEmail } from '../services/email/email.service.js';
 
 export const getDraftTicketsAsAdmin = async (req, res) => {
     try {
@@ -40,6 +41,7 @@ export const submitDraftTicket = async (req, res) => {
         ticket.status = 'New';
 
         await ticket.save();
+        await sendUpdateEmail([ticket.email], ticket);
 
         res.status(200).json({
             message: 'Draft ticket submitted successfully',
@@ -74,7 +76,7 @@ export const viewTicketAsUser = async (req, res) => {
     }
     try {
         const ticket = await Ticket.findById(ticketId);
-        let creator  = await User.findById(ticket.creator);
+        let creator = await User.findById(ticket.creator);
         if (ticket.email !== email || creator.email !== email) {
             return res.status(403).json({ message: 'Incorrect Email or Ticket ID' });
         }
@@ -102,8 +104,8 @@ export const getIndividualTicket = async (req, res) => {
 
 export const handleMergeSelection = async (req, res) => {
     const { tickets } = req.body;
-    let mergedTicket = await AIMergeDraftTickets(tickets);
-    res.status(200).json({ message: 'Tickets merged successfully', mergedTicket: mergedTicket });
+    let [mergedTicket, suggestedAssignee] = await AIMergeDraftTickets(tickets);
+    res.status(200).json({ message: 'Tickets merged successfully', mergedTicket: mergedTicket, suggestedAssignee: suggestedAssignee });
 };
 
 export const handleUnlinkTickets = async (req, res) => {
@@ -141,13 +143,20 @@ export const mergeDraftTickets = async (req, res) => {
         const mergedTicketDoc = new Ticket(mergedTicket);
         mergedTicketDoc.status = "New";
 
-        const ticketsToMerge = await Ticket.find ({ _id: { $in: mergedTicketDoc.mergedTickets } })
+        const ticketsToMerge = await Ticket.find({ _id: { $in: mergedTicketDoc.mergedTickets } })
         const creatorList = ticketsToMerge.map(ticket => ticket.creator)
         await mergedTicketDoc.updateOne({ $set: { status: 'New' } });
         mergedTicketDoc.followers.push(...creatorList);
-        console.log(mergedTicketDoc)
         await Ticket.deleteMany({ _id: { $in: mergedTicketDoc.mergedTickets.map(id => id._id) } });
         await mergedTicketDoc.save();
+        let followerEmails = [];
+        for (const followerId of mergedTicketDoc.followers) {
+            const user = await User.findById(followerId);
+            if (user) {
+                followerEmails.push(user.email);
+            }
+        }
+        await sendUpdateEmail(followerEmails, mergedTicketDoc);
         res.status(200).json({ message: 'Tickets merged successfully', data: mergedTicket });
     } catch (error) {
         res.status(500).json({
@@ -234,6 +243,23 @@ export const saveAsAssignee = async (req, res) => {
         }
 
         await ticket.save();
+
+        let followerEmails = [];
+        const recipients = new Set();
+        if (ticket.email) recipients.add(ticket.email);
+
+        for (const followerId of ticket.followers) {
+            const user = await User.findById(followerId);
+            if (user) {
+                recipients.add(user.email);
+            }
+        }
+        followerEmails = Array.from(recipients);
+
+        if (followerEmails.length > 0) {
+            await sendUpdateEmail(followerEmails, ticket);
+        }
+
         res.status(200).json({ ticket });
     } catch (error) {
         res.status(500).json({
