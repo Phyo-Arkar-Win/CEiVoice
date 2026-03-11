@@ -1,12 +1,12 @@
 import { Router } from 'express';
-import { protect, restrictTo } from '../middlewares/auth.middleware.js';
-import { getTicketDetails, submitComment, getTickets } from '../controllers/ticket.controller.js';
+import authController from '../controllers/auth.controller.js';
+import { getUserTickets } from '../controllers/dashboard.controller.js';
+import { ticketDetailsAsUser, submitCommentAsUser } from '../controllers/ticket.controller.js';
+import { auth } from 'google-auth-library';
 
 const router = Router();
-router.get('/tickets', getTickets);
-
-// Moved to tickets route
-// router.get('/tickets/:ticketId', getTicketDetails);
-// router.post('/tickets/:ticketId/comments', submitComment);
+router.get('/tickets', authController.protect, getUserTickets);
+router.get('/ticketDetails/:id', authController.protect, ticketDetailsAsUser); //edtbyRomulus
+router.post('/submitComment', authController.protect, submitCommentAsUser); //edtbyRomulus
 
 export default router;
