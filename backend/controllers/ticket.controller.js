@@ -4,6 +4,24 @@ import User from '../models/user.js';
 import Scope from '../models/scope.js';
 import { AIMergeDraftTickets } from '../services/ollama.service.js';
 
+export const getTicketsAsAdmin = async (req, res) => {
+  try {
+
+    const tickets = await Ticket.find({
+      status: { $ne: "Draft" }
+    }).sort({ createdAt: -1 });
+
+    res.status(200).json(tickets);
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: `Error loading tickets: ${error.message}`,
+    });
+
+  }
+};
+
 export const getDraftTicketsAsAdmin = async (req, res) => {
     try {
         const draftTickets = await Ticket.find({ status: 'Draft' });
