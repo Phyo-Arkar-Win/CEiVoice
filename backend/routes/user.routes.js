@@ -2,10 +2,11 @@ import { Router } from 'express';
 import authController from '../controllers/auth.controller.js';
 import { getUserTickets } from '../controllers/dashboard.controller.js';
 import { ticketDetailsAsUser, submitCommentAsUser } from '../controllers/ticket.controller.js';
+import { auth } from 'google-auth-library';
 
 const router = Router();
-router.get('/tickets', getUserTickets);
-router.get('/ticketDetails', ticketDetailsAsUser);
-router.post('/submitComment', submitCommentAsUser);
+router.get('/tickets', authController.protect, getUserTickets);
+router.get('/ticketDetails/:id', authController.protect, ticketDetailsAsUser); //edtbyRomulus
+router.post('/submitComment', authController.protect, submitCommentAsUser); //edtbyRomulus
 
 export default router;

@@ -1,6 +1,7 @@
 import Ticket from '../models/ticket.js';
 import Comment from '../models/comment.js';
 import User from '../models/user.js';
+import Scope from '../models/scope.js';
 import { AIMergeDraftTickets } from '../services/ollama.service.js';
 import { sendUpdateEmail } from '../services/email/email.service.js';
 
@@ -15,7 +16,7 @@ export const getDraftTicketsAsAdmin = async (req, res) => {
     }
 };
 
-// PUT : Submit a new ticket from draft | submit draft ticket
+// Submit a new ticket from draft | submit draft ticket
 export const submitDraftTicket = async (req, res) => {
     try {
         const id = req.params.id;
@@ -58,6 +59,9 @@ export const viewTicketAsGuest = async (req, res) => {
     const { email, ticketId } = req.body;
     try {
         const ticket = await Ticket.findById(ticketId);
+        if (!ticket) {
+            return res.status(404).json({ message: 'Ticket not found' });
+        }
         if (ticket.email !== email) {
             return res.status(403).json({ message: 'Incorrect Email or Ticket ID' });
         }
@@ -92,6 +96,9 @@ export const getIndividualTicket = async (req, res) => {
     const { ticketId } = req.body;
     try {
         const ticket = await Ticket.findById(ticketId);
+        if (!ticket) {
+            return res.status(404).json({ message: 'Ticket not found' });
+        }
         res.status(200).json({ title: ticket.title, category: ticket.category, summary: ticket.summary, resolution_path: ticket.resolution_path });
     } catch (error) {
         res.status(500).json({
@@ -197,12 +204,32 @@ export const updateDraftTicket = async (req, res) => {
 };
 
 export const ticketDetailsAsAdminOrAssignee = async (req, res) => {
-    const { ticketId } = req.body;
+    const userId = req.user.id;
+    const ticketId = req.params.id;
     try {
-        const ticket = await Ticket.findById(ticketId);
-        const publicComments = await Comment.find({ ticket: ticketId, visibility: 'Public' }).sort({ createdAt: -1 });
-        const internalComments = await Comment.find({ ticket: ticketId, visibility: 'Internal' }).sort({ createdAt: -1 });
-        res.status(200).json({ ticket, publicComments, internalComments });
+        const ticket = await Ticket.findById(ticketId).populate('assignees', 'name email').populate('creator', 'name email');
+        if (!ticket) {
+            return res.status(404).json({ message: "Ticket not found" });
+        }
+
+        // Get raw follower count from the unpopulated document (followers may contain emails, not ObjectIds)
+        const rawTicket = await Ticket.findById(ticketId).lean();
+        const followersCount = Array.isArray(rawTicket?.followers) ? rawTicket.followers.length : 0;
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        const assignees = await User.find({ role: 'assignee' });
+        const publicComments = await Comment.find({ ticket: ticketId, visibility: 'Public' }).populate('user', 'name email role').sort({ createdAt: -1 });
+        const internalComments = await Comment.find({ ticket: ticketId, visibility: 'Internal' }).populate('user', 'name email role').sort({ createdAt: -1 });
+        const scopes = await Scope.find();
+
+        if (user.role === 'admin') {
+            res.status(200).json({ ticket, publicComments, internalComments, scopes, followersCount });
+        } else if (user.role === 'assignee') {
+            res.status(200).json({ ticket, publicComments, internalComments, scopes, assignees, followersCount });
+        }
     } catch (error) {
         res.status(500).json({
             message: `Error viewing ticket: ${error.message}`,
@@ -211,11 +238,16 @@ export const ticketDetailsAsAdminOrAssignee = async (req, res) => {
 };
 
 export const ticketDetailsAsUser = async (req, res) => {
-    const { ticketId } = req.body;
+    const ticketId = req.params.id;
     try {
-        const ticket = await Ticket.findById(ticketId);
-        const publicComments = await Comment.find({ ticket: ticketId, visibility: 'Public' }).sort({ createdAt: -1 });
-        res.status(200).json({ ticket, publicComments });
+        const ticket = await Ticket.findById(ticketId).populate('assignees', 'name email').populate('creator', 'name email'); //edtbyRomulus
+        if (!ticket) {
+            return res.status(404).json({ message: 'Ticket not found' });
+        }
+        const rawTicket = await Ticket.findById(ticketId).lean();
+        const followersCount = Array.isArray(rawTicket?.followers) ? rawTicket.followers.length : 0;
+        const publicComments = await Comment.find({ ticket: ticketId, visibility: 'Public' }).populate('user', 'name email role').sort({ createdAt: -1 }); //edtbyRomulus
+        res.status(200).json({ ticket, publicComments, followersCount });
     } catch (error) {
         res.status(500).json({
             message: `Error viewing ticket: ${error.message}`,
@@ -223,19 +255,66 @@ export const ticketDetailsAsUser = async (req, res) => {
     }
 };
 
+// export const saveAsAssignee = async (req, res) => {
+//     const { ticketId, status, reassignedAssigneeId } = req.body;
+//     try {
+//         let ticket = await Ticket.findById(ticketId);
+//         if (!ticket) {
+//             return res.status(404).json({ message: "Ticket not found" });
+//         }
+//         const reassignedAssignee = await User.findById(reassignedAssigneeId);
+
+//         // console.log(reassignedAssignee)
+        
+        
+//         if (status === "Solving") {
+//             ticket.status = status;
+//         } 
+//         else if (status === "Solved" || status === "Failed") {
+//             const commented = await Comment.find({ ticket: ticket, user: req.user.id });
+            
+            
+//             if (!commented.length) {
+//                 return res.status(400).json({ message: 'You must comment before marking the ticket as solved' });
+//             }
+//             ticket.status = status;
+//         }
+
+//         if (reassignedAssignee) {
+//             if (!ticket.assignees.includes(reassignedAssignee)) {
+//                 ticket.assignees.push(reassignedAssignee);
+//             }
+//         }
+//         console.log(ticket) 
+
+//         await ticket.save();
+//         console.log("What")
+//         res.status(200).json({ ticket });
+//     } catch (error) {
+//         res.status(500).json({
+//             message: `Error updating ticket: ${error.message}`,
+//         });
+//     }
+// }
+
 export const saveAsAssignee = async (req, res) => {
     const { ticketId, status, reassignedAssigneeId } = req.body;
     try {
         const ticket = await Ticket.findById(ticketId);
-        const reassignedAssignee = await User.findById(reassignedAssigneeId);
-        if (status !== "Solved") {
-            ticket.status = status;
-        } else if (status === "Solved") {
-            const commented = await Comment.find({ ticket: ticketId, user: req.user.id });
+        if (!ticket) {
+            return res.status(404).json({ message: "Ticket not found" });
+        }
 
+        const updateFields = {};
+
+        if (status === "Solved") {
+            const commented = await Comment.find({ ticket: ticketId, user: req.user.id });
             if (!commented.length) {
-                return res.status(400).json({ message: 'You must comment before marking the ticket as solved' });
+                return res.status(400).json({ message: `You must comment before marking the ticket as ${status.toLowerCase()}` });
             }
+        }
+        if (status) {
+            updateFields.status = status;
         }
 
         if (reassignedAssignee) {
@@ -273,14 +352,17 @@ export const submitCommentAsUser = async (req, res) => {
     const { ticketId, commentText } = req.body;
     try {
         const ticket = await Ticket.findById(ticketId);
+        if (!ticket) {
+            return res.status(404).json({ message: "Ticket not found" });
+        }
         const user = await User.findById(userId);
         const newComment = new Comment({
-            user,
-            ticket,
+            user: userId,
+            ticket: ticketId,
             comment: commentText,
         });
         await newComment.save();
-        res.status(200).json({ message: 'Comment added successfully', comment: newComment, name: user.name, role: user.role });
+        res.status(201).json({ message: 'Comment added successfully', comment: newComment, name: user.name, role: user.role });
     } catch (error) {
         res.status(500).json({
             message: `Error adding comment: ${error.message}`,
@@ -293,15 +375,23 @@ export const submitCommentAsAdminOrAssignee = async (req, res) => {
     const { ticketId, commentText, visibility } = req.body;
     try {
         const ticket = await Ticket.findById(ticketId);
+        if (!ticket) {
+            return res.status(404).json({ message: "Ticket not found" });
+        }
         const user = await User.findById(userId);
         const newComment = new Comment({
-            user,
-            ticket,
+            user: userId,
+            ticket: ticketId,
             comment: commentText,
             visibility
         });
+        if ( visibility === 'Public' && user.role === 'assignee' ) {
+            if ( ticket.status !== 'Solved' ) {
+                await Ticket.findByIdAndUpdate(ticketId, { status: 'Solving' });
+             }
+        }
         await newComment.save();
-        res.status(200).json({ message: 'Comment added successfully', comment: newComment, name: user.name, role: user.role });
+        res.status(201).json({ message: 'Comment added successfully', comment: newComment, name: user.name, role: user.role });
     } catch (error) {
         res.status(500).json({
             message: `Error adding comment: ${error.message}`,

@@ -76,6 +76,7 @@ export default function MergeDraftToNew() {
 
   // Unmerge
   const unmergeUser = async (ticketId) => {
+    console.log(mergedTicket)
 
   try {
     const res = await api.post("/tickets/merge/unlink", {
