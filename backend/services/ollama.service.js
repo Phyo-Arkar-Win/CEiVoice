@@ -3,7 +3,7 @@ import Ticket from '../models/ticket.js';
 import Scope from '../models/scope.js';
 import User from '../models/user.js';
 
-export const createDraftTicket = async (email, issue, user) => {
+const AIGenerateDraftTicket = async (email, issue, user) => {
     const scopes = await Scope.find({}, 'name');
     const scopeList = scopes.map(scope => scope.name).join(', ');
 
@@ -91,21 +91,19 @@ ${issue}
         original_message: issue,
         creator: user
     });
+    // console.log("What", suggestedAssignee)
     return [newTicket, suggestedAssignee]
 };
 
 
-export const mergeDraftTickets = async (tickets) => {
-    const assignees = await User.find({ role: 'assignee' }).populate('scopes');
-    const assigneesList = assignees.map(assignee =>
-        `Name: ${assignee.name}
-        Scopes: ${assignee.scopes.map(scope => scope.name).join(', ')}`)
-        .join('\n');
+export const AIMergeDraftTickets = async (tickets) => {
     const scopes = await Scope.find({}, 'name');
+    const assignees = await User.find({ role: 'assignee' }).populate('scopes');
+    const assigneesList = assignees.map(a => `${a.name} (Scopes: ${a.scopes.map(s => s.name).join(', ')})`).join('\n');
     const scopeList = scopes.map(scope => scope.name).join(', ');
     const ticketList = tickets.map((ticket, index) => `
     Ticket ${index + 1}
-    Issue: ${ticket.issue}
+    Ticket Issue: ${ticket.issue}
     Title: ${ticket.title}
     Summary: ${ticket.summary}
     Category: ${ticket.category}
@@ -193,7 +191,6 @@ ${ticketList}
         }
     });
 
-    // Parsed output data from AI
     const parsed = JSON.parse(response.response);
 
     const followers = [
@@ -211,8 +208,10 @@ ${ticketList}
         category: parsed.category,
         resolution_path: parsed.resolution_path,
         followers,
-        mergedTickets: tickets.map(ticket => ticket._id),
+        mergedTickets: tickets.map(t => t._id),
     });
 
     return [mergedTicket, suggestedAssignee]
 };
+
+export default AIGenerateDraftTicket;
