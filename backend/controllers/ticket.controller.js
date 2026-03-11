@@ -322,6 +322,7 @@ export const saveAsAssignee = async (req, res) => {
             return res.status(404).json({ message: "Ticket not found" });
         }
 
+        const reassignedAssignee = await User.findById(reassignedAssigneeId);
         const updateFields = {};
 
         if (status === "Solved") {
