@@ -19,6 +19,7 @@ export default function AdminTicketDetails() {
   // ── Ticket Data State ──────────────────────────────────────────────────────
   const [ticket, setTicket] = useState(initialTicket);
   const [followersCount, setFollowersCount] = useState(0);
+  
 
   // ── Comment State ──────────────────────────────────────────────────────────
   const [publicComments, setPublicComments] = useState([]);
@@ -183,7 +184,6 @@ export default function AdminTicketDetails() {
 
   // ─── JSX Render ───────────────────────────────────────────────────────────
   return (
-    
     <div className="min-h-screen flex bg-gray-100">
       {/* ── Sidebar Navigation ──────────────────────────────────────────────── */}
       <AdminNavbar />
@@ -206,7 +206,7 @@ export default function AdminTicketDetails() {
           {loading ? (
             <p className="text-gray-600 text-center text-sm">Loading ticket...</p>
           ) : (
-            <div>
+            <>
               {/* Error banner */}
               {errorMessage && (
                 <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -317,7 +317,7 @@ export default function AdminTicketDetails() {
                   </button>
                 </div>
               </div>
-            </div>
+            </>
           )}
         </div>
       </div>

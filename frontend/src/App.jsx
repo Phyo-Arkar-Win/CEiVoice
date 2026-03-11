@@ -24,11 +24,10 @@ import Draft from "./pages/Admin/Draft";
 import Staff from "./pages/Admin/StaffManagement";
 import Tickets from "./pages/Admin/Tickets";
 import MergeDraftToNew from "./pages/Admin/MergeDraftToNew";
-// import Admin_Ticket_Details from "./pages/Admin/AdminTicketDetail";
+import AdminTicketDetails from "./pages/Admin/AdminTicketDetails";
 
 // Assignee
 import Assignee_Dashboard from "./pages/Assignee/AssigneeDashboard"
-import Assignee_Referral from './pages/Assignee/Referral';
 import Assignee_Historylog from './pages/Assignee/HistoryLog';
 import Assignee_Ticket_Details from './pages/Assignee/AssigneeTicketDetails';
 
@@ -80,19 +79,15 @@ const App = () => {
                     <Route path='/drafts/merge' element={<ProtectedRoute allowedRoles={["admin"]}><MergeDraftToNew/></ProtectedRoute>}/>
                     <Route path='/staff' element={<ProtectedRoute allowedRoles={["admin"]}><Staff /></ProtectedRoute>} />
 
-                    {/* <Route path='/admin_ticket_details/:routeTicketId' element= {
+                    <Route path='/admin_ticket_details/:routeTicketId' element= {
                         <ProtectedRoute allowedRoles={['admin']}>
-                            <Admin_Ticket_Details/>
-                        </ProtectedRoute>}/> */}
+                            <AdminTicketDetails/>
+                        </ProtectedRoute>}/>
                     
                     {/* Assignee Route */}
                     <Route path='/assignee_dashboard' element={
                         <ProtectedRoute allowedRoles={["assignee"]}>
                             <Assignee_Dashboard />
-                        </ProtectedRoute>}/>
-                    <Route path='/assignee_referral' element={
-                        <ProtectedRoute allowedRoles={["assignee"]}>
-                            <Assignee_Referral />
                         </ProtectedRoute>}/>
                     <Route path='/assignee_historylog' element={
                         <ProtectedRoute allowedRoles={["assignee"]}>

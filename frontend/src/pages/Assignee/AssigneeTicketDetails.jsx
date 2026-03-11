@@ -267,7 +267,7 @@ export default function Assignee_Ticket_Details() {
       {/* ── Main Content Area ───────────────────────────────────────────────── */}
       <div
         className={`flex-1 transition-all duration-300 p-4 md:p-6 ${
-          collapsed ? "ml-20" : "ml-64"
+          collapsed ? "ml-1" : "ml-7"
         }`}
       >
         <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6">
