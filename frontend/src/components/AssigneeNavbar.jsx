@@ -68,14 +68,6 @@ export default function AssigneeNavbar() {
               Dashboard
             </span>
           </NavLink>
-
-          <NavLink to="/assignee_referral" className={linkStyle}>
-            <IoPeopleOutline className="text-2xl min-w-[28px]" />
-            <span className="ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              Referral
-            </span>
-          </NavLink>
-
           <NavLink to="/assignee_historylog" className={linkStyle}>
             <MdOutlineAccessTime className="text-2xl min-w-[28px]" />
             <span className="ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">

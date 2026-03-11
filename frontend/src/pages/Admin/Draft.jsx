@@ -326,7 +326,7 @@ export default function Draft() {
               className={`px-4 py-2 rounded text-white cursor-pointer 
   ${merging ? "bg-gray-400" : "bg-orange-600"}`}
             >
-              {merging ? "Merging..." : "+ Merge"}
+              {merging ? "Merging..." : "+ Merge Submit"}
             </button>
           </div>
         </div>

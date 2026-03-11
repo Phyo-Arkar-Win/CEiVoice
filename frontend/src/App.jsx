@@ -28,7 +28,6 @@ import Admin_Ticket_Details from "./pages/Admin/AdminTicketDetails";
 
 // Assignee
 import Assignee_Dashboard from "./pages/Assignee/AssigneeDashboard"
-import Assignee_Referral from './pages/Assignee/Referral';
 import Assignee_Historylog from './pages/Assignee/HistoryLog';
 import Assignee_Ticket_Details from './pages/Assignee/AssigneeTicketDetails';
 
@@ -89,10 +88,6 @@ const App = () => {
                     <Route path='/assignee_dashboard' element={
                         <ProtectedRoute allowedRoles={["assignee"]}>
                             <Assignee_Dashboard />
-                        </ProtectedRoute>}/>
-                    <Route path='/assignee_referral' element={
-                        <ProtectedRoute allowedRoles={["assignee"]}>
-                            <Assignee_Referral />
                         </ProtectedRoute>}/>
                     <Route path='/assignee_historylog' element={
                         <ProtectedRoute allowedRoles={["assignee"]}>
