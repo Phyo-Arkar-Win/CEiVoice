@@ -177,8 +177,8 @@ SELECTED TICKETS
 ${ticketList}
 `;
 
-    const assignees = await User.find({ role: "assignee" }, 'name');
-    const assigneesList = assignees.map(assignee => `(${assignee.name}, ${assignee.role})`).join(', ');
+    // const suggestedassignees = await User.find({ role: "assignee" }, 'name');
+    // const assigneesList = assignees.map(assignee => `(${assignee.name}, ${assignee.role})`).join(', ');
 
     const ollama = new Ollama({ host: 'http://localhost:11434' });
 
