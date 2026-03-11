@@ -175,30 +175,29 @@ export const mergeDraftTickets = async (req, res) => {
 // update draft ticket ( admin can update before submitting )
 export const updateDraftTicket = async (req, res) => {
     try {
-
-        const ticket = await Ticket.findByIdAndUpdate(
-            req.params.id,
-            req.body,   // <-- important
-            { new: true }
-        );
-
+        const id = req.params.id;
+        const { title, summary, category, resolution_path, assignees, deadline } = req.body;
+        const ticket = await Ticket.findById(id);
         if (!ticket) {
-            return res.status(404).json({
-                message: "Ticket not found"
-            });
+            return res.status(404).json({ message: 'Ticket not found' });
         }
 
+        ticket.title = title;
+        ticket.summary = summary;
+        ticket.category = category;
+        ticket.resolution_path = resolution_path;
+        ticket.assignees = assignees;
+        ticket.deadline = deadline;
+
+        await ticket.save();
+
         res.status(200).json({
-            message: "Draft updated",
-            ticket
+            message: 'Draft ticket updated successfully',
+            ticket: ticket,
         });
-
     } catch (error) {
-        console.error(error);
-
         res.status(500).json({
-            message: "Update failed",
-            error: error.message
+            message: `Error updating draft ticket: ${error.message}`,
         });
     }
 };

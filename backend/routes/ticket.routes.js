@@ -15,6 +15,13 @@ router.patch(
   submitDraftTicket
 );
 
+router.patch(
+  '/:id/update',
+  authController.protect,
+  authController.restrictTo('admin', 'assignee'),
+  updateDraftTicket
+);
+
 router.post('/track/submit', viewTicketAsGuest);
 router.post('/track/user', viewTicketAsUser);
 
