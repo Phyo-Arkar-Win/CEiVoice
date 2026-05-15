@@ -122,6 +122,7 @@ export const createDraftTicket = async (req, res) => {
         ticket.status = 'New';
 
         await ticket.save();
+        await sendUpdateEmail([ticket.email], ticket);
 
         res.status(200).json({
             message: 'Draft ticket submitted successfully',
@@ -340,9 +341,16 @@ export const mergeDraftTickets = async (req, res) => {
         const creatorList = ticketsToMerge.map(ticket => ticket.creator)
         await mergedTicketDoc.updateOne({ $set: { status: 'New' } });
         mergedTicketDoc.followers.push(...creatorList);
-        console.log(mergedTicketDoc)
         await Ticket.deleteMany({ _id: { $in: mergedTicketDoc.mergedTickets.map(id => id._id) } });
         await mergedTicketDoc.save();
+        let followerEmails = [];
+        for (const followerId of mergedTicketDoc.followers) {
+            const user = await User.findById(followerId);
+            if (user) {
+                followerEmails.push(user.email);
+            }
+        }
+        await sendUpdateEmail(followerEmails, mergedTicketDoc);
         res.status(200).json({ message: 'Tickets merged successfully', data: mergedTicket });
     } catch (error) {
         res.status(500).json({
@@ -354,30 +362,29 @@ export const mergeDraftTickets = async (req, res) => {
 // update draft ticket ( admin can update before submitting )
 export const updateDraftTicket = async (req, res) => {
     try {
-
-        const ticket = await Ticket.findByIdAndUpdate(
-            req.params.id,
-            req.body,   // <-- important
-            { new: true }
-        );
-
+        const id = req.params.id;
+        const { title, summary, category, resolution_path, assignees, deadline } = req.body;
+        const ticket = await Ticket.findById(id);
         if (!ticket) {
-            return res.status(404).json({
-                message: "Ticket not found"
-            });
+            return res.status(404).json({ message: 'Ticket not found' });
         }
 
+        ticket.title = title;
+        ticket.summary = summary;
+        ticket.category = category;
+        ticket.resolution_path = resolution_path;
+        ticket.assignees = assignees;
+        ticket.deadline = deadline;
+
+        await ticket.save();
+
         res.status(200).json({
-            message: "Draft updated",
-            ticket
+            message: 'Draft ticket updated successfully',
+            ticket: ticket,
         });
-
     } catch (error) {
-        console.error(error);
-
         res.status(500).json({
-            message: "Update failed",
-            error: error.message
+            message: `Error updating draft ticket: ${error.message}`,
         });
     }
 };
@@ -430,15 +437,21 @@ export const saveAsAssignee = async (req, res) => {
     const { ticketId, status, reassignedAssigneeId } = req.body;
     try {
         const ticket = await Ticket.findById(ticketId);
-        const reassignedAssignee = await User.findById(reassignedAssigneeId);
-        if (status !== "Solved") {
-            ticket.status = status;
-        } else if (status === "Solved") {
-            const commented = await Comment.find({ ticket: ticketId, user: req.user.id });
+        if (!ticket) {
+            return res.status(404).json({ message: "Ticket not found" });
+        }
 
+        const reassignedAssignee = await User.findById(reassignedAssigneeId);
+        const updateFields = {};
+
+        if (status === "Solved") {
+            const commented = await Comment.find({ ticket: ticketId, user: req.user.id });
             if (!commented.length) {
-                return res.status(400).json({ message: 'You must comment before marking the ticket as solved' });
+                return res.status(400).json({ message: `You must comment before marking the ticket as ${status.toLowerCase()}` });
             }
+        }
+        if (status) {
+            updateFields.status = status;
         }
 
         if (reassignedAssignee) {
@@ -446,6 +459,23 @@ export const saveAsAssignee = async (req, res) => {
         }
 
         await ticket.save();
+
+        let followerEmails = [];
+        const recipients = new Set();
+        if (ticket.email) recipients.add(ticket.email);
+
+        for (const followerId of ticket.followers) {
+            const user = await User.findById(followerId);
+            if (user) {
+                recipients.add(user.email);
+            }
+        }
+        followerEmails = Array.from(recipients);
+
+        if (followerEmails.length > 0) {
+            await sendUpdateEmail(followerEmails, ticket);
+        }
+
         res.status(200).json({ ticket });
     } catch (error) {
         res.status(500).json({

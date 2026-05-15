@@ -1,17 +1,20 @@
 import { Ollama } from 'ollama';
 import Ticket from '../models/ticket.js';
 import Scope from '../models/scope.js';
+import User from '../models/user.js';
 
 export const createDraftTicket = async (email, issue, user) => {
     const scopes = await Scope.find({}, 'name');
     const scopeList = scopes.map(scope => scope.name).join(', ');
 
+    const assignees = await User.find({ role: 'assignee' }).populate('scopes');
+    const assigneesList = assignees.map(a => `${a.name} (Scopes: ${a.scopes.map(s => s.name).join(', ')})`).join('\n');
     const prompt = `
 You are an AI service desk assistant responsible for analyzing a user's support request and generating a structured helpdesk ticket draft.
 
 Your goal is to help administrators focus on resolution instead of categorization.
 
-Analyze the user's message and produce a structured ticket containing a suggested title, category, summary, and resolution path.
+Analyze the user's message and produce a structured ticket containing a suggested title, category, summary, resolution path, and suggested assignee.
 
 IMPORTANT RULES:
 - Return ONLY valid JSON. Do not include explanations, comments, or text outside the JSON.
@@ -27,6 +30,8 @@ Output JSON structure:
   "summary": string,
   "category": string,
   "resolution_path": [string]
+  "suggested_assignee": string
+
 }
 
 Field requirements:
@@ -51,6 +56,11 @@ If none apply, choose the closest logical category.
 Provide 1–3 actionable steps or resources support staff could take to resolve the request.
 Each step must be short, practical, and relevant.
 
+5. suggested_assignee
+Choose the most suitable assignee for this ticket from the following list:
+${assigneesList}
+Return the NAME of the assignee.
+
 User Request Message:
 ${issue}
 `;
@@ -67,6 +77,9 @@ ${issue}
     });
 
     const parsed = JSON.parse(response.response);
+
+    console.log("Parsed AI response:", parsed.suggested_assignee);
+    let suggestedAssignee = await User.findOne({ name: parsed.suggested_assignee });
 
     const newTicket = await Ticket.create({
         email: email,
@@ -128,7 +141,7 @@ OUTPUT FORMAT
   "summary": string,
   "category": string,
   "resolution_path": [string],
-  "assignees": [string]
+  "suggested_assignee": [string]
 }
 
 ---------------------
@@ -155,11 +168,19 @@ ${scopeList}
 resolution_path
 Provide 1–3 short actionable steps support staff could take to resolve the issue.
 
+suggested_assignee
+Choose the most suitable assignee for this ticket from the following list:
+${assigneesList}
+Return the NAME of the assignee.
+
 ---------------------
 SELECTED TICKETS
 ---------------------
 ${ticketList}
 `;
+
+    // const suggestedassignees = await User.find({ role: "assignee" }, 'name');
+    // const assigneesList = assignees.map(assignee => `(${assignee.name}, ${assignee.role})`).join(', ');
 
     const ollama = new Ollama({ host: 'http://localhost:11434' });
 
@@ -176,10 +197,12 @@ ${ticketList}
     const parsed = JSON.parse(response.response);
 
     const followers = [
-    ...new Map(
-        tickets.map(ticket => [ticket.creator.toString(), ticket.creator])
-    ).values()
+        ...new Map(
+            tickets.map(ticket => [ticket.creator.toString(), ticket.creator])
+        ).values()
     ];
+
+    let suggestedAssignee = await User.findOne({ name: parsed.suggested_assignee });
 
     const mergedTicket = new Ticket({
         issue: parsed.issue,
@@ -190,6 +213,6 @@ ${ticketList}
         followers,
         mergedTickets: tickets.map(ticket => ticket._id),
     });
-    
-    return mergedTicket
+
+    return [mergedTicket, suggestedAssignee]
 };
