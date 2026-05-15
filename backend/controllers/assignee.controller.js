@@ -1,11 +1,18 @@
 import User from '../models/user.js';
 import Scope from "../models/scope.js"
 
-export const getAssignee = async (req, res) => {
+export const getAssignees = async (req, res) => {
   try {
-    const assignees = await User.find({ role: "assignee" }).populate("scopes")
+    const assignees = await User.find({ role: "assignee" }).populate("scopes", "name")
+
+    const assigneesList = assignees.map(assignee => ({
+      name: assignee.name,
+      email: assignee.email,
+      scopes: assignee.scopes.map(scope => scope.name)
+    }))
+
     res.status(200).json({
-      data: assignees
+      data: assigneesList
     });
 
   } catch (error) {
@@ -17,7 +24,7 @@ export const getAssignee = async (req, res) => {
   }
 };
 
-export const recruitAssignee = async (req, res) => {
+export const createAssignee = async (req, res) => {
 
   try {
 

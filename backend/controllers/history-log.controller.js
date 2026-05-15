@@ -1,11 +1,11 @@
-import HistoryLog from "../models/historyLog.js";
+import HistoryLog from "../models/history-log.js";
 
-const getHistoryLogs = async (req, res) => {
-    try {   
+export const getHistoryLogs = async (req, res) => {
+    try {
         let user = req.user;
-        
+
         let statusHistoryLog = await HistoryLog.find({ 
-            action: "StatusChange" ,   
+            action: "StatusChange" ,
             $or: [
                 { fromAssignee:  user },
                 { toAssignee: user }
@@ -24,4 +24,3 @@ const getHistoryLogs = async (req, res) => {
     }
 };
 
-export default getHistoryLogs;

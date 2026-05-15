@@ -1,17 +1,18 @@
 import { Router } from 'express';
-import { getAssigneeDashboardData } from '../controllers/dashboard.controller.js';
-import authController from '../controllers/auth.controller.js';
-import getHistoryLog  from '../controllers/historyLog.controller.js';
-import { ticketDetailsAsAdminOrAssignee, submitCommentAsAdminOrAssignee, saveAsAssignee } from '../controllers/ticket.controller.js';
-import { get } from 'mongoose';
+import { protect, restrictTo } from '../middlewares/auth.middleware.js';
+import { getHistoryLogs } from '../controllers/history-log.controller.js';
+import { saveAsAssignee } from '../controllers/ticket.controller.js';
 
 const router = Router();
-router.get('/dashboard', authController.protect, getAssigneeDashboardData);
-router.get('/ticketDetailsAsAdminOrAssignee', authController.protect, ticketDetailsAsAdminOrAssignee);
-router.post('/commentAsAdminOrAssignee', authController.protect, submitCommentAsAdminOrAssignee);
-router.get('/history', authController.protect, authController.restrictTo('assignee'), getHistoryLog);
-router.get('/ticketDetails/:id', authController.protect, ticketDetailsAsAdminOrAssignee); 
-router.post('/submitComment', authController.protect, submitCommentAsAdminOrAssignee); 
-router.post('/saveTicket', authController.protect, saveAsAssignee);
+
+router.get('/dashboard', getAssigneeDashboardData);
+router.get('/history', getHistoryLogs);
+
+router.post('/save-ticket', saveAsAssignee);
+
+// Moved to tickets route
+// router.get('/tickets/:id', getTicketDetails);
+// router.post('/submitComment', submitComment); 
+
 
 export default router;      
