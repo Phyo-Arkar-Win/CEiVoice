@@ -1,5 +1,5 @@
-import { Router } from 'express'; 
-import { getScopes, createScope } from '../controllers/scope.controller.js'; 
+import { Router } from 'express';
+import { getScopes, createScope } from '../controllers/scope.controller.js';
 
 const router = Router();
 

@@ -2,7 +2,7 @@ import { Ollama } from 'ollama';
 import Ticket from '../models/ticket.js';
 import Scope from '../models/scope.js';
 
-const AIGenerateDraftTicket = async (email, issue, user) => {
+export const createDraftTicket = async (email, issue, user) => {
     const scopes = await Scope.find({}, 'name');
     const scopeList = scopes.map(scope => scope.name).join(', ');
 
@@ -78,18 +78,21 @@ ${issue}
         original_message: issue,
         creator: user
     });
-
-    return newTicket
+    return [newTicket, suggestedAssignee]
 };
 
 
-export const AIMergeDraftTickets = async (tickets) => {
+export const mergeDraftTickets = async (tickets) => {
+    const assignees = await User.find({ role: 'assignee' }).populate('scopes');
+    const assigneesList = assignees.map(assignee =>
+        `Name: ${assignee.name}
+        Scopes: ${assignee.scopes.map(scope => scope.name).join(', ')}`)
+        .join('\n');
     const scopes = await Scope.find({}, 'name');
-    // const users = await User.find({ role: "assignee" }, 'name');
     const scopeList = scopes.map(scope => scope.name).join(', ');
     const ticketList = tickets.map((ticket, index) => `
     Ticket ${index + 1}
-    Ticket Issue: ${ticket.issue}
+    Issue: ${ticket.issue}
     Title: ${ticket.title}
     Summary: ${ticket.summary}
     Category: ${ticket.category}
@@ -169,6 +172,7 @@ ${ticketList}
         }
     });
 
+    // Parsed output data from AI
     const parsed = JSON.parse(response.response);
 
     const followers = [
@@ -184,10 +188,8 @@ ${ticketList}
         category: parsed.category,
         resolution_path: parsed.resolution_path,
         followers,
-        mergedTickets: tickets.map(t=>t._id)
+        mergedTickets: tickets.map(ticket => ticket._id),
     });
     
     return mergedTicket
 };
-
-export default AIGenerateDraftTicket;

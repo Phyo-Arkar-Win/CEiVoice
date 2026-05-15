@@ -1,41 +1,39 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import authRoutes from './routes/auth.routes.js';
 import ollamaRoutes from './routes/ollama.routes.js';
-import healthCheckRoutes from './routes/healthCheck.routes.js';
-import loginRoutes from './routes/login.routes.js';
-import signupRoutes from './routes/signup.routes.js';
+import healthCheckRoutes from './routes/health-check.routes.js';
 import emailRoutes from './routes/email.routes.js';
-import issueSubmissionRoutes from './routes/issueSubmission.routes.js';
 import ticketRoutes from './routes/ticket.routes.js';
-import recruitAssigneeRoutes from './routes/recruitAssignee.routes.js';
 import ScopesRoutes from './routes/scopes.routes.js';
-import historyLogRoutes from './routes/historyLog.routes.js';
+import historyLogRoutes from './routes/history-log.routes.js';
 import assigneeRoutes from './routes/assignee.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import userRoutes from './routes/user.routes.js';
+import testRoutes from './routes/test.route.js';
 
 const app = express();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 
 app.get('/', (req, res) => {
     res.send('Hello, World!');
 });
 
-app.use('/api/health', healthCheckRoutes);
-app.use('/api/AI', ollamaRoutes);
-app.use('/login', loginRoutes);
-app.use('/signup', signupRoutes);
-app.use('/email', emailRoutes);
-app.use('/submit', issueSubmissionRoutes);
-app.use('/tickets', ticketRoutes);
-app.use('/recruit', recruitAssigneeRoutes);
-app.use('/scopes', ScopesRoutes);
-app.use('/history', historyLogRoutes);
-app.use('/assignee', assigneeRoutes);
-app.use('/admin', adminRoutes);
-app.use('/user', userRoutes);
+app.use('/api/v1/health', healthCheckRoutes);
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/ai', ollamaRoutes);
+app.use('/api/v1/email', emailRoutes);
+app.use('/api/v1/tickets', ticketRoutes);
+app.use('/api/v1/scopes', ScopesRoutes);
+app.use('/api/v1/history', historyLogRoutes);
+app.use('/api/v1/assignee', assigneeRoutes);
+app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/user', userRoutes);
+app.use('/api/v1/test', testRoutes);
 
 export default app;

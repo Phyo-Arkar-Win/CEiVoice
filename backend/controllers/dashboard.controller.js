@@ -1,6 +1,6 @@
 import Ticket from '../models/ticket.js';
 
-const getAssigneeDashboardData = async (req, res) => {
+export const getAssigneeDashboardData = async (req, res) => {
     try {
         const assigneeId = req.user.id;
 
@@ -59,7 +59,7 @@ const getAssigneeDashboardData = async (req, res) => {
     }
 }
 
-const getAdminDashboardData = async (req, res) => {
+export const getAdminDashboardData = async (req, res) => {
     try {
         // period from dropdown, default to 3 days
         const period = Number(req.query.period) || 3;
@@ -160,16 +160,16 @@ const getAdminDashboardData = async (req, res) => {
 }
 
 
-const getUserTickets = async (req, res) => {
-    try {
-        const userId = req.user.id;
-        const tickets = await Ticket
-            .find({ $or: [{ followers: { $in: [userId] } }, { creator: userId }] })
-            .sort({ createdAt: -1 });
-        res.status(200).json({ tickets });
-    } catch (error) {
-        res.status(500).json({ message: `Error fetching user tickets: ${error.message}` });
-    }
-}
+// Moved to ticket controller
+// export const getUserTickets = async (req, res) => {
+//     try {
+//         const userId = req.user.id;
+//         const tickets = await Ticket
+//             .find({ $or: [{ followers: { $in: [userId] } }, { creator: userId }] })
+//             .sort({ createdAt: -1 });
+//         res.status(200).json({ tickets });
+//     } catch (error) {
+//         res.status(500).json({ message: `Error fetching user tickets: ${error.message}` });
+//     }
+// }
 
-export { getAssigneeDashboardData, getAdminDashboardData, getUserTickets };

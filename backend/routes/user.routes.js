@@ -1,11 +1,12 @@
 import { Router } from 'express';
-import authController from '../controllers/auth.controller.js';
-import { getUserTickets } from '../controllers/dashboard.controller.js';
-import { ticketDetailsAsUser, submitCommentAsUser } from '../controllers/ticket.controller.js';
+import { protect, restrictTo } from '../middlewares/auth.middleware.js';
+import { getTicketDetails, submitComment, getTickets } from '../controllers/ticket.controller.js';
 
 const router = Router();
-router.get('/tickets', getUserTickets);
-router.get('/ticketDetails', ticketDetailsAsUser);
-router.post('/submitComment', submitCommentAsUser);
+router.get('/tickets', getTickets);
+
+// Moved to tickets route
+// router.get('/tickets/:ticketId', getTicketDetails);
+// router.post('/tickets/:ticketId/comments', submitComment);
 
 export default router;

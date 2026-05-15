@@ -5,7 +5,7 @@ import { OAuth2Client } from "google-auth-library";
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-const signup = async (req, res) => {
+export const signup = async (req, res) => {
 
     const { email, password, username } = req.body;
 
@@ -21,29 +21,42 @@ const signup = async (req, res) => {
 
 }
 
-const login = async (req, res) => {
+export const login = async (req, res) => {
 
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
 
+    const user = await User.findOne({ email });
     if (!user) {
         return res.status(400).json({ message: "Invalid email or password." });
     }
-    const correctPassword = await bcrypt.compare(password, user.password);
 
+    const correctPassword = await bcrypt.compare(password, user.password);
     if (!correctPassword) {
         return res.status(400).json({ message: "Invalid email or password." });
     }
 
     const token = jwt.sign(
-        { userId: user._id },
-        process.env.JWT_SECRET, { expiresIn: "3h" }
+        {
+            userId: user._id,
+            role: user.role
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: "3h" }
     );
+
+    res.cookie('jwt', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV !== 'development',
+        sameSite: 'strict',
+        maxAge: 3 * 60 * 60 * 1000
+    });
+
+    console.log(jwt.verify(req.cookies.jwt, process.env.JWT_SECRET).role)
 
     res.status(200).json({ message: "Login successful.", user, token });
 }
 
-const googleLogin = async (req, res) => {
+export const googleLogin = async (req, res) => {
     const { token } = req.body;
 
     try {
@@ -64,10 +77,20 @@ const googleLogin = async (req, res) => {
         }
 
         const appToken = jwt.sign(
-            { userId: user._id },
+            {
+                userId: user._id,
+                role: user.role
+             },
             process.env.JWT_SECRET,
             { expiresIn: "3h" }
         );
+
+        res.cookie('jwt', appToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV !== 'development',
+            sameSite: 'strict',
+            maxAge: 3 * 60 * 60 * 1000
+        });
 
         res.status(200).json({ message: "Google login successful.", token: appToken, user });
     } catch (error) {
@@ -76,33 +99,7 @@ const googleLogin = async (req, res) => {
     }
 }
 
-const protect = async (req, res, next) => {
-    try {
-        let token;
-        if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
-            token = req.headers.authorization.split(" ")[1];
-        }
-
-        if (!token) {
-            return res.status(401).json({ message: "You are not logged in! Please log in to get access." });
-        }
-
-        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-
-        const currentUser = await User.findById(decodedToken.userId);
-        if (!currentUser) {
-            return res.status(401).json({ message: "The user belonging to this token no longer exists." });
-        }
-
-        req.user = currentUser;
-        next();
-    } catch (error) {
-        console.error("Auth Error:", error);
-        res.status(401).json({ message: "Authentication failed." });
-    }
-}
-
-const restrictTo = (...roles) => {
+export const restrictTo = (...roles) => {
     return (req, res, next) => {
         if (!roles.includes(req.user.role)) {
             return res.status(403).json({ message: "You do not have permission to perform this action." });
@@ -111,4 +108,3 @@ const restrictTo = (...roles) => {
     };
 };
 
-export default { signup, login, googleLogin, protect, restrictTo };
