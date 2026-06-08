@@ -25,13 +25,13 @@ export const validateSignup = async (req, res, next) => {
 }
 
 export const protect = async (req, res, next) => {
-    const token = req.cookies.jwt;
-    if (!token) {
+    const accessToken = req.cookies.accessToken;
+    if (!accessToken) {
         return res.status(401).json({ message: "Please log in to get access." });
     }
 
     try {
-        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+        const decodedToken = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
         const currentUser = await User.findById(decodedToken.userId).select('-password');
         if (!currentUser) {
             return res.status(401).json({ message: "The user belonging to this token no longer exists." });
