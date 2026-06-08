@@ -10,7 +10,8 @@ const userSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: "Scope"
         }
-    ]
+    ],
+    refreshTokens: [{ type: String }]
 }, { timestamps: true });
 
 export default mongoose.model('User', userSchema);
