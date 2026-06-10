@@ -1,13 +1,23 @@
 import { Router } from 'express';
-import authController from '../controllers/auth.controller.js';
+import { protect, restrictTo } from '../middlewares/auth.middleware.js';
 import { getAdminDashboardData } from '../controllers/dashboard.controller.js';
-import { getAssignee } from '../controllers/recruitAssignee.controller.js';
-import { ticketDetailsAsAdminOrAssignee, submitCommentAsAdminOrAssignee  } from '../controllers/ticket.controller.js';
+import { getAssignees, createAssignee } from '../controllers/assignee.controller.js';
+import { getTickets } from '../controllers/ticket.controller.js';
 
 const router = Router();
+
+// yyk
 router.get('/dashboard', getAdminDashboardData);
-router.get('/assignee', getAssignee);
-router.get('/ticketDetails/:id', ticketDetailsAsAdminOrAssignee);
-router.post('/submitComment', submitCommentAsAdminOrAssignee );
+
+// Completed
+router.get("/tickets", getTickets);
+router.get('/assignees', getAssignees);
+router.post('/assignees', createAssignee);
+
+
+// Moved to tickets route
+// router.post('/tickets/:ticketId/comments', submitComment);
+// router.get('/tickets/:ticketId', getTicketDetails);
+
 
 export default router;
