@@ -7,30 +7,22 @@ import { Search } from "lucide-react";
 export default function Dashboard() {
 
   const navigate = useNavigate();
-
   const [tickets, setTickets] = useState([]);
 
   // FETCH USER TICKETS
   const fetchTickets = async () => {
-
     try {
 
-      const res = await api.get("/tickets/user");
+      const res = await api.get("/user/tickets");
 
-      setTickets(res.data);
+      // backend returns { tickets: [...] }
+      setTickets(res.data.tickets);
 
     } catch (error) {
 
-      console.log("Backend not ready yet");
+      console.log("Error fetching tickets:", error);
 
-      // mock data for now
-      setTickets([
-        {
-          id: "Ticket-001",
-          title: "My mouse is not working",
-          status: "Solving"
-        }
-      ]);
+      setTickets([]);
     }
   };
 
@@ -89,28 +81,30 @@ export default function Dashboard() {
             </thead>
 
             <tbody>
-
-              {tickets.map((ticket, index) => (
-
-                <tr key={index} className="border-t">
-
-                  <td className="py-4">{ticket.id}</td>
-
-                  <td>{ticket.title}</td>
-
-                  <td>{ticket.status}</td>
-
-                  <td>
-                    <button className="hover:text-orange-600">
-                      <Search size={20}/>
-                    </button>
-                  </td>
-
-                </tr>
-
-              ))}
-
-            </tbody>
+  {tickets.length === 0 ? (
+    <tr>
+      <td colSpan="4" className="text-center py-6 text-gray-500">
+        No tickets found
+      </td>
+    </tr>
+  ) : (
+    tickets.map((ticket) => (
+      <tr key={ticket._id} className="border-t">
+        <td className="py-4">{ticket._id}</td>
+        <td>{ticket.title}</td>
+        <td>{ticket.status}</td>
+        <td>
+          <button
+            className="hover:text-orange-600"
+            onClick={() => navigate(`/user_ticket_detail/${ticket._id}`)}
+          >
+            <Search size={20}/>
+          </button>
+        </td>
+      </tr>
+    ))
+  )}
+</tbody>
 
           </table>
 

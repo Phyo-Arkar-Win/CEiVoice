@@ -8,11 +8,13 @@ export default function Draft() {
 
   const [tickets, setTickets] = useState([]);
   const [assignees, setAssignees] = useState([]);
+  const [scopes, setScopes] = useState([]);
   const [merging, setMerging] = useState(false);
 
   useEffect(() => {
     fetchDraftTickets();
     fetchAssignees();
+    fetchScopes();
   }, []);
 
   // Fetch assignees from backend
@@ -22,6 +24,16 @@ export default function Draft() {
       setAssignees(res.data.data || res.data);
     } catch (err) {
       console.error("Error fetching assignees:", err);
+    }
+  };
+
+  // Fetch scopes (for category dropdown) from backend
+  const fetchScopes = async () => {
+    try {
+      const res = await api.get("/scopes");
+      setScopes(res.data.data || res.data);
+    } catch (err) {
+      console.error("Error fetching scopes:", err);
     }
   };
 
@@ -182,7 +194,8 @@ export default function Draft() {
               {ticket.expanded && (
                 <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
 
-                  <div>
+                  {/* Title - Full Width */}
+                  <div className="col-span-1 md:col-span-2">
                     <label className="font-semibold block mb-1">Title</label>
                     <input
                       value={ticket.title || ""}
@@ -193,14 +206,36 @@ export default function Draft() {
                     />
                   </div>
 
+                  {/* Category - Dropdown from scopes */}
                   <div>
                     <label className="font-semibold block mb-1">Category</label>
-                    <input
+                    <select
                       value={ticket.category || ""}
                       onChange={(e) =>
                         handleChange(index, "category", e.target.value)
                       }
                       className="w-full border border-orange-400 rounded-full px-4 py-2"
+                    >
+                      <option value="">Select Category</option>
+                      {scopes.map((scope) => (
+                        <option key={scope._id || scope.name} value={scope.name}>
+                          {scope.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Email - Plain text input beside Category */}
+                  <div>
+                    <label className="font-semibold block mb-1">Email</label>
+                    <input
+                      type="email"
+                      value={ticket.email || ""}
+                      onChange={(e) =>
+                        handleChange(index, "email", e.target.value)
+                      }
+                      className="w-full border border-orange-400 rounded-full px-4 py-2"
+                      placeholder="Ticket email"
                     />
                   </div>
 
