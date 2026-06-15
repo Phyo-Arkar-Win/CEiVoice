@@ -21,7 +21,7 @@ export default function Signup() {
     e.preventDefault();
 
     try {
-      const response = await api.post("/signup", {
+      const response = await api.post("/auth/signup", {
         username,
         email,
         password,
@@ -41,7 +41,7 @@ export default function Signup() {
   // GOOGLE SIGNUP
   const handleGoogleLoginSuccess = async (credentialResponse) => {
     try {
-      const response = await api.post("/login/google", {
+      const response = await api.post("/auth/login/google", {
         token: credentialResponse.credential
       });
 
