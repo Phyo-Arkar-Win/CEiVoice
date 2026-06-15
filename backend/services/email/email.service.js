@@ -47,3 +47,12 @@ export const sendUpdateEmail = async (email, ticket) => {
     }
 };
 
+export const sendEmail = async (type, email, ticket) => {
+    if (type === "confirmation") {
+        return sendConfirmationEmail(email, ticket);
+    }
+
+    if (type === "update") {
+        return sendUpdateEmail(email, ticket);
+    }
+};

@@ -24,25 +24,69 @@ export const validateSignup = async (req, res, next) => {
     next();
 }
 
+// export const protect = async (req, res, next) => {
+//     const accessToken = req.cookies.accessToken;
+//     if (!accessToken) {
+//         return res.status(401).json({ message: "Please log in to get access." });
+//     }
+
+//     try {
+//         const decodedToken = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+//         const currentUser = await User.findById(decodedToken.userId).select('-password');
+//         if (!currentUser) {
+//             return res.status(401).json({ message: "The user belonging to this token no longer exists." });
+//         }
+//         req.user = currentUser;
+//         next();
+//     } catch (error) {
+//         console.error("Auth Error:", error);
+//         res.status(401).json({ message: "Authentication failed." });
+//     }
+// }
+
 export const protect = async (req, res, next) => {
-    const accessToken = req.cookies.accessToken;
+    let accessToken;
+
+    if (
+        req.headers.authorization &&
+        req.headers.authorization.startsWith("Bearer")
+    ) {
+        accessToken = req.headers.authorization.split(" ")[1];
+    } else {
+        accessToken = req.cookies.accessToken;
+    }
+
     if (!accessToken) {
-        return res.status(401).json({ message: "Please log in to get access." });
+        return res.status(401).json({
+            message: "Please log in to get access."
+        });
     }
 
     try {
-        const decodedToken = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
-        const currentUser = await User.findById(decodedToken.userId).select('-password');
+        const decodedToken = jwt.verify(
+            accessToken,
+            process.env.ACCESS_TOKEN_SECRET
+        );
+
+        const currentUser = await User.findById(
+            decodedToken.userId
+        ).select("-password");
+
         if (!currentUser) {
-            return res.status(401).json({ message: "The user belonging to this token no longer exists." });
+            return res.status(401).json({
+                message: "The user belonging to this token no longer exists."
+            });
         }
+
         req.user = currentUser;
         next();
     } catch (error) {
         console.error("Auth Error:", error);
-        res.status(401).json({ message: "Authentication failed." });
+        res.status(401).json({
+            message: "Authentication failed."
+        });
     }
-}
+};
 
 export const restrictTo = (...roles) => {
     return (req, res, next) => {

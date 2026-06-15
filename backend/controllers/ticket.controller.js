@@ -2,7 +2,7 @@ import Ticket from '../models/ticket.js';
 import Comment from '../models/comment.js';
 import User from '../models/user.js';
 import Scope from '../models/scope.js';
-import { mergeDraftTickets, createDraftTicketAI } from '../services/ollama.service.js';
+import { mergeDraftTicketsAI, createDraftTicketAI } from '../services/ollama.service.js';
 import { sendConfirmationEmail, sendUpdateEmail } from '../services/email/email.service.js';
 
 export const getTickets = async (req, res) => {

@@ -62,6 +62,7 @@ ${issue}
 
     const ollama = new Ollama({ host: 'http://localhost:11434' });
 
+    console.time("ollama")
     const response = await ollama.generate({
         model: "llama3.2",
         prompt,
@@ -82,7 +83,7 @@ ${issue}
 };
 
 
-export const mergeDraftTickets = async (tickets) => {
+export const mergeDraftTicketsAI = async (tickets) => {
     const assignees = await User.find({ role: 'assignee' }).populate('scopes');
     const assigneesList = assignees.map(assignee =>
         `Name: ${assignee.name}
