@@ -1,14 +1,14 @@
 import { Router } from 'express';
-import { handleIssueSubmission, mergeDraftTickets, createDraftTicket, getDraftTicketsAsAdmin, handleMergeSelection, handleUnlinkTickets, updateDraftTicket, trackTicket, submitComment, getTicketDetails } from '../controllers/ticket.controller.js';
+import { createDraftTicket, mergeDraftTickets, createNewTicket, getDraftTicketsAsAdmin, handleMergeSelection, handleUnlinkTickets, updateDraftTicket, trackTicket, submitComment, getTicketDetails } from '../controllers/ticket.controller.js';
 import { protect, restrictTo } from '../middlewares/auth.middleware.js';
 
 const router = Router();
-router.post('/', handleIssueSubmission);
+router.post('/drafts', createDraftTicket);
 router.get('/drafts', getDraftTicketsAsAdmin);
 router.post('/merge/selection', handleMergeSelection);
 router.post('/merge/unlink', handleUnlinkTickets);
 router.post('/merge', mergeDraftTickets);
-router.patch('/:id', createDraftTicket);
+router.patch('/:id', createNewTicket);
 
 // New
 router.post('/:ticketId/comments', submitComment)

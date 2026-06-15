@@ -114,7 +114,7 @@ export default function MergeDraftToNew() {
       title,
       category,
       deadline,
-      assignee,
+      assignees: assignee,
       summary,
       resolutionPath: resolution.split("\n"),
       mergedTickets: mergedUsers.map(u => u.id)

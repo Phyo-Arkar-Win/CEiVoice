@@ -3,12 +3,7 @@ import Ticket from '../models/ticket.js';
 import Scope from '../models/scope.js';
 import User from '../models/user.js';
 
-export const createDraftTicket = async (email, issue, user) => {
-    const scopes = await Scope.find({}, 'name');
-    const scopeList = scopes.map(scope => scope.name).join(', ');
-
-    const assignees = await User.find({ role: 'assignee' }).populate('scopes');
-    const assigneesList = assignees.map(a => `${a.name} (Scopes: ${a.scopes.map(s => s.name).join(', ')})`).join('\n');
+export const createDraftTicketAI = async (issue, scopeList, assigneesList) => {
     const prompt = `
 You are an AI service desk assistant responsible for analyzing a user's support request and generating a structured helpdesk ticket draft.
 
@@ -81,17 +76,9 @@ ${issue}
     console.log("Parsed AI response:", parsed.suggested_assignee);
     let suggestedAssignee = await User.findOne({ name: parsed.suggested_assignee });
 
-    const newTicket = await Ticket.create({
-        email: email,
-        issue: issue,
-        title: parsed.title,
-        summary: parsed.summary,
-        category: parsed.category,
-        resolution_path: parsed.resolution_path,
-        original_message: issue,
-        creator: user
-    });
-    return [newTicket, suggestedAssignee]
+    console.log("Parsed AI response:", parsed.suggested_assignee);
+
+    return parsed;
 };
 
 

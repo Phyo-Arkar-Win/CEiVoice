@@ -2,9 +2,8 @@ import Ticket from '../models/ticket.js';
 import Comment from '../models/comment.js';
 import User from '../models/user.js';
 import Scope from '../models/scope.js';
-import { mergeDraftTickets, createDraftTicket } from '../services/ollama.service.js';
+import { mergeDraftTickets, createDraftTicketAI } from '../services/ollama.service.js';
 import { sendConfirmationEmail, sendUpdateEmail } from '../services/email/email.service.js';
-
 
 export const getTickets = async (req, res) => {
     const userRole = req.user.role;
@@ -97,7 +96,7 @@ export const getDraftTicketsAsAdmin = async (req, res) => {
 };
 
 // Submit a new ticket from draft | submit draft ticket
-export const createDraftTicket = async (req, res) => {
+export const createNewTicket = async (req, res) => {
     try {
         const id = req.params.id;
         const { title, summary, category, resolution_path, assignees, deadline } = req.body;
@@ -592,16 +591,36 @@ export const submitComment = async (req, res) => {
 //     }
 // };
 
-export const handleIssueSubmission = async (req, res) => {
+export const createDraftTicket = async (req, res) => {
     const { email, issue } = req.body;
     let user = await User.findOne({ email });
     if (!issue) {
         return res.status(400).json({ error: "Missing message in request body" });
     }
     try {
-        const [ticket, suggestedAssignee] = await createDraftTicket(email, issue, user);
-        await sendConfirmationEmail(email, ticket);
-        res.status(200).json({ ticket, suggestedAssignee, message: "Email sent successfully" });
+        const scopes = await Scope.find({}, 'name');
+        const scopeList = scopes.map(scope => scope.name).join(', ');
+
+        const assignees = await User.find({ role: 'assignee' }).populate('scopes');
+        const assigneesList = assignees.map(a => `${a.name} (Scopes: ${a.scopes.map(s => s.name).join(', ')})`).join('\n');
+
+        const parsedAIResponse = await createDraftTicketAI(issue, scopeList, assigneesList);
+
+        let suggestedAssignee = await User.findOne({ name: parsedAIResponse.suggested_assignee });
+        
+        const draftTicket = await Ticket.create({
+            email: email,
+            issue: issue,
+            title: parsedAIResponse.title,
+            summary: parsedAIResponse.summary,
+            category: parsedAIResponse.category,
+            resolution_path: parsedAIResponse.resolution_path,
+            original_message: issue,
+            creator: user
+        })
+
+        await sendConfirmationEmail(email, draftTicket);
+        res.status(200).json({ ticket: draftTicket, suggestedAssignee, message: "Email sent successfully" });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
