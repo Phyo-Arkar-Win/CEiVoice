@@ -56,7 +56,7 @@ export default function Draft() {
         (key) => updates[key] === undefined && delete updates[key]
       );
 
-      await api.patch(`/tickets/drafts/${ticket._id}`, updates);
+      await api.patch(`/tickets/${ticket._id}`, updates);
 
       alert("Draft updated successfully");
       fetchDraftTickets(); // refresh list
