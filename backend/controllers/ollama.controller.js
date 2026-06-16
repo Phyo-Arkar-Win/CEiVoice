@@ -1,6 +1,5 @@
-import ticket from "../models/ticket.js";
 import Ticket from "../models/ticket.js";
-import { mergeDraftTickets as mergeService } from "../services/ollama.service.js";
+import { mergeDraftTicketsAI as mergeService } from "../services/ollama.service.js";
 
 export const mergeDraftTickets = async (req, res, next) => {
     const ticketIds = req.body;
@@ -8,10 +7,7 @@ export const mergeDraftTickets = async (req, res, next) => {
         const tickets = await Ticket.find(
             { _id: { $in: ticketIds } }
         ).lean();
-        console.log(tickets)
-        
-        // const mergedTicket = await mergeService(tickets);
-
+        const mergedTicket = await mergeService(tickets);
         res.json(mergedTicket);
     } catch (err) {
         next(err);
