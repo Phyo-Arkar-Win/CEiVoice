@@ -8,6 +8,7 @@ router.get('/drafts', getDraftTicketsAsAdmin);
 router.post('/merge/selection', handleMergeSelection);
 router.post('/merge/unlink', handleUnlinkTickets);
 router.post('/merge', mergeDraftTickets);
+router.patch('/drafts/:id', updateDraftTicket);
 router.patch('/:id', createNewTicket);
 
 // New
