@@ -1,7 +1,4 @@
 import { Ollama } from 'ollama';
-import Ticket from '../models/ticket.js';
-import Scope from '../models/scope.js';
-import User from '../models/user.js';
 
 export const createDraftTicketAI = async (issue, scopeList, assigneesList) => {
     const prompt = `
