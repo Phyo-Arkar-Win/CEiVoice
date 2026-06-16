@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { protect, restrictTo } from '../middlewares/auth.middleware.js';
 import { getHistoryLogs } from '../controllers/history-log.controller.js';
 import { saveAsAssignee } from '../controllers/ticket.controller.js';
+import { getAssigneeDashboardData } from '../controllers/dashboard.controller.js';
 
 const router = Router();
 
