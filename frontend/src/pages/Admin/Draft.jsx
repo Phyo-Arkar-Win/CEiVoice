@@ -20,7 +20,7 @@ export default function Draft() {
   // Fetch assignees from backend
   const fetchAssignees = async () => {
     try {
-      const res = await api.get("/admin/assignee");
+      const res = await api.get("/admin/assignees");
       setAssignees(res.data.data || res.data);
     } catch (err) {
       console.error("Error fetching assignees:", err);
@@ -45,7 +45,10 @@ export default function Draft() {
         category: ticket.category,
         resolution_path: ticket.resolution_path,
         deadline: ticket.deadline,
-        assignees: ticket.assignee ? [ticket.assignee] : undefined,
+
+        assignees: ticket.assignee?._id 
+        ? [ticket.assignee._id] 
+        : undefined,
       };
 
       // remove undefined values so only changed fields are sent
@@ -279,7 +282,7 @@ export default function Draft() {
                   <div>
                     <label className="font-semibold block mb-1">Assignee</label>
                     <select
-                      value={ticket.assignee}
+                      value={ticket.assignee?._id || ticket.assignee || ""}
                       onChange={(e) =>
                         handleChange(index, "assignee", e.target.value)
                       }

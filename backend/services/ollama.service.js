@@ -1,7 +1,4 @@
 import { Ollama } from 'ollama';
-import Ticket from '../models/ticket.js';
-import Scope from '../models/scope.js';
-import User from '../models/user.js';
 
 export const createDraftTicketAI = async (issue, scopeList, assigneesList) => {
     const prompt = `
@@ -73,32 +70,11 @@ ${issue}
     });
 
     const parsed = JSON.parse(response.response);
-
-    console.log("Parsed AI response:", parsed.suggested_assignee);
-    let suggestedAssignee = await User.findOne({ name: parsed.suggested_assignee });
-
-    console.log("Parsed AI response:", parsed.suggested_assignee);
-
     return parsed;
 };
 
 
-export const mergeDraftTicketsAI = async (tickets) => {
-    const assignees = await User.find({ role: 'assignee' }).populate('scopes');
-    const assigneesList = assignees.map(assignee =>
-        `Name: ${assignee.name}
-        Scopes: ${assignee.scopes.map(scope => scope.name).join(', ')}`)
-        .join('\n');
-    const scopes = await Scope.find({}, 'name');
-    const scopeList = scopes.map(scope => scope.name).join(', ');
-    const ticketList = tickets.map((ticket, index) => `
-    Ticket ${index + 1}
-    Issue: ${ticket.issue}
-    Title: ${ticket.title}
-    Summary: ${ticket.summary}
-    Category: ${ticket.category}
-    Resolution Path: ${(ticket.resolution_path)}
-`).join("\n");
+export const mergeDraftTicketsAI = async (scopeList, ticketList, assigneeList) => {
     const prompt = `
 You are an AI service desk assistant responsible for consolidating multiple helpdesk tickets into a single ticket draft.
 
@@ -158,7 +134,7 @@ Provide 1–3 short actionable steps support staff could take to resolve the iss
 
 suggested_assignee
 Choose the most suitable assignee for this ticket from the following list:
-${assigneesList}
+${assigneeList}
 Return the NAME of the assignee.
 
 ---------------------
@@ -181,26 +157,7 @@ ${ticketList}
         }
     });
 
-    // Parsed output data from AI
     const parsed = JSON.parse(response.response);
 
-    const followers = [
-        ...new Map(
-            tickets.map(ticket => [ticket.creator.toString(), ticket.creator])
-        ).values()
-    ];
-
-    let suggestedAssignee = await User.findOne({ name: parsed.suggested_assignee });
-
-    const mergedTicket = new Ticket({
-        issue: parsed.issue,
-        title: parsed.title,
-        summary: parsed.summary,
-        category: parsed.category,
-        resolution_path: parsed.resolution_path,
-        followers,
-        mergedTickets: tickets.map(ticket => ticket._id),
-    });
-
-    return [mergedTicket, suggestedAssignee]
+    return parsed;
 };

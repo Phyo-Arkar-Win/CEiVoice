@@ -6,7 +6,7 @@ import { getAssigneeDashboardData } from '../controllers/dashboard.controller.js
 
 const router = Router();
 
-router.get('/dashboard', getAssigneeDashboardData);
+router.get('/dashboard', protect, getAssigneeDashboardData);
 router.get('/history', getHistoryLogs);
 
 router.post('/save-ticket', saveAsAssignee);

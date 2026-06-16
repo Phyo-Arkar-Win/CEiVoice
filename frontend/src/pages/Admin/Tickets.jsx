@@ -18,7 +18,7 @@ export default function Tickets() {
 
         const res = await api.get("/admin/tickets");
 
-        setTickets(res.data);
+        setTickets(res.data.tickets || res.data || []); // handle both { tickets: [...] } and [...] formats
 
       } catch (error) {
 

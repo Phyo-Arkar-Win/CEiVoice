@@ -18,27 +18,28 @@ export const getAssigneeDashboardData = async (req, res) => {
 
         // active tickets
         const activeTickets = await Ticket.countDocuments({
-            assignees: assigneeId,
+            assignees: { $in: [assigneeId] },
             status: { $in: activeStatus }
-        })
+        }) 
+
 
         // tickets near deadline
         const nearDeadlineTickets = await Ticket.countDocuments({
-            assignees: assigneeId,
+            assignees: { $in: [assigneeId] },
             status: { $in: activeStatus },
             deadline: { $gte: todayStart, $lte: threeDaysLater }
         })
 
         // tickets due today
         const dueTodayTickets = await Ticket.countDocuments({
-            assignees: assigneeId,
+            assignees: { $in: [assigneeId] },
             status: { $in: activeStatus },
             deadline: { $gte: todayStart, $lte: todayEnd }
         })
 
         // overdue tickets
          const overdueTickets = await Ticket.countDocuments({
-            assignees: assigneeId,
+            assignees: { $in: [assigneeId] },
             status: { $in: activeStatus },
             deadline: { $lt: todayStart }
         })

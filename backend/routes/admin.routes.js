@@ -10,7 +10,7 @@ const router = Router();
 router.get('/dashboard', getAdminDashboardData);
 
 // Completed
-router.get("/tickets", getTickets);
+router.get("/tickets", protect, getTickets);
 router.get('/assignees', getAssignees);
 router.post('/assignees', createAssignee);
 
