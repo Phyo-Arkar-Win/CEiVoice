@@ -2,7 +2,7 @@ import Ticket from '../models/ticket.js';
 import Comment from '../models/comment.js';
 import User from '../models/user.js';
 import Scope from '../models/scope.js';
-import { mergeDraftTickets, createDraftTicketAI } from '../services/ollama.service.js';
+import { mergeDraftTicketsAI, createDraftTicketAI } from '../services/ollama.service.js';
 import { sendConfirmationEmail, sendUpdateEmail } from '../services/email/email.service.js';
 
 export const getTickets = async (req, res) => {
@@ -297,9 +297,53 @@ export const getTicketDetails = async (req, res) => {
 
 
 export const handleMergeSelection = async (req, res) => {
-    const { tickets } = req.body;
-    let [mergedTicket, suggestedAssignee] = await mergeDraftTickets(tickets);
-    res.status(200).json({ message: 'Tickets merged successfully', mergedTicket: mergedTicket, suggestedAssignee: suggestedAssignee });
+    try {
+        const { tickets } = req.body;
+
+        if (!tickets || !Array.isArray(tickets) || tickets.length < 2) {
+            return res.status(400).json({ message: 'At least two tickets are required to merge.' });
+        }
+
+        const assignees = await User.find({ role: 'assignee' }).populate('scopes');
+        const assigneeList = assignees.map(assignee =>
+            `Name: ${assignee.name}
+        Scopes: ${assignee.scopes.map(scope => scope.name).join(', ')}`)
+            .join('\n');
+        const scopes = await Scope.find({}, 'name');
+        const scopeList = scopes.map(scope => scope.name).join(', ');
+        const ticketList = tickets.map((ticket, index) => `
+    Ticket ${index + 1}
+    Issue: ${ticket.issue}
+    Title: ${ticket.title}
+    Summary: ${ticket.summary}
+    Category: ${ticket.category}
+    Resolution Path: ${ticket.resolution_path}
+    `).join("\n");
+
+        const parsedAIResponse = await mergeDraftTicketsAI(scopeList, ticketList, assigneeList);
+
+        const followers = [
+            ...new Map(
+                tickets.map(ticket => [ticket.creator.toString(), ticket.creator])
+            ).values()
+        ];
+
+        let suggestedAssignee = await User.findOne({ name: parsedAIResponse.suggested_assignee });
+
+        const mergedTicket = await Ticket.create({
+            issue: parsedAIResponse.issue,
+            title: parsedAIResponse.title,
+            summary: parsedAIResponse.summary,
+            category: parsedAIResponse.category,
+            resolution_path: parsedAIResponse.resolution_path,
+            followers,
+            mergedTickets: tickets.map(ticket => ticket._id),
+        });
+
+        res.status(200).json({ message: 'Tickets merged successfully', mergedTicket, suggestedAssignee });
+    } catch (error) {
+        res.status(500).json({ message: `Error merging tickets: ${error.message}` });
+    }
 };
 
 export const handleUnlinkTickets = async (req, res) => {
@@ -388,49 +432,6 @@ export const updateDraftTicket = async (req, res) => {
     }
 };
 
-
-
-// export const saveAsAssignee = async (req, res) => {
-//     const { ticketId, status, reassignedAssigneeId } = req.body;
-//     try {
-//         let ticket = await Ticket.findById(ticketId);
-//         if (!ticket) {
-//             return res.status(404).json({ message: "Ticket not found" });
-//         }
-//         const reassignedAssignee = await User.findById(reassignedAssigneeId);
-
-//         // console.log(reassignedAssignee)
-
-
-//         if (status === "Solving") {
-//             ticket.status = status;
-//         } 
-//         else if (status === "Solved" || status === "Failed") {
-//             const commented = await Comment.find({ ticket: ticket, user: req.user.id });
-
-
-//             if (!commented.length) {
-//                 return res.status(400).json({ message: 'You must comment before marking the ticket as solved' });
-//             }
-//             ticket.status = status;
-//         }
-
-//         if (reassignedAssignee) {
-//             if (!ticket.assignees.includes(reassignedAssignee)) {
-//                 ticket.assignees.push(reassignedAssignee);
-//             }
-//         }
-//         console.log(ticket) 
-
-//         await ticket.save();
-//         console.log("What")
-//         res.status(200).json({ ticket });
-//     } catch (error) {
-//         res.status(500).json({
-//             message: `Error updating ticket: ${error.message}`,
-//         });
-//     }
-// }
 
 export const saveAsAssignee = async (req, res) => {
     const { ticketId, status, reassignedAssigneeId } = req.body;
@@ -591,6 +592,7 @@ export const submitComment = async (req, res) => {
 //     }
 // };
 
+// Reviewed (Tony)
 export const createDraftTicket = async (req, res) => {
     const { email, issue } = req.body;
     let user = await User.findOne({ email });
