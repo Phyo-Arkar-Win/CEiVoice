@@ -17,7 +17,7 @@ export default function Login() {
     e.preventDefault();
     try {
       const response = await api.post(
-        "/login",
+        "/auth/login",
         {
           email,
           password,
@@ -54,7 +54,7 @@ export default function Login() {
   const handleGoogleLoginSuccess = async (credentialResponse) => {
     try {
       const response = await api.post(
-        "/login/google",
+        "/auth/login/google",
         {
           token: credentialResponse.credential,
         },

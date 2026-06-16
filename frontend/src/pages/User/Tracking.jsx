@@ -33,8 +33,7 @@ export default function TrackTicket() {
     try {
       setStatus("loading");
 
-      const res = await api.post("/tickets/track/user", {
-        ticketId: trackingId,
+      const res = await api.post(`/tickets/${trackingId}/tracking`, {
         email,
       });
 

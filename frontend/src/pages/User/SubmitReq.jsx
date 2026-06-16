@@ -42,14 +42,14 @@ export default function SubmitReq() {
 
     try {
       setLoading(true);
-      const res = await api.post("/submit", {
+      const res = await api.post("/tickets/drafts", {
         email,
         issue,
       });
       
       console.log(res.data)
       setIssue("");
-      navigate("/confirmation", { state: { trackingId: res.data._id } })
+      navigate("/confirmation", { state: { trackingId: res.data.ticket._id } })
 
     } catch (err) {
       console.error(err);
