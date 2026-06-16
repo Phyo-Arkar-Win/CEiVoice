@@ -229,77 +229,7 @@ export const getTicketDetails = async (req, res) => {
     }
 }
 
-// export const ticketDetailsAsUser = async (req, res) => {
-//     const ticketId = req.params.id;
-//     try {
-//         const ticket = await Ticket.findById(ticketId).populate('assignees', 'name email').populate('creator', 'name email'); //edtbyRomulus
-//         if (!ticket) {
-//             return res.status(404).json({ message: 'Ticket not found' });
-//         }
-//         // const rawTicket = await Ticket.findById(ticketId).lean();
-//         const followersCount = Array.isArray(ticket?.followers) ? ticket.followers.length : 0;
-//         const publicComments = await Comment.find({ ticket: ticketId, visibility: 'Public' }).populate('user', 'name email role').sort({ createdAt: -1 }); //edtbyRomulus
-//         res.status(200).json({ ticket, publicComments, followersCount });
-//     } catch (error) {
-//         res.status(500).json({
-//             message: `Error viewing ticket: ${error.message}`,
-//         });
-//     }
-// };
-
-// export const ticketDetailsAsAdminOrAssignee = async (req, res) => {
-//     const userId = req.user.id;
-//     const ticketId = req.params.id;
-//     try {
-//         const ticket = await Ticket.findById(ticketId).populate('assignees', 'name email').populate('creator', 'name email');
-//         if (!ticket) {
-//             return res.status(404).json({ message: "Ticket not found" });
-//         }
-
-//         // Get raw follower count from the unpopulated document (followers may contain emails, not ObjectIds)
-//         const rawTicket = await Ticket.findById(ticketId).lean();
-//         const followersCount = Array.isArray(rawTicket?.followers) ? rawTicket.followers.length : 0;
-
-//         const user = await User.findById(userId);
-//         if (!user) {
-//             return res.status(404).json({ message: "User not found" });
-//         }
-//         const assignees = await User.find({ role: 'assignee' });
-//         const publicComments = await Comment.find({ ticket: ticketId, visibility: 'Public' }).populate('user', 'name email role').sort({ createdAt: -1 });
-//         const internalComments = await Comment.find({ ticket: ticketId, visibility: 'Internal' }).populate('user', 'name email role').sort({ createdAt: -1 });
-//         const scopes = await Scope.find();
-
-//         if (user.role === 'admin') {
-//             res.status(200).json({ ticket, publicComments, internalComments, scopes, followersCount });
-//         } else if (user.role === 'assignee') {
-//             res.status(200).json({ ticket, publicComments, internalComments, scopes, assignees, followersCount });
-//         }
-//     } catch (error) {
-//         res.status(500).json({
-//             message: `Error viewing ticket: ${error.message}`,
-//         });
-//     }
-// };
-
-// export const getIndividualTicket = async (req, res) => {
-//     const { ticketId } = req.body;
-//     try {
-//         const ticket = await Ticket.findById(ticketId);
-//         if (!ticket) {
-//             return res.status(404).json({ message: 'Ticket not found' });
-//         }
-//         res.status(200).json({ title: ticket.title, category: ticket.category, summary: ticket.summary, resolution_path: ticket.resolution_path });
-//     } catch (error) {
-//         res.status(500).json({
-//             message: `Error viewing ticket: ${error.message}`,
-//         });
-//     }
-// };
-
-
 // Merge Draft Tickets
-
-
 export const handleMergeSelection = async (req, res) => {
     try {
         const { tickets } = req.body;
@@ -405,6 +335,42 @@ export const mergeDraftTickets = async (req, res) => {
         });
     }
 };
+
+// Reviewed (Tony)
+export const createDraftTicket = async (req, res) => {
+    const { email, issue } = req.body;
+    let user = await User.findOne({ email });
+    if (!issue) {
+        return res.status(400).json({ error: "Missing message in request body" });
+    }
+    try {
+        const scopes = await Scope.find({}, 'name');
+        const scopeList = scopes.map(scope => scope.name).join(', ');
+
+        const assignees = await User.find({ role: 'assignee' }).populate('scopes');
+        const assigneesList = assignees.map(a => `${a.name} (Scopes: ${a.scopes.map(s => s.name).join(', ')})`).join('\n');
+
+        const parsedAIResponse = await createDraftTicketAI(issue, scopeList, assigneesList);
+
+        let suggestedAssignee = await User.findOne({ name: parsedAIResponse.suggested_assignee });
+        
+        const draftTicket = await Ticket.create({
+            email: email,
+            issue: issue,
+            title: parsedAIResponse.title,
+            summary: parsedAIResponse.summary,
+            category: parsedAIResponse.category,
+            resolution_path: parsedAIResponse.resolution_path,
+            original_message: issue,
+            creator: user
+        })
+
+        await sendConfirmationEmail(email, draftTicket);
+        res.status(200).json({ ticket: draftTicket, suggestedAssignee, message: "Email sent successfully" });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
 
 // update draft ticket ( admin can update before submitting )
 export const updateDraftTicket = async (req, res) => {
@@ -544,90 +510,3 @@ export const submitComment = async (req, res) => {
     }
 }
 
-// export const submitCommentAsUser = async (req, res) => {
-//     const userId = req.user.id;
-//     const { ticketId, commentText } = req.body;
-//     try {
-//         const ticket = await Ticket.findById(ticketId);
-//         if (!ticket) {
-//             return res.status(404).json({ message: "Ticket not found" });
-//         }
-//         const user = await User.findById(userId);
-//         const newComment = new Comment({
-//             user: userId,
-//             ticket: ticketId,
-//             comment: commentText,
-//         });
-//         await newComment.save();
-//         res.status(201).json({ message: 'Comment added successfully', comment: newComment, name: user.name, role: user.role });
-//     } catch (error) {
-//         res.status(500).json({
-//             message: `Error adding comment: ${error.message}`,
-//         });
-//     }
-// };
-
-// export const submitCommentAsAdminOrAssignee = async (req, res) => {
-//     const userId = req.user.id;
-//     const { ticketId, commentText, visibility } = req.body;
-//     try {
-//         const ticket = await Ticket.findById(ticketId);
-//         if (!ticket) {
-//             return res.status(404).json({ message: "Ticket not found" });
-//         }
-//         const user = await User.findById(userId);
-//         const newComment = new Comment({
-//             user: userId,
-//             ticket: ticketId,
-//             comment: commentText,
-//             visibility
-//         });
-//         if ( visibility === 'Public' && user.role === 'assignee' ) {
-//             if ( ticket.status !== 'Solved' ) {
-//                 await Ticket.findByIdAndUpdate(ticketId, { status: 'Solving' });
-//              }
-//         }
-//         await newComment.save();
-//         res.status(201).json({ message: 'Comment added successfully', comment: newComment, name: user.name, role: user.role });
-//     } catch (error) {
-//         res.status(500).json({
-//             message: `Error adding comment: ${error.message}`,
-//         });
-//     }
-// };
-
-// Reviewed (Tony)
-export const createDraftTicket = async (req, res) => {
-    const { email, issue } = req.body;
-    let user = await User.findOne({ email });
-    if (!issue) {
-        return res.status(400).json({ error: "Missing message in request body" });
-    }
-    try {
-        const scopes = await Scope.find({}, 'name');
-        const scopeList = scopes.map(scope => scope.name).join(', ');
-
-        const assignees = await User.find({ role: 'assignee' }).populate('scopes');
-        const assigneesList = assignees.map(a => `${a.name} (Scopes: ${a.scopes.map(s => s.name).join(', ')})`).join('\n');
-
-        const parsedAIResponse = await createDraftTicketAI(issue, scopeList, assigneesList);
-
-        let suggestedAssignee = await User.findOne({ name: parsedAIResponse.suggested_assignee });
-        
-        const draftTicket = await Ticket.create({
-            email: email,
-            issue: issue,
-            title: parsedAIResponse.title,
-            summary: parsedAIResponse.summary,
-            category: parsedAIResponse.category,
-            resolution_path: parsedAIResponse.resolution_path,
-            original_message: issue,
-            creator: user
-        })
-
-        await sendConfirmationEmail(email, draftTicket);
-        res.status(200).json({ ticket: draftTicket, suggestedAssignee, message: "Email sent successfully" });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-}
