@@ -376,19 +376,17 @@ export const createDraftTicket = async (req, res) => {
 export const updateDraftTicket = async (req, res) => {
     try {
         const id = req.params.id;
-        const { title, summary, category, resolution_path, assignees, deadline } = req.body;
+        const { title, summary, category, resolution_path, assignee, deadline } = req.body;
         const ticket = await Ticket.findById(id);
         if (!ticket) {
             return res.status(404).json({ message: 'Ticket not found' });
         }
 
-        const assignee = await User.findById(assignees[0]);
-
         ticket.title = title;
         ticket.summary = summary;
         ticket.category = category;
         ticket.resolution_path = resolution_path;
-        ticket.assignees = assignee;
+        ticket.assignees = await User.findOne({ name: assignee });
         ticket.deadline = deadline;
 
         await ticket.save();
