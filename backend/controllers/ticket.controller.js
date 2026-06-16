@@ -381,6 +381,7 @@ export const updateDraftTicket = async (req, res) => {
         if (!ticket) {
             return res.status(404).json({ message: 'Ticket not found' });
         }
+        console.log(assignee);
 
         ticket.title = title;
         ticket.summary = summary;

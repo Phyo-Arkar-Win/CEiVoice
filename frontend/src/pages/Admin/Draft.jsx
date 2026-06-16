@@ -46,8 +46,8 @@ export default function Draft() {
         resolution_path: ticket.resolution_path,
         deadline: ticket.deadline,
 
-        assignees: ticket.assignee?._id 
-        ? [ticket.assignee._id] 
+        assignee: ticket.assignee
+        ? ticket.assignee
         : undefined,
       };
 
