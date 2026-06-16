@@ -382,11 +382,13 @@ export const updateDraftTicket = async (req, res) => {
             return res.status(404).json({ message: 'Ticket not found' });
         }
 
+        const assignee = await User.findById(assignees[0]);
+
         ticket.title = title;
         ticket.summary = summary;
         ticket.category = category;
         ticket.resolution_path = resolution_path;
-        ticket.assignees = assignees;
+        ticket.assignees = assignee;
         ticket.deadline = deadline;
 
         await ticket.save();
