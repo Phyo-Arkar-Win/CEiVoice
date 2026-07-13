@@ -2,6 +2,7 @@ import Ticket from '../models/ticket.js';
 import Comment from '../models/comment.js';
 import User from '../models/user.js';
 import Scope from '../models/scope.js';
+import HistoryLog from '../models/history-log.js';
 import { mergeDraftTicketsAI, createDraftTicketAI } from '../services/ollama.service.js';
 import { sendConfirmationEmail, sendUpdateEmail } from '../services/email/email.service.js';
 
@@ -85,7 +86,7 @@ export const trackTicket = async (req, res) => {
     }
 }
 
-export const getDraftTicketsAsAdmin = async (req, res) => {
+export const getDraftTickets = async (req, res) => {
     try {
         const draftTickets = await Ticket.find({ status: 'Draft' });
         res.status(200).json(draftTickets);
@@ -119,11 +120,16 @@ export const createNewTicket = async (req, res) => {
         ticket.resolution_path = resolution_path;
         ticket.assignees.push(await User.findOne({ name: assignee }));
         ticket.deadline = deadline;
-
         ticket.status = 'New';
-
         await ticket.save();
         await sendUpdateEmail([ticket.email], ticket);
+
+        await HistoryLog.create({
+            ticket: ticket._id,
+            action: 'StatusChange',
+            fromStatus: 'Draft',
+            toStatus: 'New'
+        });
 
         res.status(200).json({
             message: 'Draft ticket submitted successfully',
