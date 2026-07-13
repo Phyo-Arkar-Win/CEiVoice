@@ -32,7 +32,7 @@ export default function Login() {
 
   const handleGoogleLoginSuccess = async (credentialResponse) => {
     try {
-      const response = await api.post("/auth/login/google", {
+      const response = await api.post("/auth/google", {
         token: credentialResponse.credential,
       });
       const { user } = response.data; // cookies set automatically by backend
@@ -40,7 +40,7 @@ export default function Login() {
       localStorage.setItem("role", user.role);
       handleNavigateByRole(user.role);
     } catch (error) {
-      alert("Google login failed. Please try again.");
+      alert(error.response?.data?.message || "Google login failed. Please try again.");
     }
   };
 
