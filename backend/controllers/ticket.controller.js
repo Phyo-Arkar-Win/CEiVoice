@@ -359,7 +359,7 @@ export const createDraftTicket = async (req, res) => {
         const parsedAIResponse = await createDraftTicketAI(issue, scopeList, assigneesList);
 
         let suggestedAssignee = await User.findOne({ name: parsedAIResponse.suggested_assignee });
-        
+
         const draftTicket = await Ticket.create({
             email: email,
             issue: issue,
@@ -410,14 +410,16 @@ export const updateDraftTicket = async (req, res) => {
 };
 
 
-export const saveAsAssignee = async (req, res) => {
+export const updateTicket = async (req, res) => {
     const { ticketId, status, reassignedAssigneeId } = req.body;
+    const assigneeId = req.user.id
     try {
         const ticket = await Ticket.findById(ticketId);
         if (!ticket) {
             return res.status(404).json({ message: "Ticket not found" });
         }
 
+        const currentAssignee = await User.findById(assigneeId);
         const reassignedAssignee = await User.findById(reassignedAssigneeId);
         const updateFields = {};
 
@@ -426,6 +428,13 @@ export const saveAsAssignee = async (req, res) => {
             if (!commented.length) {
                 return res.status(400).json({ message: `You must comment before marking the ticket as ${status.toLowerCase()}` });
             }
+            await HistoryLog.create({
+                ticket: ticket._id,
+                action: "StatusChange",
+                assignee: currentAssignee.id,
+                fromStatus: ticket.status,
+                toStatus: "Solved"
+            });
         }
         if (status) {
             updateFields.status = status;
@@ -433,6 +442,14 @@ export const saveAsAssignee = async (req, res) => {
 
         if (reassignedAssignee) {
             ticket.assignees.push(reassignedAssignee);
+            ticket.assignees.pop(currentAssignee._id);
+            await HistoryLog.create({
+                ticket: ticket._id,
+                action: "AssigneeChange",
+                preAssignee: currentAssignee.id,
+                newAssignee: currentAssignee._id,
+                toAssignee: reassignedAssignee
+            });
         }
 
         await ticket.save();
@@ -479,6 +496,16 @@ export const submitComment = async (req, res) => {
                 comment: commentText,
             });
             await newComment.save();
+
+            if (ticket.status !== 'Solving') {
+                await HistoryLog.create({
+                    ticket: ticket._id,
+                    action: "StatusChange",
+                    fromStatus: "New",
+                    toStatus: "Solving"
+                });
+            }
+
             res.status(201).json({ message: 'Comment added successfully', comment: newComment, name: user.name, role: user.role });
         } catch (error) {
             res.status(500).json({
