@@ -1,13 +1,13 @@
 import { Router } from 'express';
 import { protect, restrictTo } from '../middlewares/auth.middleware.js';
-import { getAdminDashboardData } from '../controllers/dashboard.controller.js';
+import { getDashboardData } from '../controllers/dashboard.controller.js';
 import { getAssignees, createAssignee } from '../controllers/assignee.controller.js';
 import { getTickets } from '../controllers/ticket.controller.js';
 
 const router = Router();
 
 // yyk
-router.get('/dashboard', getAdminDashboardData);
+router.get('/dashboard', getDashboardData);
 
 // Completed
 router.get("/tickets", protect, getTickets);
