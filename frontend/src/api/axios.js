@@ -43,8 +43,12 @@ api.interceptors.response.use(
                 return api(original);
             } catch (refreshError) {
                 processQueue(refreshError);
-                localStorage.clear();
-                window.location.href = "/login";
+                try {
+                    await api.post("/auth/logout");
+                } finally {
+                    localStorage.clear();
+                    window.location.href = "/login";
+                }
                 return Promise.reject(refreshError);
             } finally {
                 isRefreshing = false;
