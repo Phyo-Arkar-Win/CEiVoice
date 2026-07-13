@@ -353,7 +353,7 @@ export const createDraftTicket = async (req, res) => {
         const parsedAIResponse = await createDraftTicketAI(issue, scopeList, assigneesList);
 
         let suggestedAssignee = await User.findOne({ name: parsedAIResponse.suggested_assignee });
-        
+
         const draftTicket = await Ticket.create({
             email: email,
             issue: issue,
@@ -404,7 +404,7 @@ export const updateDraftTicket = async (req, res) => {
 };
 
 
-export const saveAsAssignee = async (req, res) => {
+export const updateTicket = async (req, res) => {
     const { ticketId, status, reassignedAssigneeId } = req.body;
     try {
         const ticket = await Ticket.findById(ticketId);
