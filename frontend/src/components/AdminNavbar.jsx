@@ -29,7 +29,7 @@ export default function AdminNavbar() {
     }`;
 
   return (
-    <div className="group fixed top-0 left-0 h-screen w-20 hover:w-64 bg-gray-100 border-r-2 border-orange-500 flex flex-col transition-all duration-300 overflow-hidden z-50">
+    <div className="group sticky top-0 self-start h-screen w-20 hover:w-64 shrink-0 bg-gray-100 border-r-2 border-orange-500 flex flex-col transition-all duration-300 overflow-hidden z-40">
 
       {/* TOP SECTION */}
       <div className="flex-1 overflow-y-auto">

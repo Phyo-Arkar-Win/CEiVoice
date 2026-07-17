@@ -35,13 +35,14 @@ export default function AssigneeNavbar() {
     <div
       className="
         group
-        fixed
+        sticky
         top-0
-        left-0
+        self-start
         h-screen
         w-20
         md:w-64
         hover:w-64
+        shrink-0
         bg-gray-100
         border-r-2
         border-orange-500
@@ -51,7 +52,7 @@ export default function AssigneeNavbar() {
         transition-all
         duration-300
         overflow-hidden
-        z-50
+        z-40
       "
     >
       {/* TOP SECTION */}
@@ -70,9 +71,9 @@ export default function AssigneeNavbar() {
         <div className="flex items-center py-3 mt-4 px-6">
           <IoPerson className="text-2xl min-w-[28px]" />
 
-          <div className={labelStyle}>
-            <div className="font-bold whitespace-nowrap border-b border-black pb-1">
-              {name}
+          <div className="ml-3 opacity-100 whitespace-nowrap">
+            <div className="font-bold border-b border-black pb-1">
+              {name || "Assignee"}
             </div>
             <div className="text-sm mt-1">Assignee</div>
           </div>
