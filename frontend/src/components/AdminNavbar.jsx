@@ -29,10 +29,10 @@ export default function AdminNavbar() {
     }`;
 
   return (
-    <div className="group min-h-screen w-20 hover:w-64 bg-gray-100 border-r-2 border-orange-500 flex flex-col justify-between transition-all duration-300 overflow-hidden">
+    <div className="group fixed top-0 left-0 h-screen w-20 hover:w-64 bg-gray-100 border-r-2 border-orange-500 flex flex-col transition-all duration-300 overflow-hidden z-50">
 
       {/* TOP SECTION */}
-      <div>
+      <div className="flex-1 overflow-y-auto">
         {/* LOGO */}
         <div className="flex items-center gap-3 px-4 py-4 border-b border-orange-500">
           <img
@@ -91,15 +91,15 @@ export default function AdminNavbar() {
       </div>
 
       {/* LOGOUT */}
-      <div
+      <button
         onClick={handleLogout}
-        className="flex items-center px-6 py-4 cursor-pointer hover:bg-gray-200 border-t"
+      className="mt-auto flex items-center px-6 py-4 cursor-pointer hover:bg-gray-200 border-t w-full text-left bg-gray-100 font-bold"
       >
         <IoIosLogOut className="text-2xl min-w-[28px]" />
         <span className="ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           Logout
         </span>
-      </div>
+      </button>
 
     </div>
   );
