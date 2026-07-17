@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import AdminNavbar from "@/components/AdminNavbar";
 import api from "@/api/axios";
+import { useAuth } from "../../context/AuthContext";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 const COMMENT_TABS = ["Public", "Internal"];
@@ -35,7 +36,7 @@ export default function AdminTicketDetails() {
   const [commentError, setCommentError] = useState("");
 
   // ── Current User Info ──────────────────────────────────────────────────────
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const { user } = useAuth();
   const userEmail = user?.email || "admin@gmail.com";
 
   // ─── Helper Functions ──────────────────────────────────────────────────────

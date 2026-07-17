@@ -1,25 +1,19 @@
-import React, { useEffect, useState } from "react";
+
+import React from "react";
 import ceiLogo from "../assets/cei.png";
 import { IoIosLogOut } from "react-icons/io";
 import { NavLink, useNavigate } from "react-router-dom";
 import { BsGraphUp } from "react-icons/bs";
 import { IoPerson } from "react-icons/io5";
 import { MdOutlineAccessTime } from "react-icons/md";
+import { useAuth } from "../context/AuthContext";
 
 export default function AssigneeNavbar() {
-  const [name, setName] = useState("");
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (user) {
-      setName(user.name);
-    }
-  }, []);
+  const { user, logout } = useAuth();
 
   const handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
+    logout();
     navigate("/login");
   };
 
@@ -71,9 +65,9 @@ export default function AssigneeNavbar() {
         <div className="flex items-center py-3 mt-4 px-6">
           <IoPerson className="text-2xl min-w-[28px]" />
 
-          <div className="ml-3 opacity-100 whitespace-nowrap">
-            <div className="font-bold border-b border-black pb-1">
-              {name || "Assignee"}
+          <div className="ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div className="font-bold whitespace-nowrap border-b border-black pb-1">
+              {user?.name || "Assignee"}
             </div>
             <div className="text-sm mt-1">Assignee</div>
           </div>

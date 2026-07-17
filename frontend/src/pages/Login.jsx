@@ -4,12 +4,14 @@ import { GoogleLogin } from "@react-oauth/google";
 import api from "../api/axios";
 import { useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleNavigateByRole = (role) => {
     if (role === "admin") navigate("/admin_dashboard");
@@ -23,7 +25,7 @@ export default function Login() {
       const response = await api.post("/auth/login", { email, password });
       const { user } = response.data; // cookies set automatically by backend
 
-      localStorage.setItem("role", user.role);
+      login(user);
       handleNavigateByRole(user.role);
     } catch (error) {
       alert(error.response?.data?.message || "Login failed.");
@@ -37,7 +39,7 @@ export default function Login() {
       });
       const { user } = response.data; // cookies set automatically by backend
 
-      localStorage.setItem("role", user.role);
+      login(user);
       handleNavigateByRole(user.role);
     } catch (error) {
       alert(error.response?.data?.message || "Google login failed. Please try again.");

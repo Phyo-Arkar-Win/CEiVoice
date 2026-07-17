@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import UserNavbar from "@/components/UserNavbar";
 import api from "@/api/axios";
+import { useAuth } from "../../context/AuthContext";
 
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -33,7 +34,7 @@ export default function UserTicketDetails() {
 
 
  // ── Current User Info ──────────────────────────────────────────────────────
- const user = JSON.parse(localStorage.getItem("user") || "{}");
+ const { user } = useAuth();
  const userEmail = user?.email || "user@gmail.com";
 
 

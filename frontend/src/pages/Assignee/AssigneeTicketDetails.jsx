@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import AssigneeNavbar from "@/components/AssigneeNavbar";
 import api from "@/api/axios";
+import { useAuth } from "../../context/AuthContext";
 
 // ─── Component ───────────────────────────────────────────────────────────────
 export default function Assignee_Ticket_Details() {
@@ -38,7 +39,7 @@ export default function Assignee_Ticket_Details() {
   const [activeTab, setActiveTab] = useState("Public");
 
   // ── Current User Info ──────────────────────────────────────────────────────
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const { user } = useAuth();
   const userEmail = user?.email || "assignee@gmail.com";
 
   // ─── Helper Functions ──────────────────────────────────────────────────────
