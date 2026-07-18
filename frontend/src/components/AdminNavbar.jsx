@@ -32,7 +32,7 @@ export default function AdminNavbar() {
     <div className="group sticky top-0 self-start h-screen w-20 hover:w-64 shrink-0 bg-gray-100 border-r-2 border-orange-500 flex flex-col transition-all duration-300 overflow-hidden z-40">
 
       {/* TOP SECTION */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-hidden">
         {/* LOGO */}
         <div className="flex items-center gap-3 px-4 py-4 border-b border-orange-500">
           <img
@@ -46,7 +46,6 @@ export default function AdminNavbar() {
           </h1>
         </div>
 
-        {/* USER */}
         {/* USER */}
 <div className="flex items-center py-3 mt-4 px-6">
   <IoPerson className="text-2xl min-w-[28px]" />
