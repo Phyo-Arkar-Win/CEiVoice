@@ -11,16 +11,21 @@ export default function MergeDraftToNew() {
 
 
   const [mergedUsers, setMergedUsers] = useState([]);
+  
   const [assignees, setAssignees] = useState([]);
-
-  const [deadline, setDeadline] = useState("");
   const [assignee, setAssignee] = useState("");
-
+  useEffect(() => {
+    console.log("Assignee Array:", assignees);
+  }, [assignees]);
+  
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
   const [summary, setSummary] = useState("");
+  const [deadline, setDeadline] = useState("");
   const [resolution, setResolution] = useState("");
 
+
+  // Load merged ticket data
   useEffect(() => {
 
   if (mergedTicket) {
@@ -56,18 +61,12 @@ export default function MergeDraftToNew() {
   useEffect(() => {
 
     const fetchAssignees = async () => {
-
       try {
-
-        const res = await api.get("/admin/assignee");
+        const res = await api.get("/admin/assignees");
         setAssignees(res.data.data || res.data);
-
       } catch (err) {
-
         console.error("Error fetching assignees:", err);
-
       }
-
     };
 
     fetchAssignees();
@@ -109,27 +108,32 @@ export default function MergeDraftToNew() {
 
   // Submit merged ticket
   const handleSubmit = async () => {
-
+    
     const mergedTicketData = {
       title,
       category,
       deadline,
-      assignees: assignee,
+      assignees: [assignee],
       summary,
       resolutionPath: resolution.split("\n"),
-      mergedTickets: mergedUsers.map(u => u.id)
+      mergedTickets: mergedUsers.map(u => ({ _id: u.id }))
     };
 
     const payload = {
       mergedTicket: mergedTicketData
     }
 
-    console.log("payload:", payload)
+    console.log(mergedTicketData);
+    console.log("Selected assignee:", assignee);
+    console.log("All assignees:", assignees);
+    console.log(
+      "Matched user:",
+      assignees.find((a) => a.name === assignee)
+    );
 
     try {
 
       const res = await api.post("/tickets/merge", payload);
-
       console.log("merge result:", res.data)
 
       alert("Merged ticket submitted!");
@@ -139,6 +143,9 @@ export default function MergeDraftToNew() {
     } catch (error) {
 
       console.error("Submit error:", error);
+       console.log("Response:", error.response);
+    console.log("Data:", error.response?.data);
+    console.log("Message:", error.response?.data?.message);
 
     }
 
@@ -212,7 +219,10 @@ export default function MergeDraftToNew() {
 
               <select
                 value={assignee}
-                onChange={(e) => setAssignee(e.target.value)}
+                onChange={(e) => {
+                  console.log("Dropdown value:", e.target.value);
+                  setAssignee(e.target.value);
+                }}
                 className="w-full h-10 border border-orange-400 rounded-full px-4"
               >
 

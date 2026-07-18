@@ -25,7 +25,7 @@ export default function AdminNavbar() {
     <div className="group sticky top-0 self-start h-screen w-20 hover:w-64 shrink-0 bg-gray-100 border-r-2 border-orange-500 flex flex-col transition-all duration-300 overflow-hidden z-40">
 
       {/* TOP SECTION */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1">
         {/* LOGO */}
         <div className="flex items-center gap-3 px-4 py-4 border-b border-orange-500">
           <img
@@ -86,10 +86,18 @@ export default function AdminNavbar() {
       {/* LOGOUT */}
       <button
         onClick={handleLogout}
-      className="mt-auto flex items-center px-6 py-4 cursor-pointer hover:bg-gray-200 border-t w-full text-left bg-gray-100 font-bold"
+      className="mt-auto flex items-center px-6 py-4 cursor-pointer hover:bg-gray-200 border-t w-full text-left bg-gray-100 font-bold overflow-hidden"
       >
         <IoIosLogOut className="text-2xl min-w-[28px]" />
-        <span className="ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <span className="
+        ml-3 
+        inline-block
+        whitespace-nowrap
+        max-w-0 
+        overflow-hidden 
+        group-hover:max-w-xs
+        transition-all 
+        duration-300">
           Logout
         </span>
       </button>
