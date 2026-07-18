@@ -4,6 +4,7 @@ import { GoogleLogin } from '@react-oauth/google';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import api from "../api/axios"
+import { useAuth } from "../context/AuthContext";
 
 export default function Signup() {
   const [username, setUsername] = useState('');
@@ -14,6 +15,7 @@ export default function Signup() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleNavigateByRole = (role) => {
     if (role === "admin") navigate("/admin_dashboard");
@@ -28,7 +30,7 @@ export default function Signup() {
       const response = await api.post("/auth/signup", { username, email, password, confirmPassword });
       const { user } = response.data;
 
-      localStorage.setItem("role", user.role);
+      login(user);
       handleNavigateByRole(user.role); // auto login after signup since backend sets cookies
     } catch (error) {
       alert(error.response?.data?.message || "Signup failed. Please try again.");
@@ -42,7 +44,7 @@ export default function Signup() {
       });
       const { user } = response.data;
 
-      localStorage.setItem("role", user.role);
+      login(user);
       handleNavigateByRole(user.role);
     } catch (error) {
       alert(error.response?.data?.message || "Google login failed. Please try again.");

@@ -1,23 +1,18 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import api from  "@/api/axios";
 import noSearchImg from "@/assets/no_search.png";
 import error_img from "@/assets/error_img.png";
 import UserNavbar from "@/components/UserNavbar";
+import { useAuth } from "../../context/AuthContext";
 
 
 export default function TrackTicket() {
+  const { user } = useAuth();
   const [trackingId, setTrackingId] = useState("");
   const [status, setStatus] = useState("idle");
   const [ticket, setTicket] = useState(null);
   const [error, setError] = useState("")
-  const [email, setEmail] = useState("")
-
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (user) {
-        setEmail(user.email);
-    }
-  }, []);
+  const email = user?.email || "";
 
   const onSearch = async (e) => {
     e.preventDefault();

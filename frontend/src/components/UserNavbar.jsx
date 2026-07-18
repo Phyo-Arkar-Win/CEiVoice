@@ -1,24 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import ceiLogo from "../assets/cei.png";
 import { IoIosLogOut } from "react-icons/io";
 import { NavLink, useNavigate } from "react-router-dom";
 import { HiMenu, HiX } from "react-icons/hi";
+import { useAuth } from "../context/AuthContext";
 
 export default function UserNavbar() {
-
-  const [name, setName] = useState("");
   const [open, setOpen] = useState(false);
-
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (user) setName(user.name);
-  }, []);
+  const { user, logout } = useAuth();
 
   const handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
+    logout();
     navigate("/login");
   };
 
@@ -63,7 +56,7 @@ export default function UserNavbar() {
         <div className="hidden md:flex items-center gap-8">
 
           <div className="flex flex-col items-center text-sm">
-            <span className="border-b border-black px-4 pb-0.5">{name || "User"}</span>
+            <span className="border-b border-black px-4 pb-0.5">{user?.name || "User"}</span>
             <span className="text-gray-600 text-xs mt-0.5">User</span>
           </div>
 
@@ -109,7 +102,7 @@ export default function UserNavbar() {
           <div className="border-t pt-3 flex justify-between items-center">
 
             <div className="flex flex-col text-sm">
-              <span className="font-medium">{name || "User"}</span>
+              <span className="font-medium">{user?.name || "User"}</span>
               <span className="text-gray-600 text-xs text-left">User</span>
             </div>
 
