@@ -14,14 +14,14 @@ export default function Assignee_Historylog() {
         const res = await api.get("/assignee/history");
 
         const formattedStatus = res.data.statusHistoryLog.map((log) => ({
-          ticketId: log.ticket?._id || "Unknown",
+          ticketId: log.ticket?.toString() || "-",
           datetime: new Date(log.timestamp).toLocaleString(),
           change: `${log.fromStatus} → ${log.toStatus}`,
           by: log.fromAssignee?.name || "System",
         }));
 
         const formattedAssignee = res.data.assigneeHistoryLog.map((log) => ({
-          ticketId: log.ticket?._id || "Unknown",
+          ticketId: log.ticket?.toString() || "-",
           datetime: new Date(log.timestamp).toLocaleString(),
           change: `${log.fromAssignee?.name || "None"} → ${
             log.toAssignee?.name || "None"
