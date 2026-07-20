@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import AdminNavbar from "../../components/AdminNavbar";
 import api from "../../api/axios";
 import { LuPencil } from "react-icons/lu";
-import { IoClose } from "react-icons/io5";
+import { IoClose, IoChevronDown } from "react-icons/io5";
 
 export default function StaffManagement() {
 
@@ -192,12 +192,13 @@ export default function StaffManagement() {
                 Scope
               </label>
 
-              <select
-                onChange={handleSelect}
-                className="w-full px-4 py-2 rounded-lg bg-gray-200"
-              >
+              <div className="relative">
+                <select
+                  onChange={handleSelect}
+                  className="w-full pr-8 px-3 py-2 rounded bg-gray-200 appearance-none"
+                >
 
-                <option>Select Scope</option>
+                  <option>Select Scope</option>
 
                 {options.map((opt, index)=>(
                   <option key={index} value={opt}>
@@ -210,7 +211,10 @@ export default function StaffManagement() {
                 </option>
 
               </select>
-
+                <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-500">
+                  <IoChevronDown className="text-base" />
+                </span>
+              </div>
               {/* Selected Tags */}
 
               <div className="flex flex-wrap gap-2">
