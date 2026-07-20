@@ -47,7 +47,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-300">
+    <div className="min-h-screen bg-gray-200">
       <Navbar title="Sign up" />
 
       <div className="py-6 flex justify-center items-center mt-16">
@@ -61,7 +61,7 @@ export default function Login() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-gray-300 rounded-lg p-2 outline-none"
+                className="w-full bg-gray-200 rounded-lg p-2 outline-none"
                 required
               />
             </div>
@@ -72,7 +72,7 @@ export default function Login() {
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-gray-300 rounded-lg p-2 pr-10 outline-none"
+                className="w-full bg-gray-200 rounded-lg p-2 pr-10 outline-none"
                 required
               />
               <button
