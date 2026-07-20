@@ -120,9 +120,10 @@ export const createNewTicket = async (req, res) => {
         ticket.category = category;
         ticket.resolution_path = resolution_path;
 
+        console.log("Assignee:", assignee);
         if (assignee) {
             const assigneeUser = await User.findOne({
-                $or: [{ name: assignee }, { _id: assignee }],
+                name: assignee,
             });
             if (assigneeUser) {
                 ticket.assignees.push(assigneeUser._id);
