@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import AdminNavbar from "../../components/AdminNavbar";
 import api from "../../api/axios";
 import { LuPencil } from "react-icons/lu";
+import { IoClose } from "react-icons/io5";
 
 export default function StaffManagement() {
 
@@ -57,6 +58,10 @@ export default function StaffManagement() {
     if (!selected.includes(value)) {
       setSelected([...selected, value]);
     }
+  };
+
+  const removeSelected = (value) => {
+    setSelected((prev) => prev.filter((v) => v !== value));
   };
 
   // =========================
@@ -199,12 +204,20 @@ export default function StaffManagement() {
 
               <div className="flex flex-wrap gap-2">
 
-                {selected.map((item,index)=>(
+                {selected.map((item, index) => (
                   <span
                     key={index}
-                    className="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-sm"
+                    className="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-sm flex items-center gap-2"
                   >
-                    {item}
+                    <span>{item}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeSelected(item)}
+                      className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-orange-200 text-orange-700 hover:bg-orange-300"
+                      aria-label={`Remove ${item}`}
+                    >
+                      <IoClose className="text-xs" />
+                    </button>
                   </span>
                 ))}
 
