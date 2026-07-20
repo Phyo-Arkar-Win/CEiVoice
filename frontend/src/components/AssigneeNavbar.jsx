@@ -27,19 +27,14 @@ export default function AssigneeNavbar() {
     }`;
 
   const labelStyle =
-    "ml-3 opacity-0 md:opacity-100 transition-opacity duration-300 group-hover:opacity-100 whitespace-nowrap";
+    "ml-3 opacity-0 transition-opacity duration-300 group-hover:opacity-100 whitespace-nowrap";
 
   return (
-  
     <div
       className="
         group
-        sticky
-        top-0
-        self-start
         h-screen
         w-20
-        md:w-64
         hover:w-64
         shrink-0
         bg-gray-100
@@ -70,7 +65,7 @@ export default function AssigneeNavbar() {
         <div className="flex items-center py-3 mt-4 px-6">
           <IoPerson className="text-2xl min-w-[28px]" />
 
-          <div className="ml-3 opacity-0 md:opacity-100 group-hover:opacity-100 transition-opacity duration-300">
+          <div className="ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <div className="font-bold whitespace-nowrap border-b border-black pb-1">
               {displayName}
             </div>
@@ -98,7 +93,7 @@ export default function AssigneeNavbar() {
         className="flex items-center px-6 py-4 cursor-pointer hover:bg-gray-200 border-t w-full text-left bg-gray-100 font-bold"
       >
         <IoIosLogOut className="text-2xl min-w-[28px]" />
-        <span className="ml-3 opacity-0 md:opacity-100 group-hover:opacity-100 transition-opacity duration-300">
+        <span className="ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           Logout
         </span>
       </button>

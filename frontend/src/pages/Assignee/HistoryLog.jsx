@@ -40,15 +40,12 @@ export default function Assignee_Historylog() {
   }, []);
 
   return (
-    <div className="bg-gray-100 min-h-screen">
+    <div className="flex bg-gray-100 h-screen overflow-hidden">
       {/* Fixed Sidebar */}
-      <AssigneeNavbar
-        collapsed={collapsed}
-        setCollapsed={setCollapsed}
-      />
+      <AssigneeNavbar />
 
       {/* Main Content */}
-      <main className="ml-20 md:ml-64 p-4 md:p-10">
+      <main className="flex-1 p-4 md:p-10 min-w-0 overflow-y-auto">
         <h1 className="text-xl md:text-2xl font-semibold mb-6">
           History Log
         </h1>

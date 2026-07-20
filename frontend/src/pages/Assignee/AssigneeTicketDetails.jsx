@@ -263,14 +263,10 @@ export default function Assignee_Ticket_Details() {
   return (
     <div className="min-h-screen flex bg-gray-100">
       {/* ── Sidebar Navigation ──────────────────────────────────────────────── */}
-      <AssigneeNavbar collapsed={collapsed} setCollapsed={setCollapsed} />
+      <AssigneeNavbar />
 
       {/* ── Main Content Area ───────────────────────────────────────────────── */}
-      <div
-        className={`flex-1 transition-all duration-300 p-4 md:p-6 ${
-          collapsed ? "ml-1" : "ml-7"
-        }`}
-      >
+      <div className="flex-1 transition-all duration-300 p-4 md:p-6 min-w-0 overflow-hidden">
         <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6">
           {/* Back button */}
           <button
