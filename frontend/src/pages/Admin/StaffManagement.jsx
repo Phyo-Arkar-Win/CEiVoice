@@ -15,13 +15,15 @@ export default function StaffManagement() {
   const [selected, setSelected] = useState([]);
   const [showInput, setShowInput] = useState(false);
   const [newScope, setNewScope] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [originalEmail, setOriginalEmail] = useState("");
 
   // =========================
   // Fetch Assignees
   // =========================
   const fetchAssignees = async () => {
     try {
-      const res = await api.get("/recruit");
+      const res = await api.get("/admin/assignees");
       setAssignees(res.data.data);
     } catch (err) {
       console.error(err);
@@ -64,6 +66,22 @@ export default function StaffManagement() {
     setSelected((prev) => prev.filter((v) => v !== value));
   };
 
+  const handleEditAssignee = (user) => {
+    setName(user.name || "");
+    setEmail(user.email || "");
+    setSelected(Array.isArray(user.scopes) ? user.scopes : []);
+    setOriginalEmail(user.email || "");
+    setIsEditing(true);
+  };
+
+  const cancelEdit = () => {
+    setName("");
+    setEmail("");
+    setSelected([]);
+    setOriginalEmail("");
+    setIsEditing(false);
+  };
+
   // =========================
   // Add Scope
   // =========================
@@ -94,19 +112,16 @@ export default function StaffManagement() {
   const assignUser = async () => {
 
     try {
-
-      await api.post("/recruit", {
+      await api.post("/admin/assignees", {
         name,
         email,
-        scopes: selected
+        scopes: selected,
+        originalEmail: originalEmail || email,
       });
 
       fetchAssignees();
 
-      setName("");
-      setEmail("");
-      setSelected([]);
-
+      cancelEdit();
     } catch (err) {
       console.error(err);
     }
@@ -121,9 +136,7 @@ export default function StaffManagement() {
   }, []);
 
   return (
-    <>
-    <div>
-    <div className="min-h-screen flex bg-gray-100 overflow-hidden">
+    <div className="h-screen flex bg-gray-100 overflow-hidden">
 
       <AdminNavbar />
 
@@ -138,11 +151,9 @@ export default function StaffManagement() {
         <div className="bg-white rounded-xl shadow p-4 md:p-6 mb-6">
 
           <h2 className="font-semibold text-lg md:text-2xl mb-4 md:mb-6">
-            Add new Assignee
+            {isEditing ? "Edit Assignee" : "Add new Assignee"}
           </h2>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-
             {/* Name */}
 
             <div>
@@ -252,12 +263,23 @@ export default function StaffManagement() {
 
           </div>
 
-          <button
-            onClick={assignUser}
-            className="mt-6 bg-orange-500 text-white px-5 py-2 rounded hover:bg-orange-600 transition-colors w-full sm:w-auto"
-          >
-            Assign
-          </button>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 mt-6">
+            <button
+              onClick={assignUser}
+              className="bg-orange-500 text-white px-5 py-2 rounded hover:bg-orange-600 transition-colors w-full sm:w-auto"
+            >
+              {isEditing ? "Update Assignee" : "Assign"}
+            </button>
+            {isEditing && (
+              <button
+                type="button"
+                onClick={cancelEdit}
+                className="bg-gray-200 text-gray-700 px-5 py-2 rounded hover:bg-gray-300 transition-colors w-full sm:w-auto"
+              >
+                Cancel
+              </button>
+            )}
+          </div>
 
         </div>
 
@@ -296,11 +318,20 @@ export default function StaffManagement() {
                     </td>
 
                     <td className="py-3 pr-4 text-gray-600">
-                      {user.scopes?.map(scope => scope.name).join(", ") || "-"}
+                      {Array.isArray(user.scopes)
+                        ? user.scopes.join(", ")
+                        : "-"}
                     </td>
 
                     <td className="py-3 text-center">
-                      <LuPencil className="text-lg text-gray-500 hover:text-orange-500 cursor-pointer inline-block transition-colors" />
+                      <button
+                        type="button"
+                        onClick={() => handleEditAssignee(user)}
+                        className="inline-flex items-center justify-center p-2 rounded hover:bg-gray-100"
+                        aria-label={`Edit ${user.name}`}
+                      >
+                        <LuPencil className="text-lg text-gray-500 hover:text-orange-500 transition-colors" />
+                      </button>
                     </td>
 
                   </tr>
@@ -312,12 +343,9 @@ export default function StaffManagement() {
             </table>
           </div>
 
-          </div>
-
         </div>
 
     </div>
     </div>
-    </>
   );
 }
