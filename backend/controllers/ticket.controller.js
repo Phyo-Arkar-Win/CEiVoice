@@ -201,7 +201,7 @@ export const getTicketDetails = async (req, res) => {
 
     // For users
     if (userRole === 'user') {
-        const ticketId = req.params.id;
+        const ticketId = req.params.ticketId;
         try {
             const ticket = await Ticket.findById(ticketId).populate('assignees', 'name email').populate('creator', 'name email'); //edtbyRomulus
             if (!ticket) {
