@@ -288,7 +288,7 @@ export const handleMergeSelection = async (req, res) => {
 
         let suggestedAssignee = await User.findOne({ name: parsedAIResponse.suggested_assignee });
 
-        const mergedTicket = await Ticket.create({
+        const mergedTicket = new Ticket({
             issue: parsedAIResponse.issue,
             title: parsedAIResponse.title,
             summary: parsedAIResponse.summary,
@@ -346,32 +346,35 @@ export const mergeDraftTickets = async (req, res) => {
         // }
 
         // console.log(mergedTicket.assignees)
-        const assigneeObjects = await User.find({
-        name: { $in: mergedTicket.assignees }
-        });
 
-        const mergedTicketDoc = new Ticket(mergedTicket);
+        console.log("I'm in ")
 
-        mergedTicketDoc.status = "New";
-        const ticketsToMerge = await Ticket.find({ _id: { $in: mergedTicketDoc.mergedTickets } })
-        const creatorList = ticketsToMerge.map(ticket => ticket.creator)
-        const mergedSourceIds = mergedTicketDoc.mergedTickets.map(id => id._id);
-        await mergedTicketDoc.updateOne({ $set: { status: 'New' } });
+        // const assigneeObjects = await User.find({
+        // name: { $in: mergedTicket.assignees }
+        // });
 
-        mergedTicketDoc.followers.push(...creatorList);
-        mergedTicketDoc.assignees = assigneeObjects.map(user => user._id);
+        // const mergedTicketDoc = new Ticket(mergedTicket);
 
-        await Ticket.deleteMany({ _id: { $in: mergedSourceIds } });
-        await mergedTicketDoc.save();
-        let followerEmails = [];
-        for (const followerId of mergedTicketDoc.followers) {
-            const user = await User.findById(followerId);
-            if (user) {
-                followerEmails.push(user.email);
-            }
-        }
-        console.log('Follower Emails:', followerEmails);
-        await sendUpdateEmail(followerEmails, mergedTicketDoc);
+        // mergedTicketDoc.status = "New";
+        // const ticketsToMerge = await Ticket.find({ _id: { $in: mergedTicketDoc.mergedTickets } })
+        // const creatorList = ticketsToMerge.map(ticket => ticket.creator)
+        // const mergedSourceIds = mergedTicketDoc.mergedTickets.map(id => id._id);
+        // await mergedTicketDoc.updateOne({ $set: { status: 'New' } });
+
+        // mergedTicketDoc.followers.push(...creatorList);
+        // mergedTicketDoc.assignees = assigneeObjects.map(user => user._id);
+
+        // await Ticket.deleteMany({ _id: { $in: mergedSourceIds } });
+        // await mergedTicketDoc.save();
+        // let followerEmails = [];
+        // for (const followerId of mergedTicketDoc.followers) {
+        //     const user = await User.findById(followerId);
+        //     if (user) {
+        //         followerEmails.push(user.email);
+        //     }
+        // }
+        // console.log('Follower Emails:', followerEmails);
+        // await sendUpdateEmail(followerEmails, mergedTicketDoc);
         res.status(200).json({ message: 'Tickets merged successfully', data: mergedTicket });
 
         // Clean up merging draft tickets to new ticket
