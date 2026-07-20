@@ -3,6 +3,8 @@ import AssigneeNavbar from "@/components/AssigneeNavbar";
 import api from "../../api/axios";
 
 export default function Assignee_Historylog() {
+  const [expanded, setExpanded] = useState(false);
+
   const [statusLogs, setStatusLogs] = useState([]);
   const [assigneeLogs, setAssigneeLogs] = useState([]);
 
@@ -38,12 +40,19 @@ export default function Assignee_Historylog() {
   }, []);
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="bg-gray-100 min-h-screen">
       {/* Sidebar */}
-      <AssigneeNavbar />
+      <AssigneeNavbar
+        expanded={expanded}
+        setExpanded={setExpanded}
+      />
 
       {/* Main Content */}
-      <main className="flex-1 min-h-screen p-4 md:p-10 transition-all duration-300">
+      <main
+        className={`min-h-screen p-4 md:p-10 transition-all duration-300 ${
+          expanded ? "ml-64" : "ml-20"
+        }`}
+      >
         <h1 className="text-xl md:text-2xl font-semibold mb-6">
           History Log
         </h1>
