@@ -11,6 +11,11 @@ import { useAuth } from "../context/AuthContext";
 export default function AssigneeNavbar() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const storedUser =
+    typeof window !== "undefined"
+      ? JSON.parse(localStorage.getItem("user") || "null")
+      : null;
+  const displayName = user?.name || storedUser?.name || "Assignee";
 
   const handleLogout = () => {
     logout();
@@ -65,9 +70,9 @@ export default function AssigneeNavbar() {
         <div className="flex items-center py-3 mt-4 px-6">
           <IoPerson className="text-2xl min-w-[28px]" />
 
-          <div className="ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div className="ml-3 opacity-0 md:opacity-100 group-hover:opacity-100 transition-opacity duration-300">
             <div className="font-bold whitespace-nowrap border-b border-black pb-1">
-              {user?.name || "Assignee"}
+              {displayName}
             </div>
             <div className="text-sm mt-1">Assignee</div>
           </div>
