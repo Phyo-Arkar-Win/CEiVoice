@@ -1,23 +1,17 @@
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import UserNavbar from "@/components/userNavbar";
 import api from "@/api/axios";
+import { useAuth } from "../../context/AuthContext";
 
 export default function SubmitReq() {
   const navigate = useNavigate("")
-  const [email, setEmail] = useState("");
+  const { user } = useAuth();
+  const email = user?.email || "";
   const [issue, setIssue] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState();
-
-  // Load user email once
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (user) {
-      setEmail(user.email);
-    }
-  }, []);
 
   // Auto clear message/error
   useEffect(() => {

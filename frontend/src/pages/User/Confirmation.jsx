@@ -1,21 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import UserNavbar from "@/components/userNavbar";
 import { CheckCircle } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 export default function SuccessPage() {
   const navigate = useNavigate();
-  const [email, setEmail ] = useState("")
+  const { user } = useAuth();
+  const email = user?.email || "";
   
   const location = useLocation();
   const trackingId = location.state?.trackingId;
-
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"))
-    if (user) {
-      setEmail(user.email);
-    }
-  }, [])
 
 
   return (
