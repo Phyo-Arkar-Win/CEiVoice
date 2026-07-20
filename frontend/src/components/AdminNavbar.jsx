@@ -22,7 +22,7 @@ export default function AdminNavbar() {
     }`;
 
   return (
-    <div className="group sticky top-0 self-start h-screen w-20 hover:w-64 shrink-0 bg-gray-100 border-r-2 border-orange-500 flex flex-col transition-all duration-300 overflow-hidden z-40">
+    <div className="group h-screen w-20 hover:w-64 shrink-0 bg-gray-100 border-r-2 border-orange-500 flex flex-col transition-all duration-300 overflow-hidden z-40">
 
       {/* TOP SECTION */}
       <div className="flex-1">

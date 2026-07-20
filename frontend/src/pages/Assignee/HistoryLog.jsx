@@ -48,7 +48,7 @@ export default function Assignee_Historylog() {
       />
 
       {/* Main Content */}
-      <main className="ml-64 p-4 md:p-10">
+      <main className="ml-20 md:ml-64 p-4 md:p-10">
         <h1 className="text-xl md:text-2xl font-semibold mb-6">
           History Log
         </h1>
@@ -161,7 +161,7 @@ export default function Assignee_Historylog() {
                         No assignee logs found.
                       </td>
                     </tr>
-                  )}
+                  )}  
                 </tbody>
               </table>
             </div>
