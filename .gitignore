@@ -1,6 +1,7 @@
 node_modules/
 dist/
 .env
+docs/
 
 
 # Logs
@@ -27,3 +28,4 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+PROJECT_MAP.md

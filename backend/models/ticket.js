@@ -19,12 +19,17 @@ const ticketSchema = new mongoose.Schema(
             ],
             default: 'Draft',
         },
+        embedding: { type: [Number], default: [] },
         creator: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
         },
         followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
         assignees: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+        relatedTickets: [{
+            ticketId: { type: mongoose.Schema.Types.ObjectId, ref: 'Ticket' },
+            similarityScore: { type: Number },
+        }],
         mergedTickets: [{
             type: mongoose.Schema.Types.ObjectId, ref: 'Ticket'
         }],

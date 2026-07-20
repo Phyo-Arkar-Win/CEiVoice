@@ -5,6 +5,8 @@ import Scope from '../models/scope.js';
 import HistoryLog from '../models/history-log.js';
 import { mergeDraftTicketsAI, createDraftTicketAI } from '../services/ollama.service.js';
 import { sendConfirmationEmail, sendUpdateEmail } from '../services/email/email.service.js';
+import { computeEmbedding } from '../services/embedding.service.js';
+import { computeAndStoreSimilarities, cleanupRelatedTickets } from '../services/similarity.service.js';
 
 export const getTickets = async (req, res) => {
     const userRole = req.user.role;
@@ -136,6 +138,11 @@ export const createNewTicket = async (req, res) => {
             ticket: ticket,
         });
 
+        // Cleanup after draft to new ticket
+        (async () => cleanupRelatedTickets(id).catch(err =>
+            console.error('[Background] Cleanup error on submit:', err.message)
+        ))();
+
     } catch (error) {
         console.error(error);
         res.status(500).json({
@@ -208,7 +215,10 @@ export const getTicketDetails = async (req, res) => {
         const userId = req.user.id;
         const ticketId = req.params.id;
         try {
-            const ticket = await Ticket.findById(ticketId).populate('assignees', 'name email').populate('creator', 'name email');
+            const ticket = await Ticket.findById(ticketId)
+                .populate('assignees', 'name email')
+                .populate('creator', 'name email')
+                .populate('relatedTickets.ticketId', 'title category summary status');
             if (!ticket) {
                 return res.status(404).json({ message: "Ticket not found" });
             }
@@ -322,9 +332,10 @@ export const mergeDraftTickets = async (req, res) => {
         mergedTicketDoc.status = "New";
         const ticketsToMerge = await Ticket.find({ _id: { $in: mergedTicketDoc.mergedTickets } })
         const creatorList = ticketsToMerge.map(ticket => ticket.creator)
+        const mergedSourceIds = mergedTicketDoc.mergedTickets.map(id => id._id);
         await mergedTicketDoc.updateOne({ $set: { status: 'New' } });
         mergedTicketDoc.followers.push(...creatorList);
-        await Ticket.deleteMany({ _id: { $in: mergedTicketDoc.mergedTickets.map(id => id._id) } });
+        await Ticket.deleteMany({ _id: { $in: mergedSourceIds } });
         await mergedTicketDoc.save();
         let followerEmails = [];
         for (const followerId of mergedTicketDoc.followers) {
@@ -335,6 +346,13 @@ export const mergeDraftTickets = async (req, res) => {
         }
         await sendUpdateEmail(followerEmails, mergedTicketDoc);
         res.status(200).json({ message: 'Tickets merged successfully', data: mergedTicket });
+
+        // Clean up merging draft tickets to new ticket
+        (async () => {
+            for (const sourceId of mergedSourceIds) {
+                await cleanupRelatedTickets(sourceId);
+            }
+        })().catch(err => console.error('[Background] Cleanup error on merge:', err.message));
     } catch (error) {
         res.status(500).json({
             message: `Error merging tickets: ${error.message}`,
@@ -369,10 +387,22 @@ export const createDraftTicket = async (req, res) => {
             resolution_path: parsedAIResponse.resolution_path,
             original_message: issue,
             creator: user
-        })
+        });
 
         await sendConfirmationEmail(email, draftTicket);
         res.status(200).json({ ticket: draftTicket, suggestedAssignee, message: "Email sent successfully" });
+
+        // Background embedding and compute similarities
+        (async () => {
+            try {
+                const text = draftTicket.issue?.trim() ?? ''
+                const embedding = await computeEmbedding(text);
+                await Ticket.findByIdAndUpdate(draftTicket._id, { embedding });
+                await computeAndStoreSimilarities(draftTicket._id);
+            } catch (err) {
+                console.error('[Background] Embedding/similarity error on create:', err.message);
+            }
+        })();
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -402,6 +432,18 @@ export const updateDraftTicket = async (req, res) => {
             message: 'Draft ticket updated successfully',
             ticket: ticket,
         });
+
+        // Background recomputing embedding and similarities after draft update
+        (async () => {
+            try {
+                const text = ticketToEmbeddingText(ticket);
+                const embedding = await computeEmbedding(text);
+                await Ticket.findByIdAndUpdate(id, { embedding });
+                await computeAndStoreSimilarities(id);
+            } catch (err) {
+                console.error('[Background] Embedding/similarity error on update:', err.message);
+            }
+        })();
     } catch (error) {
         res.status(500).json({
             message: `Error updating draft ticket: ${error.message}`,
