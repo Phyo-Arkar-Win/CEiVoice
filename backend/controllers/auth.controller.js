@@ -2,10 +2,11 @@ import User from "../models/user.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { OAuth2Client } from "google-auth-library";
+import { generateAccessToken, generateRefreshToken } from "../utils/token.js";
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-const signup = async (req, res) => {
+export const signup = async (req, res) => {
 
     const { email, password, username } = req.body;
 
@@ -17,33 +18,33 @@ const signup = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = await User.create({ email, password: hashedPassword, name: username });
+
+    await cookieSetter(newUser, res);
+
     res.status(201).json({ message: "User created successfully.", user: newUser });
 
 }
 
-const login = async (req, res) => {
+export const login = async (req, res) => {
 
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
 
+    const user = await User.findOne({ email });
     if (!user) {
         return res.status(400).json({ message: "Invalid email or password." });
     }
-    const correctPassword = await bcrypt.compare(password, user.password);
 
+    const correctPassword = await bcrypt.compare(password, user.password);
     if (!correctPassword) {
         return res.status(400).json({ message: "Invalid email or password." });
     }
 
-    const token = jwt.sign(
-        { userId: user._id },
-        process.env.JWT_SECRET, { expiresIn: "3h" }
-    );
+    await cookieSetter(user, res);
 
-    res.status(200).json({ message: "Login successful.", user, token });
+    res.status(200).json({ message: "Login successful.", user });
 }
 
-const googleLogin = async (req, res) => {
+export const googleLogin = async (req, res) => {
     const { token } = req.body;
 
     try {
@@ -63,46 +64,98 @@ const googleLogin = async (req, res) => {
             });
         }
 
-        const appToken = jwt.sign(
-            { userId: user._id },
-            process.env.JWT_SECRET,
-            { expiresIn: "3h" }
-        );
-
-        res.status(200).json({ message: "Google login successful.", token: appToken, user });
+        await cookieSetter(user, res);
+        res.status(200).json({ message: "Google login successful.", user });
     } catch (error) {
         console.error("Google login error:", error);
         res.status(400).json({ message: "Google authentication failed." });
     }
 }
 
-const protect = async (req, res, next) => {
+// Helper Function to set cookies
+const cookieSetter = async(user, res) => {
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    user.refreshTokens.push(refreshToken);
+    await user.save();
+
+    res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV !== 'development',
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+
+    res.cookie('accessToken', accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV !== 'development',
+        sameSite: 'strict',
+        maxAge: 15 * 60 * 1000
+    });
+}
+
+export const refreshToken = async (req, res) => {
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) {
+        res.clearCookie('refreshToken');
+        res.clearCookie('accessToken');
+        return res.status(401).json({ message: "Token expired. Please log in again." });
+    }
+
     try {
-        let token;
-        if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
-            token = req.headers.authorization.split(" ")[1];
+        const decodedRefreshToken = jwt.verify(
+            refreshToken,
+            process.env.REFRESH_TOKEN_SECRET
+        );
+
+        const user = await User.findById(decodedRefreshToken.userId);
+
+        if (!user) {
+            return res.status(403).json({ message: "User not found." });
         }
 
-        if (!token) {
-            return res.status(401).json({ message: "You are not logged in! Please log in to get access." });
+        // Protection against hijacks
+        const tokenInDatabase = user.refreshTokens.includes(refreshToken);
+        if (!tokenInDatabase) {
+            res.clearCookie('refreshToken');
+            res.clearCookie('accessToken');
+            user.refreshTokens = [];
+            await user.save();
+            return res.status(403).json({ message: "Invalid refresh token. Please log in again." });
         }
 
-        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+        const newAccessToken = generateAccessToken(user);
+        res.cookie('accessToken', newAccessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV !== 'development',
+            sameSite: 'strict',
+            maxAge: 15 * 60 * 1000
+        });
+        res.status(200).json({ message: "Access token refreshed successfully." });
 
-        const currentUser = await User.findById(decodedToken.userId);
-        if (!currentUser) {
-            return res.status(401).json({ message: "The user belonging to this token no longer exists." });
-        }
-
-        req.user = currentUser;
-        next();
     } catch (error) {
-        console.error("Auth Error:", error);
-        res.status(401).json({ message: "Authentication failed." });
+        console.log("RefreshToken Error: ", error);
+        res.clearCookie('refreshToken');
+        res.clearCookie('accessToken');
+        return res.status(403).json({ message: "Invalid refresh token. Please log in again." });
     }
 }
 
-const restrictTo = (...roles) => {
+export const logout = async (req, res) => {
+    const refreshToken = req.cookies.refreshToken;
+    if (refreshToken) {
+        await User.findOneAndUpdate(
+            { refreshTokens: refreshToken },
+            { $pull: { refreshTokens: refreshToken } }
+        );
+    }
+    res.clearCookie('refreshToken');
+    res.clearCookie('accessToken');
+    return res.status(200).json({ message: "Logout successful." });
+}
+
+export const restrictTo = (...roles) => {
     return (req, res, next) => {
         if (!roles.includes(req.user.role)) {
             return res.status(403).json({ message: "You do not have permission to perform this action." });
@@ -111,4 +164,3 @@ const restrictTo = (...roles) => {
     };
 };
 
-export default { signup, login, googleLogin, protect, restrictTo };

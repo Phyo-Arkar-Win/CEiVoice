@@ -8,22 +8,38 @@ export default function Draft() {
 
   const [tickets, setTickets] = useState([]);
   const [assignees, setAssignees] = useState([]);
+  const [scopes, setScopes] = useState([]);
   const [merging, setMerging] = useState(false);
 
 
   useEffect(() => {
-    fetchDraftTickets();
-    fetchAssignees();
+    (async () => {
+      await fetchAssignees();
+      await fetchScopes();
+      await fetchDraftTickets();
+    })();
   }, []);
 
   // Fetch assignees from backend
   const fetchAssignees = async () => {
     try {
-      const res = await api.get("/admin/assignee");
-      console.log("Assignees fetched:", res.data);
-      setAssignees(res.data.data || res.data);
+      const res = await api.get("/admin/assignees");
+      const list = res.data.data || res.data;
+      setAssignees(list);
+      return list;
     } catch (err) {
       console.error("Error fetching assignees:", err);
+      return [];
+    }
+  };
+
+  // Fetch scopes (for category dropdown) from backend
+  const fetchScopes = async () => {
+    try {
+      const res = await api.get("/scopes");
+      setScopes(res.data.data || res.data);
+    } catch (err) {
+      console.error("Error fetching scopes:", err);
     }
   };
 
@@ -35,7 +51,10 @@ export default function Draft() {
         category: ticket.category,
         resolution_path: ticket.resolution_path,
         deadline: ticket.deadline,
-        assignees: ticket.assignee ? [ticket.assignee] : undefined,
+
+        assignee: ticket.assignee
+        ? ticket.assignee
+        : undefined,
       };
 
       // remove undefined values so only changed fields are sent
@@ -62,7 +81,7 @@ export default function Draft() {
         ...ticket,
         checked: false,
         expanded: false,
-        assignee: ticket.assignees?.[0]?._id || "",
+        assignee: ticket.assignees?.[0]?.name || ticket.suggested_assignee || "",
       }));
 
       setTickets(formatted);
@@ -101,7 +120,7 @@ export default function Draft() {
         category: ticket.category,
         resolution_path: ticket.resolution_path,
         deadline: ticket.deadline,
-        assignees: [ticket.assignee],
+        assignees: ticket.assignee,
       });
 
       alert(res.data.message);
@@ -184,7 +203,8 @@ export default function Draft() {
               {ticket.expanded && (
                 <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
 
-                  <div>
+                  {/* Title - Full Width */}
+                  <div className="col-span-1 md:col-span-2">
                     <label className="font-semibold block mb-1">Title</label>
                     <input
                       value={ticket.title || ""}
@@ -195,14 +215,36 @@ export default function Draft() {
                     />
                   </div>
 
+                  {/* Category - Dropdown from scopes */}
                   <div>
                     <label className="font-semibold block mb-1">Category</label>
-                    <input
+                    <select
                       value={ticket.category || ""}
                       onChange={(e) =>
                         handleChange(index, "category", e.target.value)
                       }
                       className="w-full border border-orange-400 rounded-full px-4 py-2"
+                    >
+                      <option value="">Select Category</option>
+                      {scopes.map((scope) => (
+                        <option key={scope._id || scope.name} value={scope.name}>
+                          {scope.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Email - Plain text input beside Category */}
+                  <div>
+                    <label className="font-semibold block mb-1">Email</label>
+                    <input
+                      type="email"
+                      value={ticket.email || ""}
+                      onChange={(e) =>
+                        handleChange(index, "email", e.target.value)
+                      }
+                      className="w-full border border-orange-400 rounded-full px-4 py-2"
+                      placeholder="Ticket email"
                     />
                   </div>
 
@@ -246,7 +288,7 @@ export default function Draft() {
                   <div>
                     <label className="font-semibold block mb-1">Assignee</label>
                     <select
-                      value={ticket.assignee}
+                      value={ticket.assignee || ""}
                       onChange={(e) =>
                         handleChange(index, "assignee", e.target.value)
                       }
@@ -255,7 +297,7 @@ export default function Draft() {
                       <option value="">Select Assignee</option>
 
                       {assignees.map((person) => (
-                        <option key={person._id} value={person._id}>
+                        <option key={person._id} value={person.name}>
                           {person.name}
                         </option>
                       ))}
@@ -310,6 +352,7 @@ export default function Draft() {
                   navigate("/drafts/merge", {
                     state: {
                       mergedTicket: res.data.mergedTicket,
+                      suggestedAssignee: res.data.suggestedAssignee,
                       tickets: selectedTickets
                     }
                   });

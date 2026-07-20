@@ -1,22 +1,11 @@
 import { Router } from 'express';
-import AIGenerateDraftTicket, { AIMergeDraftTickets } from '../services/ollama.service.js';
-import authController from '../controllers/auth.controller.js';
-import Ticket from '../models/ticket.js';
+import { mergeDraftTickets } from '../controllers/ollama.controller.js';
+import { createDraftTicketAI } from '../services/ollama.service.js';
+import { protect } from '../middlewares/auth.middleware.js';
 
 const router = Router();
 
-router.post('/generate', authController.protect, AIGenerateDraftTicket);
-
-router.post('/merge', async (req, res, next) => {
-  try {
-    const ticketList = await Ticket.find({}).limit(2).lean();
-
-    const result = await AIMergeDraftTickets(ticketList);
-
-    res.json(result);
-  } catch (err) {
-    next(err);
-  }
-});
+router.post('/drafts', createDraftTicketAI);
+router.post('/merge', mergeDraftTickets);
 
 export default router;

@@ -1,6 +1,6 @@
 import Scope from '../models/scope.js';
 
-const getScopes = async (req, res) => {
+export const getScopes = async (req, res) => {
     try {
         const scopes = await Scope.find();
         res.status(200).json(scopes);
@@ -9,7 +9,7 @@ const getScopes = async (req, res) => {
     }
 }
 
-const createScope = async (req, res) => {
+export const createScope = async (req, res) => {
     try {
         const { name } = req.body;
         const existingScope = await Scope.findOne({ name });
@@ -23,5 +23,4 @@ const createScope = async (req, res) => {
         res.status(500).json({ message: `Cannot create scope. ${error.message}` });
     }
 }
-
-export { getScopes, createScope };
+

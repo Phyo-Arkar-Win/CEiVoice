@@ -1,8 +1,8 @@
 import { Router } from 'express'
-import sendEmail from '../services/email/email.service.js';
-import authController from '../controllers/auth.controller.js';
+// import sendEmail from '../services/email/email.service.js';
+import { protect } from '../middlewares/auth.middleware.js';
 
 const router = Router();
-router.post("/send", authController.protect, sendEmail);
+// router.post("/send", sendEmail);
 
 export default router;

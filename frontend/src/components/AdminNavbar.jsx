@@ -1,25 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import ceiLogo from "../assets/cei.png";
 import { IoIosLogOut } from "react-icons/io";
 import { NavLink, useNavigate } from "react-router-dom";
 import { BsGraphUp } from "react-icons/bs";
 import { IoMailOpenSharp, IoTicket, IoPerson } from "react-icons/io5";
 import { MdManageAccounts } from "react-icons/md";
+import { useAuth } from "../context/AuthContext";
 
 export default function AdminNavbar() {
-  const [name, setName] = useState("");
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (user) {
-      setName(user.name);
-    }
-  }, []);
+  const { user, logout } = useAuth();
 
   const handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
+    logout();
     navigate("/login");
   };
 
@@ -29,10 +22,10 @@ export default function AdminNavbar() {
     }`;
 
   return (
-    <div className="group min-h-screen w-20 hover:w-64 bg-gray-100 border-r-2 border-orange-500 flex flex-col justify-between transition-all duration-300 overflow-hidden">
+    <aside className="group sticky top-0 left-0 h-screen w-20 hover:w-64 shrink-0 bg-gray-100 border-r-2 border-orange-500 flex flex-col transition-all duration-300 overflow-hidden z-40">
 
       {/* TOP SECTION */}
-      <div>
+      <div className="flex-1">
         {/* LOGO */}
         <div className="flex items-center gap-3 px-4 py-4 border-b border-orange-500">
           <img
@@ -47,11 +40,10 @@ export default function AdminNavbar() {
         </div>
 
         {/* USER */}
-        {/* USER */}
 <div className="flex items-center py-3 mt-4 px-6">
   <IoPerson className="text-2xl min-w-[28px]" />
   <div className="ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-    <div className="font-bold whitespace-nowrap border-b border-black pb-1">{name}</div>
+    <div className="font-bold whitespace-nowrap border-b border-black pb-1">{user?.name || "Admin"}</div>
     <div className="text-sm mt-1">Admin</div>
   </div>
 </div>
@@ -91,16 +83,24 @@ export default function AdminNavbar() {
       </div>
 
       {/* LOGOUT */}
-      <div
+      <button
         onClick={handleLogout}
-        className="flex items-center px-6 py-4 cursor-pointer hover:bg-gray-200 border-t"
+      className="mt-auto flex items-center px-6 py-4 cursor-pointer hover:bg-gray-200 border-t w-full text-left bg-gray-100 font-bold overflow-hidden"
       >
         <IoIosLogOut className="text-2xl min-w-[28px]" />
-        <span className="ml-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <span className="
+        ml-3 
+        inline-block
+        whitespace-nowrap
+        max-w-0 
+        overflow-hidden 
+        group-hover:max-w-xs
+        transition-all 
+        duration-300">
           Logout
         </span>
-      </div>
+      </button>
 
-    </div>
+    </aside>
   );
 }
