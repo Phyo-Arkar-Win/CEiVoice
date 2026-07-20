@@ -337,21 +337,30 @@ export const handleUnlinkTickets = async (req, res) => {
 export const mergeDraftTickets = async (req, res) => {
     try {
         const { mergedTicket } = req.body;
-        if (Array.isArray(mergedTicket.assignees) && mergedTicket.assignees.length) {
-            const selectedAssignee = mergedTicket.assignees[0];
-            const assigneeUser = await User.findOne({
-                $or: [{ name: selectedAssignee }, { _id: selectedAssignee }],
-            });
-            mergedTicket.assignees = assigneeUser ? [assigneeUser._id] : [];
-        }
+        // if (Array.isArray(mergedTicket.assignees) && mergedTicket.assignees.length) {
+        //     const selectedAssignee = mergedTicket.assignees[0];
+        //     const assigneeUser = await User.findOne({
+        //         $or: [{ name: selectedAssignee }, { _id: selectedAssignee }],
+        //     });
+        //     mergedTicket.assignees = assigneeUser ? [assigneeUser._id] : [];
+        // }
+
+        // console.log(mergedTicket.assignees)
+        const assigneeObjects = await User.find({
+        name: { $in: mergedTicket.assignees }
+        });
 
         const mergedTicketDoc = new Ticket(mergedTicket);
+
         mergedTicketDoc.status = "New";
         const ticketsToMerge = await Ticket.find({ _id: { $in: mergedTicketDoc.mergedTickets } })
         const creatorList = ticketsToMerge.map(ticket => ticket.creator)
         const mergedSourceIds = mergedTicketDoc.mergedTickets.map(id => id._id);
         await mergedTicketDoc.updateOne({ $set: { status: 'New' } });
+
         mergedTicketDoc.followers.push(...creatorList);
+        mergedTicketDoc.assignees = assigneeObjects.map(user => user._id);
+
         await Ticket.deleteMany({ _id: { $in: mergedSourceIds } });
         await mergedTicketDoc.save();
         let followerEmails = [];
@@ -361,6 +370,7 @@ export const mergeDraftTickets = async (req, res) => {
                 followerEmails.push(user.email);
             }
         }
+        console.log('Follower Emails:', followerEmails);
         await sendUpdateEmail(followerEmails, mergedTicketDoc);
         res.status(200).json({ message: 'Tickets merged successfully', data: mergedTicket });
 
