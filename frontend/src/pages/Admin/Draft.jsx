@@ -62,8 +62,7 @@ export default function Draft() {
         (key) => updates[key] === undefined && delete updates[key]
       );
 
-    
-      await api.patch(`/tickets/${ticket._id}`, updates);
+      await api.patch(`/tickets/${encodeURIComponent(ticket._id)}`, updates);
 
       alert("Draft updated successfully");
       fetchDraftTickets(); // refresh list
@@ -115,7 +114,8 @@ export default function Draft() {
   // Submit Draft Ticket
   const submitTicket = async (ticket) => {
     try {
-      const res = await api.put(`/tickets/${ticket._id}/submit`, {
+      console.log("I'm in")
+      const res = await api.put(`/tickets/${encodeURIComponent(ticketId)}`, {
         title: ticket.title,
         summary: ticket.summary,
         category: ticket.category,

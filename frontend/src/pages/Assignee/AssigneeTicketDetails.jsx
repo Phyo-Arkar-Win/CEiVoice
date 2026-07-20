@@ -11,11 +11,12 @@ export default function Assignee_Ticket_Details() {
   const navigate = useNavigate();
   const { routeTicketId } = useParams();
   const location = useLocation();
-  const finalTicketId = routeTicketId || location.state?.ticketId || "";
+  const ticketId = decodeURIComponent(routeTicketId || location.state?.ticketId || "");
   const initialTicket = location.state?.ticket || null;
 
   // ── UI State ───────────────────────────────────────────────────────────────
-  const [collapsed, setCollapsed] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [commentSubmitting, setCommentSubmitting] = useState(false);
@@ -75,19 +76,23 @@ export default function Assignee_Ticket_Details() {
   useEffect(() => {
     const fetchTicketAndComments = async () => {
 
-  if (!finalTicketId) {
-    setErrorMessage("Missing ticket id.");
-    setLoading(false);
-    return;
-  }
+        if (!ticketId) {
+          setErrorMessage("Missing ticket id.");
+          setLoading(false);
+          return;
+        }
 
-  try {
+      try {
+        setErrorMessage("");
+        const response = await api.get(`/tickets/${ticketId}`);
+        const ticketData = response.data.ticket;
 
-    const response = await api.get(`/assignee/ticketDetails/${finalTicketId}`);
+        if (!ticketData) {
+              setErrorMessage("Ticket details request returned no ticket.");
+              return;
+        }
 
-    const ticketData = response.data.ticket;
-
-        setTicket(ticketData);
+      setTicket(ticketData);
 
         // Store all assignees from DB for the reassign dropdown
         const assigneesFromDb = Array.isArray(response.data.assignees) ? response.data.assignees : [];
@@ -130,11 +135,8 @@ export default function Assignee_Ticket_Details() {
       }
     };
 
-    console.log(finalTicketId)
-    if (finalTicketId) {
       fetchTicketAndComments();
-    }
-  }, [finalTicketId]);
+  }, [ticketId]);;
 
   // ─── Computed / Derived Values ─────────────────────────────────────────────
 
@@ -226,7 +228,7 @@ export default function Assignee_Ticket_Details() {
     setCommentError("");
 
     try {
-      const response = await api.post("/assignee/submitComment", {
+      const response = await api.post(`/tickets/${ticketId}/comments`, {
         ticketId: ticket?._id || ticketId,
         commentText: message,
         visibility: commentType,
@@ -261,13 +263,17 @@ export default function Assignee_Ticket_Details() {
 
   // ─── JSX Render ───────────────────────────────────────────────────────────
   return (
-    <div className="h-screen flex bg-gray-100 overflow-hidden">
+    <div className="min-h-screen bg-gray-100 overflow-hidden">
       {/* ── Sidebar Navigation ──────────────────────────────────────────────── */}
-      <AssigneeNavbar />
+      <AssigneeNavbar 
+      expanded={expanded}
+      setExpanded={setExpanded}
+      />
 
       {/* ── Main Content Area ───────────────────────────────────────────────── */}
-      <div className="flex-1 transition-all duration-300 p-4 md:p-6 min-w-0 overflow-y-auto">
-        <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6">
+      <main className={`min-h-screen transition-all duration-300 ${expanded ? 'ml-64' : 'ml-20'}`}>
+        <div className="p-4 md:p-6">
+          <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6">
           {/* Back button */}
           <button
             onClick={() => navigate("/assignee_dashboard")}
@@ -468,6 +474,7 @@ export default function Assignee_Ticket_Details() {
           )}
         </div>
       </div>
+    </main>  
     </div>
   );
 }
