@@ -161,4 +161,3 @@ ${ticketList}
 
     return parsed;
 };
-
