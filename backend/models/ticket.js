@@ -8,6 +8,7 @@ const ticketSchema = new mongoose.Schema(
         summary: { type: String, required: true },
         category: { type: String, required: true },
         resolution_path: [{ type: String, required: true }],
+        suggested_assignee: { type: String },
         status: {
             type: String,
             enum: [

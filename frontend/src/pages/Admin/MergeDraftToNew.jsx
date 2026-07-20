@@ -73,6 +73,15 @@ export default function MergeDraftToNew() {
 
   }, []);
 
+  // When assignees load, set default from AI suggestion if present
+  useEffect(() => {
+    const suggested = location.state?.suggestedAssignee || mergedTicket?.suggested_assignee;
+    if (suggested && assignees.length) {
+      const match = assignees.find((a) => a.name === (suggested.name || suggested));
+      if (match) setAssignee(match._id);
+    }
+  }, [assignees, mergedTicket, location.state]);
+
   // Unmerge
   const unmergeUser = async (ticketId) => {
     console.log(mergedTicket)

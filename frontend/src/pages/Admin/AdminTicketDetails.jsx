@@ -80,8 +80,9 @@ export default function AdminTicketDetails() {
 
       try {
         setErrorMessage("");
-        const response = await api.get(`/admin/ticketDetails/${encodeURIComponent(ticketId)}`);
+        const response = await api.get(`/tickets/${ticketId}`);
         const ticketData = response.data.ticket;
+
 
         if (!ticketData) {
           setErrorMessage("Ticket details request returned no ticket.");
@@ -126,9 +127,9 @@ export default function AdminTicketDetails() {
 
   const followersText = `${followersCount} user${followersCount !== 1 ? 's' : ''}`;
 
-  const assigneesText = Array.isArray(ticket?.assignees)
-    ? ticket.assignees.map((a) => a?.name || a?.email || 'Unknown').join(", ")
-    : "-";
+  const assigneesText = (Array.isArray(ticket?.assignees) && ticket.assignees.length > 0 && typeof ticket.assignees[0] === 'object')
+    ? ticket.assignees.map((a) => a?.name || a?.email || 'Unknown').join(', ')
+    : (ticket?.suggested_assignee || '-');
 
   /** Key-value pairs rendered in the ticket info section. */
   const details = [

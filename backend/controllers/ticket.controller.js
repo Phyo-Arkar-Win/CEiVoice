@@ -119,12 +119,26 @@ export const createNewTicket = async (req, res) => {
         ticket.summary = summary;
         ticket.category = category;
         ticket.resolution_path = resolution_path;
-        ticket.assignees.push(await User.findOne({ name: assignee }));
+
+        if (assignee) {
+            const assigneeUser = await User.findOne({
+                $or: [{ name: assignee }, { _id: assignee }],
+            });
+            if (assigneeUser) {
+                ticket.assignees.push(assigneeUser._id);
+            }
+        }
+
         ticket.deadline = deadline;
 
         ticket.status = 'New';
 
         await ticket.save();
+        try {
+            await Ticket.findByIdAndUpdate(id, { $unset: { suggested_assignee: "" } });
+        } catch (err) {
+            console.error('[Background] Failed to unset suggested_assignee on submit:', err.message);
+        }
         await sendUpdateEmail([ticket.email], ticket);
 
         res.status(200).json({
@@ -207,7 +221,8 @@ export const getTicketDetails = async (req, res) => {
     // For admins and assignees
     else if (userRole == 'admin' || userRole == 'assignee') {
         const userId = req.user.id;
-        const ticketId = req.params.id;
+
+        const ticketId = req.params.ticketId;
         try {
             const ticket = await Ticket.findById(ticketId)
                 .populate('assignees', 'name email')
@@ -216,7 +231,6 @@ export const getTicketDetails = async (req, res) => {
             if (!ticket) {
                 return res.status(404).json({ message: "Ticket not found" });
             }
-
             // Get raw follower count from the unpopulated document (followers may contain emails, not ObjectIds)
             const rawTicket = await Ticket.findById(ticketId).lean();
             const followersCount = Array.isArray(rawTicket?.followers) ? rawTicket.followers.length : 0;
@@ -280,6 +294,7 @@ export const handleMergeSelection = async (req, res) => {
             summary: parsedAIResponse.summary,
             category: parsedAIResponse.category,
             resolution_path: parsedAIResponse.resolution_path,
+            suggested_assignee: parsedAIResponse.suggested_assignee,
             followers,
             mergedTickets: tickets.map(ticket => ticket._id),
         });
@@ -322,6 +337,14 @@ export const handleUnlinkTickets = async (req, res) => {
 export const mergeDraftTickets = async (req, res) => {
     try {
         const { mergedTicket } = req.body;
+        if (Array.isArray(mergedTicket.assignees) && mergedTicket.assignees.length) {
+            const selectedAssignee = mergedTicket.assignees[0];
+            const assigneeUser = await User.findOne({
+                $or: [{ name: selectedAssignee }, { _id: selectedAssignee }],
+            });
+            mergedTicket.assignees = assigneeUser ? [assigneeUser._id] : [];
+        }
+
         const mergedTicketDoc = new Ticket(mergedTicket);
         mergedTicketDoc.status = "New";
         const ticketsToMerge = await Ticket.find({ _id: { $in: mergedTicketDoc.mergedTickets } })
@@ -380,7 +403,8 @@ export const createDraftTicket = async (req, res) => {
             category: parsedAIResponse.category,
             resolution_path: parsedAIResponse.resolution_path,
             original_message: issue,
-            creator: user
+            creator: user,
+            suggested_assignee: parsedAIResponse.suggested_assignee,
         });
 
         await sendConfirmationEmail(email, draftTicket);
@@ -417,7 +441,12 @@ export const updateDraftTicket = async (req, res) => {
         ticket.summary = summary;
         ticket.category = category;
         ticket.resolution_path = resolution_path;
-        ticket.assignees = await User.findOne({ name: assignee });
+        if (assignee) {
+            const assigneeUser = await User.findOne({
+                $or: [{ name: assignee }, { _id: assignee }],
+            });
+            ticket.assignees = assigneeUser ? [assigneeUser._id] : [];
+        }
         ticket.deadline = deadline;
 
         await ticket.save();
