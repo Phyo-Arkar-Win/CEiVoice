@@ -152,7 +152,7 @@ export default function AdminTicketDetails() {
     setCommentError("");
 
     try {
-      const response = await api.post("/admin/submitComment", {
+      const response = await api.post(`/tickets/${ticketId}/comments`, {
         ticketId: ticket?._id || ticketId,
         commentText: message,
         visibility: commentType,

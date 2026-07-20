@@ -85,7 +85,7 @@ export default function UserTicketDetails() {
 
      try {
        setErrorMessage("");
-       const response = await api.get(`/user/ticketDetails/${encodeURIComponent(ticketId)}`);
+       const response = await api.get(`/tickets/${ticketId}`);
        const ticketData = response.data.ticket;
 
 
@@ -166,7 +166,7 @@ export default function UserTicketDetails() {
 
 
    try {
-     const response = await api.post("/user/submitComment", {
+     const response = await api.post(`/tickets/${ticketId}/comments `, {
        ticketId: ticket?._id || ticketId,
        commentText: message,
      });
@@ -187,6 +187,9 @@ export default function UserTicketDetails() {
      setPublicComments((prev) => [...prev, newComment]);
      setCommentText("");
    } catch (error) {
+    console.log("ticketId:", ticketId);
+    // console.log("ticket._id:", ticket?._id
+    console.log("commentText:", commentText);
      console.error("Error submitting comment:", error);
      setCommentError(error?.response?.data?.message || "Failed to submit comment.");
    } finally {
