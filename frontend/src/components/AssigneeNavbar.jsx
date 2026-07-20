@@ -1,4 +1,3 @@
-
 import React from "react";
 import ceiLogo from "../assets/cei.png";
 import { IoIosLogOut } from "react-icons/io";
@@ -31,6 +30,7 @@ export default function AssigneeNavbar() {
     "ml-3 opacity-0 md:opacity-100 transition-opacity duration-300 group-hover:opacity-100 whitespace-nowrap";
 
   return (
+  
     <div
       className="
         group
