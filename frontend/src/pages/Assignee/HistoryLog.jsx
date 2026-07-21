@@ -93,7 +93,7 @@ export default function Assignee_Historylog() {
                           </td>
 
                           <td className="px-4 py-3">
-                            <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                            <span className="bg-blue-100 text-green-700 px-2 py-1 rounded">
                               {newStatus}
                             </span>
                           </td>
