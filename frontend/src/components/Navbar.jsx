@@ -23,7 +23,7 @@ export default function Navbar({ title }) {
                 <div className='flex text-white'>
                     <button
                         onClick={handleClick}
-                        className='bg-primary-500 hover:bg-primary-600 px-3 py-2 text-white rounded-xl cursor-pointer'
+                        className='bg-primary-500 hover:bg-primary-600 px-4 py-3 text-white rounded-xl cursor-pointer'
                     >
                         {title}
                     </button>

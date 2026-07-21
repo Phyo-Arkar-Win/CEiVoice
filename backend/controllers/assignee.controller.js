@@ -28,9 +28,10 @@ export const createAssignee = async (req, res) => {
 
   try {
 
-    const { name, email, scopes } = req.body;
+    const { name, email, scopes, originalEmail } = req.body;
+    const lookupEmail = originalEmail || email;
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: lookupEmail });
 
     if (!user) {
       return res.status(404).json({
@@ -46,6 +47,7 @@ export const createAssignee = async (req, res) => {
     const scopeIds = scopeDocs.map(s => s._id);
 
     user.name = name;
+    user.email = email;
     user.scopes = scopeIds;
     user.role = "assignee";
 

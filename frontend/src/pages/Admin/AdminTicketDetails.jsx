@@ -80,8 +80,9 @@ export default function AdminTicketDetails() {
 
       try {
         setErrorMessage("");
-        const response = await api.get(`/admin/ticketDetails/${encodeURIComponent(ticketId)}`);
+        const response = await api.get(`/tickets/${ticketId}`);
         const ticketData = response.data.ticket;
+
 
         if (!ticketData) {
           setErrorMessage("Ticket details request returned no ticket.");
@@ -126,9 +127,9 @@ export default function AdminTicketDetails() {
 
   const followersText = `${followersCount} user${followersCount !== 1 ? 's' : ''}`;
 
-  const assigneesText = Array.isArray(ticket?.assignees)
-    ? ticket.assignees.map((a) => a?.name || a?.email || 'Unknown').join(", ")
-    : "-";
+  const assigneesText = (Array.isArray(ticket?.assignees) && ticket.assignees.length > 0 && typeof ticket.assignees[0] === 'object')
+    ? ticket.assignees.map((a) => a?.name || a?.email || 'Unknown').join(', ')
+    : (ticket?.suggested_assignee || '-');
 
   /** Key-value pairs rendered in the ticket info section. */
   const details = [
@@ -151,7 +152,7 @@ export default function AdminTicketDetails() {
     setCommentError("");
 
     try {
-      const response = await api.post("/admin/submitComment", {
+      const response = await api.post(`/tickets/${ticketId}/comments`, {
         ticketId: ticket?._id || ticketId,
         commentText: message,
         visibility: commentType,
@@ -185,12 +186,12 @@ export default function AdminTicketDetails() {
 
   // ─── JSX Render ───────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen flex bg-gray-100">
+    <div className="h-screen flex bg-gray-100 overflow-hidden">
       {/* ── Sidebar Navigation ──────────────────────────────────────────────── */}
       <AdminNavbar />
 
       {/* ── Main Content Area ───────────────────────────────────────────────── */}
-      <div className="flex-1 transition-all duration-300 p-4 md:p-6">
+      <div className="flex-1 transition-all duration-300 p-4 md:p-6 overflow-y-auto">
         <div className="bg-white border border-gray-300 rounded-lg shadow-sm p-6">
           {/* Back button */}
           <button

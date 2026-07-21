@@ -14,7 +14,7 @@ router.patch('/:id', createNewTicket);
 
 // New
 router.post('/:ticketId/comments', submitComment)
-router.get('/:ticketId', getTicketDetails)
+router.get('/:ticketId', protect, getTicketDetails)
 
 
 // router.post('/getTicket', getIndividualTicket)

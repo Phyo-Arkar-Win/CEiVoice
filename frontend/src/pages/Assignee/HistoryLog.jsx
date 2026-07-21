@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import AssigneeNavbar from "@/components/AssigneeNavbar";
 import api from "../../api/axios";
 
 export default function Assignee_Historylog() {
-  const [collapsed, setCollapsed] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
   const [statusLogs, setStatusLogs] = useState([]);
   const [assigneeLogs, setAssigneeLogs] = useState([]);
@@ -14,14 +14,14 @@ export default function Assignee_Historylog() {
         const res = await api.get("/assignee/history");
 
         const formattedStatus = res.data.statusHistoryLog.map((log) => ({
-          ticketId: log.ticket?._id || "Unknown",
+          ticketId: log.ticket?.toString() || "-",
           datetime: new Date(log.timestamp).toLocaleString(),
           change: `${log.fromStatus} → ${log.toStatus}`,
           by: log.fromAssignee?.name || "System",
         }));
 
         const formattedAssignee = res.data.assigneeHistoryLog.map((log) => ({
-          ticketId: log.ticket?._id || "Unknown",
+          ticketId: log.ticket?.toString() || "-",
           datetime: new Date(log.timestamp).toLocaleString(),
           change: `${log.fromAssignee?.name || "None"} → ${
             log.toAssignee?.name || "None"
@@ -41,14 +41,18 @@ export default function Assignee_Historylog() {
 
   return (
     <div className="bg-gray-100 min-h-screen">
-      {/* Fixed Sidebar */}
+      {/* Sidebar */}
       <AssigneeNavbar
-        collapsed={collapsed}
-        setCollapsed={setCollapsed}
+        expanded={expanded}
+        setExpanded={setExpanded}
       />
 
       {/* Main Content */}
-      <main className="ml-64 p-4 md:p-10">
+      <main
+        className={`min-h-screen p-4 md:p-10 transition-all duration-300 ${
+          expanded ? "ml-64" : "ml-20"
+        }`}
+      >
         <h1 className="text-xl md:text-2xl font-semibold mb-6">
           History Log
         </h1>

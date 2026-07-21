@@ -34,13 +34,13 @@ export default function Tickets() {
   }, []);
 
   return (
-    <div className="min-h-screen flex bg-gray-100">
+    <div className="h-screen flex bg-gray-100 overflow-hidden">
 
       {/* Sidebar */}
       <AdminNavbar />
 
       {/* Main Content */}
-      <div className="flex-1 p-6">
+      <div className="flex-1 p-6 overflow-y-auto">
 
         <h1 className="text-2xl font-semibold mb-6">All Tickets</h1>
 

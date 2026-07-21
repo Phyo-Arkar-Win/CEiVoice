@@ -7,12 +7,12 @@ import { getTickets } from '../controllers/ticket.controller.js';
 const router = Router();
 
 // yyk
-router.get('/dashboard', getDashboardData);
+router.get('/dashboard', protect, getDashboardData);
 
 // Completed
 router.get("/tickets", protect, getTickets);
-router.get('/assignees', getAssignees);
-router.post('/assignees', createAssignee);
+router.get('/assignees', protect, getAssignees);
+router.post('/assignees', protect, createAssignee);
 
 
 // Moved to tickets route

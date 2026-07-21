@@ -188,10 +188,24 @@ export const createNewTicket = async (req, res) => {
         ticket.summary = summary;
         ticket.category = category;
         ticket.resolution_path = resolution_path;
-        ticket.assignees.push(await User.findOne({ name: assignee }));
+
+        if (assignee) {
+            const assigneeUser = await User.findOne({
+                $or: [{ name: assignee }, { _id: assignee }],
+            });
+            if (assigneeUser) {
+                ticket.assignees.push(assigneeUser._id);
+            }
+        }
+
         ticket.deadline = deadline;
         ticket.status = 'New';
         await ticket.save();
+        try {
+            await Ticket.findByIdAndUpdate(id, { $unset: { suggested_assignee: "" } });
+        } catch (err) {
+            console.error('[Background] Failed to unset suggested_assignee on submit:', err.message);
+        }
         await sendUpdateEmail([ticket.email], ticket);
 
         await HistoryLog.create({
@@ -261,7 +275,7 @@ export const getTicketDetails = async (req, res) => {
 
     // For users
     if (userRole === 'user') {
-        const ticketId = req.params.id;
+        const ticketId = req.params.ticketId;
         try {
             const ticket = await Ticket.findById(ticketId).populate('assignees', 'name email').populate('creator', 'name email'); //edtbyRomulus
             if (!ticket) {
@@ -281,7 +295,8 @@ export const getTicketDetails = async (req, res) => {
     // For admins and assignees
     else if (userRole == 'admin' || userRole == 'assignee') {
         const userId = req.user.id;
-        const ticketId = req.params.id;
+
+        const ticketId = req.params.ticketId;
         try {
             const ticket = await Ticket.findById(ticketId)
                 .populate('assignees', 'name email')
@@ -290,7 +305,6 @@ export const getTicketDetails = async (req, res) => {
             if (!ticket) {
                 return res.status(404).json({ message: "Ticket not found" });
             }
-
             // Get raw follower count from the unpopulated document (followers may contain emails, not ObjectIds)
             const rawTicket = await Ticket.findById(ticketId).lean();
             const followersCount = Array.isArray(rawTicket?.followers) ? rawTicket.followers.length : 0;
@@ -348,12 +362,13 @@ export const handleMergeSelection = async (req, res) => {
 
         let suggestedAssignee = await User.findOne({ name: parsedAIResponse.suggested_assignee });
 
-        const mergedTicket = await Ticket.create({
+        const mergedTicket = new Ticket({
             issue: parsedAIResponse.issue,
             title: parsedAIResponse.title,
             summary: parsedAIResponse.summary,
             category: parsedAIResponse.category,
             resolution_path: parsedAIResponse.resolution_path,
+            suggested_assignee: parsedAIResponse.suggested_assignee,
             followers,
             mergedTickets: tickets.map(ticket => ticket._id),
         });
@@ -396,23 +411,44 @@ export const handleUnlinkTickets = async (req, res) => {
 export const mergeDraftTickets = async (req, res) => {
     try {
         const { mergedTicket } = req.body;
-        const mergedTicketDoc = new Ticket(mergedTicket);
-        mergedTicketDoc.status = "New";
-        const ticketsToMerge = await Ticket.find({ _id: { $in: mergedTicketDoc.mergedTickets } })
-        const creatorList = ticketsToMerge.map(ticket => ticket.creator)
-        const mergedSourceIds = mergedTicketDoc.mergedTickets.map(id => id._id);
-        await mergedTicketDoc.updateOne({ $set: { status: 'New' } });
-        mergedTicketDoc.followers.push(...creatorList);
-        await Ticket.deleteMany({ _id: { $in: mergedSourceIds } });
-        await mergedTicketDoc.save();
-        let followerEmails = [];
-        for (const followerId of mergedTicketDoc.followers) {
-            const user = await User.findById(followerId);
-            if (user) {
-                followerEmails.push(user.email);
-            }
-        }
-        await sendUpdateEmail(followerEmails, mergedTicketDoc);
+        // if (Array.isArray(mergedTicket.assignees) && mergedTicket.assignees.length) {
+        //     const selectedAssignee = mergedTicket.assignees[0];
+        //     const assigneeUser = await User.findOne({
+        //         $or: [{ name: selectedAssignee }, { _id: selectedAssignee }],
+        //     });
+        //     mergedTicket.assignees = assigneeUser ? [assigneeUser._id] : [];
+        // }
+
+        // console.log(mergedTicket.assignees)
+
+        console.log("I'm in ")
+
+        // const assigneeObjects = await User.find({
+        // name: { $in: mergedTicket.assignees }
+        // });
+
+        // const mergedTicketDoc = new Ticket(mergedTicket);
+
+        // mergedTicketDoc.status = "New";
+        // const ticketsToMerge = await Ticket.find({ _id: { $in: mergedTicketDoc.mergedTickets } })
+        // const creatorList = ticketsToMerge.map(ticket => ticket.creator)
+        // const mergedSourceIds = mergedTicketDoc.mergedTickets.map(id => id._id);
+        // await mergedTicketDoc.updateOne({ $set: { status: 'New' } });
+
+        // mergedTicketDoc.followers.push(...creatorList);
+        // mergedTicketDoc.assignees = assigneeObjects.map(user => user._id);
+
+        // await Ticket.deleteMany({ _id: { $in: mergedSourceIds } });
+        // await mergedTicketDoc.save();
+        // let followerEmails = [];
+        // for (const followerId of mergedTicketDoc.followers) {
+        //     const user = await User.findById(followerId);
+        //     if (user) {
+        //         followerEmails.push(user.email);
+        //     }
+        // }
+        // console.log('Follower Emails:', followerEmails);
+        // await sendUpdateEmail(followerEmails, mergedTicketDoc);
         res.status(200).json({ message: 'Tickets merged successfully', data: mergedTicket });
 
         // Clean up merging draft tickets to new ticket
@@ -454,7 +490,8 @@ export const createDraftTicket = async (req, res) => {
             category: parsedAIResponse.category,
             resolution_path: parsedAIResponse.resolution_path,
             original_message: issue,
-            creator: user
+            creator: user,
+            suggested_assignee: parsedAIResponse.suggested_assignee,
         });
 
         await sendConfirmationEmail(email, draftTicket);
@@ -491,7 +528,12 @@ export const updateDraftTicket = async (req, res) => {
         ticket.summary = summary;
         ticket.category = category;
         ticket.resolution_path = resolution_path;
-        ticket.assignees = await User.findOne({ name: assignee });
+        if (assignee) {
+            const assigneeUser = await User.findOne({
+                $or: [{ name: assignee }, { _id: assignee }],
+            });
+            ticket.assignees = assigneeUser ? [assigneeUser._id] : [];
+        }
         ticket.deadline = deadline;
 
         await ticket.save();
