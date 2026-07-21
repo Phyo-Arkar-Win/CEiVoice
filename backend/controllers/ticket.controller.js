@@ -99,6 +99,74 @@ export const getDraftTickets = async (req, res) => {
     }
 };
 
+export const getMergeRecommendations = async (req, res) => {
+    try {
+        const draftTickets = await Ticket.find({ status: 'Draft' }).sort({ createdAt: 1 }).lean();
+
+        const recommendations = [];
+        const processedPairs = new Set();
+
+        for (const draftTicket of draftTickets) {
+            const refreshedTicket = await Ticket.findById(draftTicket._id)
+                .populate({
+                    path: 'relatedTickets.ticketId',
+                    select: 'title category summary issue status createdAt',
+                })
+                .lean();
+
+            if (!refreshedTicket) {
+                continue;
+            }
+
+            const relatedTickets = (refreshedTicket?.relatedTickets || [])
+                .filter(entry => entry.ticketId)
+                .map(entry => {
+                    const ticketId1 = String(refreshedTicket._id);
+                    const ticketId2 = String(entry.ticketId._id);
+                    const pairKey = [ticketId1, ticketId2].sort().join("-");
+
+                    // Skip if this pair has already been processed
+                    if (processedPairs.has(pairKey)) {
+                        return null;
+                    }
+
+                    // Mark this pair as processed
+                    processedPairs.add(pairKey);
+
+                    return {
+                        ...entry.ticketId,
+                        similarityScore: entry.similarityScore,
+                    };
+                })
+                .filter(entry => entry !== null)
+                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+            if (relatedTickets.length > 0) {
+                recommendations.push({
+                    ticket: {
+                        _id: refreshedTicket._id,
+                        title: refreshedTicket.title,
+                        issue: refreshedTicket.issue,
+                        summary: refreshedTicket.summary,
+                        category: refreshedTicket.category,
+                        status: refreshedTicket.status,
+                        createdAt: refreshedTicket.createdAt,
+                    },
+                    relatedTickets,
+                });
+            }
+        }
+
+        recommendations.sort((a, b) => new Date(a.ticket.createdAt) - new Date(b.ticket.createdAt));
+
+        res.status(200).json({ recommendations, message: 'Get merge recommendation successfully.' });
+    } catch (error) {
+        res.status(500).json({
+            message: `Error fetching merge recommendations: ${error.message}`,
+        });
+    }
+};
+
 // Submit a new ticket from draft | submit draft ticket
 export const createNewTicket = async (req, res) => {
     try {
