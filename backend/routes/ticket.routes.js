@@ -1,19 +1,20 @@
 import { Router } from 'express';
-import { createDraftTicket, mergeDraftTickets, createNewTicket, getDraftTicketsAsAdmin, handleMergeSelection, handleUnlinkTickets, updateDraftTicket, trackTicket, submitComment, getTicketDetails } from '../controllers/ticket.controller.js';
+import { createDraftTicket, mergeDraftTickets, createNewTicket, getDraftTickets, getMergeRecommendations, handleMergeSelection, handleUnlinkTickets, updateDraftTicket, trackTicket, submitComment, getTicketDetails } from '../controllers/ticket.controller.js';
 import { protect, restrictTo } from '../middlewares/auth.middleware.js';
 
 const router = Router();
 router.post('/drafts', createDraftTicket);
-router.get('/drafts', getDraftTicketsAsAdmin);
-router.post('/merge/selection', handleMergeSelection);
-router.post('/merge/unlink', handleUnlinkTickets);
-router.post('/merge', mergeDraftTickets);
-router.patch('/drafts/:id', updateDraftTicket);
-router.patch('/:id', createNewTicket);
+router.get('/drafts', protect, restrictTo('admin'), getDraftTickets);
+router.get('/drafts/mergeRecommendations', protect, restrictTo('admin'), getMergeRecommendations);
+router.post('/merge/selection', protect, restrictTo('admin'), handleMergeSelection);
+router.post('/merge/unlink', protect, restrictTo('admin'), handleUnlinkTickets);
+router.post('/merge', protect, restrictTo('admin'), mergeDraftTickets);
+router.patch('/drafts/:id', protect, restrictTo('admin'), updateDraftTicket);
+router.patch('/:id', protect, restrictTo('admin'), createNewTicket);
 
 // New
-router.post('/:ticketId/comments', submitComment)
-router.get('/:ticketId', protect, getTicketDetails)
+router.post('/:ticketId/comments', protect, restrictTo('user', 'admin', 'assignee'), submitComment)
+router.get('/:ticketId', protect, restrictTo('user', 'admin', 'assignee'), getTicketDetails)
 
 
 // router.post('/getTicket', getIndividualTicket)

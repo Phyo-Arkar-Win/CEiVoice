@@ -10,25 +10,24 @@ const historyLogSchema = new mongoose.Schema({
         required: true,
         enum: ["StatusChange", "AssigneeChange"]
     },
+    assignee: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+    },
     fromStatus: {
         type: String,
-        required: true,
-        default: "Null"
     },
     toStatus: {
         type: String,
-        required: true,
-        default: "Null"
     },
-    fromAssignee: {
+    
+    preAssignee: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
-        default: "Null"
     },
-    toAssignee: {
+    newAssignee: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
-        default: "Null"
     },
     timestamp: {
         type: Date,
