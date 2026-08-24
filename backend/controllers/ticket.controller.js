@@ -2,6 +2,7 @@ import Ticket from '../models/ticket.js';
 import Comment from '../models/comment.js';
 import User from '../models/user.js';
 import Scope from '../models/scope.js';
+import HistoryLog from '../models/history-log.js';
 import { mergeDraftTicketsAI, createDraftTicketAI } from '../services/ollama.service.js';
 import { sendConfirmationEmail, sendUpdateEmail } from '../services/email/email.service.js';
 import { computeEmbedding } from '../services/embedding.service.js';
@@ -87,13 +88,81 @@ export const trackTicket = async (req, res) => {
     }
 }
 
-export const getDraftTicketsAsAdmin = async (req, res) => {
+export const getDraftTickets = async (req, res) => {
     try {
         const draftTickets = await Ticket.find({ status: 'Draft' });
         res.status(200).json(draftTickets);
     } catch (error) {
         res.status(500).json({
             message: `Error loading draft tickets: ${error.message}`,
+        });
+    }
+};
+
+export const getMergeRecommendations = async (req, res) => {
+    try {
+        const draftTickets = await Ticket.find({ status: 'Draft' }).sort({ createdAt: 1 }).lean();
+
+        const recommendations = [];
+        const processedPairs = new Set();
+
+        for (const draftTicket of draftTickets) {
+            const refreshedTicket = await Ticket.findById(draftTicket._id)
+                .populate({
+                    path: 'relatedTickets.ticketId',
+                    select: 'title category summary issue status createdAt',
+                })
+                .lean();
+
+            if (!refreshedTicket) {
+                continue;
+            }
+
+            const relatedTickets = (refreshedTicket?.relatedTickets || [])
+                .filter(entry => entry.ticketId)
+                .map(entry => {
+                    const ticketId1 = String(refreshedTicket._id);
+                    const ticketId2 = String(entry.ticketId._id);
+                    const pairKey = [ticketId1, ticketId2].sort().join("-");
+
+                    // Skip if this pair has already been processed
+                    if (processedPairs.has(pairKey)) {
+                        return null;
+                    }
+
+                    // Mark this pair as processed
+                    processedPairs.add(pairKey);
+
+                    return {
+                        ...entry.ticketId,
+                        similarityScore: entry.similarityScore,
+                    };
+                })
+                .filter(entry => entry !== null)
+                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+            if (relatedTickets.length > 0) {
+                recommendations.push({
+                    ticket: {
+                        _id: refreshedTicket._id,
+                        title: refreshedTicket.title,
+                        issue: refreshedTicket.issue,
+                        summary: refreshedTicket.summary,
+                        category: refreshedTicket.category,
+                        status: refreshedTicket.status,
+                        createdAt: refreshedTicket.createdAt,
+                    },
+                    relatedTickets,
+                });
+            }
+        }
+
+        recommendations.sort((a, b) => new Date(a.ticket.createdAt) - new Date(b.ticket.createdAt));
+
+        res.status(200).json({ recommendations, message: 'Get merge recommendation successfully.' });
+    } catch (error) {
+        res.status(500).json({
+            message: `Error fetching merge recommendations: ${error.message}`,
         });
     }
 };
@@ -130,9 +199,7 @@ export const createNewTicket = async (req, res) => {
         }
 
         ticket.deadline = deadline;
-
         ticket.status = 'New';
-
         await ticket.save();
         try {
             await Ticket.findByIdAndUpdate(id, { $unset: { suggested_assignee: "" } });
@@ -140,6 +207,13 @@ export const createNewTicket = async (req, res) => {
             console.error('[Background] Failed to unset suggested_assignee on submit:', err.message);
         }
         await sendUpdateEmail([ticket.email], ticket);
+
+        await HistoryLog.create({
+            ticket: ticket._id,
+            action: 'StatusChange',
+            fromStatus: 'Draft',
+            toStatus: 'New'
+        });
 
         res.status(200).json({
             message: 'Draft ticket submitted successfully',
@@ -490,12 +564,14 @@ export const updateDraftTicket = async (req, res) => {
 
 export const updateTicket = async (req, res) => {
     const { ticketId, status, reassignedAssigneeId } = req.body;
+    const assigneeId = req.user.id
     try {
         const ticket = await Ticket.findById(ticketId);
         if (!ticket) {
             return res.status(404).json({ message: "Ticket not found" });
         }
 
+        const currentAssignee = await User.findById(assigneeId);
         const reassignedAssignee = await User.findById(reassignedAssigneeId);
         const updateFields = {};
 
@@ -504,6 +580,13 @@ export const updateTicket = async (req, res) => {
             if (!commented.length) {
                 return res.status(400).json({ message: `You must comment before marking the ticket as ${status.toLowerCase()}` });
             }
+            await HistoryLog.create({
+                ticket: ticket._id,
+                action: "StatusChange",
+                assignee: currentAssignee.id,
+                fromStatus: ticket.status,
+                toStatus: "Solved"
+            });
         }
         if (status) {
             updateFields.status = status;
@@ -511,6 +594,14 @@ export const updateTicket = async (req, res) => {
 
         if (reassignedAssignee) {
             ticket.assignees.push(reassignedAssignee);
+            ticket.assignees.pop(currentAssignee._id);
+            await HistoryLog.create({
+                ticket: ticket._id,
+                action: "AssigneeChange",
+                preAssignee: currentAssignee.id,
+                newAssignee: currentAssignee._id,
+                toAssignee: reassignedAssignee
+            });
         }
 
         await ticket.save();
@@ -557,6 +648,16 @@ export const submitComment = async (req, res) => {
                 comment: commentText,
             });
             await newComment.save();
+
+            if (ticket.status !== 'Solving') {
+                await HistoryLog.create({
+                    ticket: ticket._id,
+                    action: "StatusChange",
+                    fromStatus: "New",
+                    toStatus: "Solving"
+                });
+            }
+
             res.status(201).json({ message: 'Comment added successfully', comment: newComment, name: user.name, role: user.role });
         } catch (error) {
             res.status(500).json({
