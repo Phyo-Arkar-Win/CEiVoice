@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 import User from "../models/user.js";
 
 export const validateLogin = async (req, res, next) => {
@@ -67,6 +68,12 @@ export const protect = async (req, res, next) => {
             accessToken,
             process.env.ACCESS_TOKEN_SECRET
         );
+
+        if (!mongoose.isValidObjectId(decodedToken.userId)) {
+            return res.status(401).json({
+                message: "Invalid authentication token. Please log in again."
+            });
+        }
 
         const currentUser = await User.findById(
             decodedToken.userId
