@@ -102,15 +102,27 @@ export const getDraftTickets = async (req, res) => {
 export const getMergeRecommendations = async (req, res) => {
     try {
         const draftTickets = await Ticket.find({ status: 'Draft' }).sort({ createdAt: 1 }).lean();
+        const scopes = await Scope.find({}, 'name');
+        const scopeList = scopes.map(scope => scope.name).join(', ');
+        const assignees = await User.find({ role: 'assignee' }).populate('scopes');
+        const assigneeList = assignees.map(assignee =>
+                `Name: ${assignee.name}
+                Scopes: ${assignee.scopes.map(scope => scope.name).join(', ')}`
+            ).join('\n');
 
         const recommendations = [];
-        const processedPairs = new Set();
+        const processedTicketIds = new Set();
 
         for (const draftTicket of draftTickets) {
+            const draftTicketId = String(draftTicket._id);
+            if (processedTicketIds.has(draftTicketId)) {
+                continue;
+            }
+
             const refreshedTicket = await Ticket.findById(draftTicket._id)
                 .populate({
                     path: 'relatedTickets.ticketId',
-                    select: 'title category summary issue status createdAt',
+                    select: 'title category summary issue resolution_path status createdAt',
                 })
                 .lean();
 
@@ -118,20 +130,18 @@ export const getMergeRecommendations = async (req, res) => {
                 continue;
             }
 
+            const groupTicketIds = new Set([draftTicketId]);
             const relatedTickets = (refreshedTicket?.relatedTickets || [])
                 .filter(entry => entry.ticketId)
                 .map(entry => {
-                    const ticketId1 = String(refreshedTicket._id);
-                    const ticketId2 = String(entry.ticketId._id);
-                    const pairKey = [ticketId1, ticketId2].sort().join("-");
+                    const relatedTicketId = String(entry.ticketId._id);
 
-                    // Skip if this pair has already been processed
-                    if (processedPairs.has(pairKey)) {
+                    // Keep each ticket in only one recommendation group.
+                    if (groupTicketIds.has(relatedTicketId) || processedTicketIds.has(relatedTicketId)) {
                         return null;
                     }
 
-                    // Mark this pair as processed
-                    processedPairs.add(pairKey);
+                    groupTicketIds.add(relatedTicketId);
 
                     return {
                         ...entry.ticketId,
@@ -142,6 +152,19 @@ export const getMergeRecommendations = async (req, res) => {
                 .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
             if (relatedTickets.length > 0) {
+                const ticketList = [refreshedTicket, ...relatedTickets]
+                    .map((ticket, index) => `
+                            Ticket ${index + 1}
+                            Issue: ${ticket.issue}
+                            Title: ${ticket.title}
+                            Summary: ${ticket.summary}
+                            Category: ${ticket.category}
+                            Resolution Path: ${ticket.resolution_path}
+                        `)
+                    .join('\n');
+                const mergedTicket = await mergeDraftTicketsAI(scopeList, ticketList, assigneeList);
+
+                groupTicketIds.forEach(ticketId => processedTicketIds.add(ticketId));
                 recommendations.push({
                     ticket: {
                         _id: refreshedTicket._id,
@@ -153,6 +176,7 @@ export const getMergeRecommendations = async (req, res) => {
                         createdAt: refreshedTicket.createdAt,
                     },
                     relatedTickets,
+                    mergedTicket,
                 });
             }
         }
