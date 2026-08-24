@@ -283,7 +283,7 @@ export default function Assignee_Ticket_Details() {
           </button>
 
           <h1 className="text-xl font-semibold text-center mb-6">
-            {ticket?.title || ticket?._id || "Ticket-001"}
+            {ticket?.title || ticket?._id}
           </h1>
 
           {loading ? (

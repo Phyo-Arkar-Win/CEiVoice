@@ -195,7 +195,7 @@ export const getMergeRecommendations = async (req, res) => {
 export const createNewTicket = async (req, res) => {
     try {
         const id = req.params.id;
-        const { title, summary, category, resolution_path, assignee, deadline } = req.body;
+        const { title, issue, summary, category, resolution_path, assignee, deadline } = req.body;
         const ticket = await Ticket.findById(id);
         if (!ticket) {
             return res.status(404).json({ message: 'Ticket not found' });
@@ -209,6 +209,7 @@ export const createNewTicket = async (req, res) => {
         }
 
         ticket.title = title;
+        ticket.issue = issue;
         ticket.summary = summary;
         ticket.category = category;
         ticket.resolution_path = resolution_path;

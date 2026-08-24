@@ -207,7 +207,9 @@ export default function Assignee_Dashboard() {
 
                             ${
                               ticket.status === "Solving"
-                                ? "bg-yellow-100 text-yellow-800"
+                                ? "bg-amber-100 text-amber-800"
+                                : ticket.status === "New"
+                                ? "bg-sky-100 text-sky-800"
                                 : ticket.status === "Solved"
                                 ? "bg-green-100 text-green-800"
                                 : ticket.status === "Draft"

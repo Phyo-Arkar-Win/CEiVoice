@@ -92,7 +92,9 @@ export default function Tickets() {
                           className={`px-2 py-1 rounded-full text-xs font-semibold
                             ${
                               ticket.status === "Solving"
-                                ? "bg-yellow-100 text-yellow-800"
+                                ? "bg-amber-100 text-amber-800"
+                                : ticket.status === "New"
+                                ? "bg-sky-100 text-sky-800"
                                 : ticket.status === "Solved"
                                 ? "bg-green-100 text-green-800"
                                 : "bg-blue-100 text-blue-800"

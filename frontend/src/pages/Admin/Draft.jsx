@@ -10,6 +10,9 @@ export default function Draft() {
   const [assignees, setAssignees] = useState([]);
   const [scopes, setScopes] = useState([]);
   const [merging, setMerging] = useState(false);
+  const [recommendations, setRecommendations] = useState([]);
+  const [recommendationsLoading, setRecommendationsLoading] = useState(true);
+  const [recommendationsError, setRecommendationsError] = useState(false);
 
 
   useEffect(() => {
@@ -17,6 +20,7 @@ export default function Draft() {
       await fetchAssignees();
       await fetchScopes();
       await fetchDraftTickets();
+      await fetchRecommendations();
     })();
   }, []);
 
@@ -47,6 +51,7 @@ export default function Draft() {
     try {
       const updates = {
         title: ticket.title,
+        issue: ticket.issue,
         summary: ticket.summary,
         category: ticket.category,
         resolution_path: ticket.resolution_path,
@@ -87,6 +92,18 @@ export default function Draft() {
       setTickets(formatted);
     } catch (err) {
       console.error("Error fetching drafts:", err);
+    }
+  };
+
+  const fetchRecommendations = async () => {
+    try {
+      const res = await api.get("/tickets/drafts/mergeRecommendations");
+      setRecommendations(res.data.recommendations || []);
+    } catch (err) {
+      console.error("Error fetching AI recommendations:", err);
+      setRecommendationsError(true);
+    } finally {
+      setRecommendationsLoading(false);
     }
   };
 
@@ -161,6 +178,66 @@ export default function Draft() {
       <div className="flex-1 p-4 md:p-8 min-w-0 overflow-y-auto">
         <h1 className="text-xl md:text-3xl font-bold mb-4">Draft Tickets</h1>
 
+        <section className="bg-orange-50 border border-orange-200 rounded-2xl shadow-sm p-4 md:p-6 mb-4 w-full">
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-orange-600">
+                AI assistant
+              </p>
+              <h2 className="text-lg md:text-xl font-bold text-gray-900">
+                Recommendations
+              </h2>
+              <p className="text-sm text-gray-600 mt-1">
+                Related drafts that may be handled together.
+              </p>
+            </div>
+            <span className="text-2xl" aria-hidden="true">✦</span>
+          </div>
+
+          {recommendationsLoading && (
+            <p className="text-sm text-gray-600">Checking your draft tickets...</p>
+          )}
+
+          {!recommendationsLoading && recommendationsError && (
+            <p className="text-sm text-red-700">
+              Recommendations are temporarily unavailable.
+            </p>
+          )}
+
+          {!recommendationsLoading && !recommendationsError && recommendations.length === 0 && (
+            <p className="text-sm text-gray-600">
+              No related draft tickets found right now.
+            </p>
+          )}
+
+          {!recommendationsLoading && !recommendationsError && recommendations.length > 0 && (
+            <div className="space-y-3">
+              {recommendations.map(({ ticket, relatedTickets }) => (
+                <div key={ticket._id} className="bg-white border border-orange-100 rounded-xl p-3 md:p-4">
+                  <p className="font-semibold text-gray-900 break-words">
+                    {ticket.title || "Untitled ticket"}
+                  </p>
+                  <div className="mt-2 space-y-2">
+                    {relatedTickets.map((relatedTicket) => (
+                      <div
+                        key={relatedTicket._id}
+                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm"
+                      >
+                        <span className="text-gray-700 break-words">
+                          Related: {relatedTicket.title || "Untitled ticket"}
+                        </span>
+                        <span className="text-orange-700 font-semibold whitespace-nowrap">
+                          {Math.round((relatedTicket.similarityScore || 0) * 100)}% match
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
         <div className="bg-gray-100 rounded-2xl shadow p-4 md:p-6 mb-4 w-full">
           {tickets.map((ticket, index) => (
             <div
@@ -213,6 +290,19 @@ export default function Draft() {
                         handleChange(index, "title", e.target.value)
                       }
                       className="w-full border border-orange-400 rounded-full px-4 py-2"
+                    />
+                  </div>
+
+                  {/* Issue - Full Width */}
+                  <div className="col-span-1 md:col-span-2">
+                    <label className="font-semibold block mb-1">Issue</label>
+                    <textarea
+                      value={ticket.issue || ""}
+                      onChange={(e) =>
+                        handleChange(index, "issue", e.target.value)
+                      }
+                      className="w-full h-28 border border-orange-400 rounded-xl px-4 py-2 resize-none"
+                      placeholder="User's issue"
                     />
                   </div>
 

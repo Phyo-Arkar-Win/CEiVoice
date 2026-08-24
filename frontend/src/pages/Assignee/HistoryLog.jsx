@@ -59,14 +59,14 @@ export default function Assignee_Historylog() {
 
         <div className="grid grid-cols-1 gap-8">
           {/* STATUS HISTORY */}
-          <div className="bg-gray-100 rounded-xl shadow p-6">
+          <div className="bg-white rounded-xl shadow p-6">
             <h2 className="text-xl font-semibold mb-4">
               Status Change
             </h2>
 
-            <div className="overflow-x-auto rounded-lg border bg-white">
+            <div className="overflow-x-auto rounded-lg border bg-gray-50">
               <table className="w-full min-w-[700px]">
-                <thead className="bg-gray-50">
+                <thead className="bg-gray-100">
                   <tr>
                     <th className="px-4 py-3 text-left">Ticket ID</th>
                     <th className="px-4 py-3 text-left">Date/Time</th>
@@ -93,7 +93,7 @@ export default function Assignee_Historylog() {
                           </td>
 
                           <td className="px-4 py-3">
-                            <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                            <span className="bg-blue-100 text-green-700 px-2 py-1 rounded">
                               {newStatus}
                             </span>
                           </td>
@@ -115,14 +115,14 @@ export default function Assignee_Historylog() {
           </div>
 
           {/* ASSIGNEE HISTORY */}
-          <div className="bg-gray-100 rounded-xl shadow p-6">
+          <div className="bg-white rounded-xl shadow p-6">
             <h2 className="text-xl font-semibold mb-4">
               Assignee Change
             </h2>
 
-            <div className="overflow-x-auto rounded-lg border bg-white">
+            <div className="overflow-x-auto rounded-lg border bg-gray-50">
               <table className="w-full min-w-[700px]">
-                <thead className="bg-gray-50">
+                <thead className="bg-gray-100">
                   <tr>
                     <th className="px-4 py-3 text-left">Ticket ID</th>
                     <th className="px-4 py-3 text-left">Date/Time</th>
