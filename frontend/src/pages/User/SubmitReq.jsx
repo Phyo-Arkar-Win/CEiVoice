@@ -42,6 +42,7 @@ export default function SubmitReq() {
       });
       
       setIssue("");
+      console.log(res.data);
       navigate("/confirmation", { state: { trackingId: res.data.ticket._id } })
 
     } catch (err) {

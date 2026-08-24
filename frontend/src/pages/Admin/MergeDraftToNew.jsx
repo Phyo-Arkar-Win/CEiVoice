@@ -50,7 +50,8 @@ export default function MergeDraftToNew() {
     const mapped = selectedTickets.map(ticket => ({
       id: ticket._id,
       email: ticket.email || "",
-      description: ticket.title || ""
+      description: ticket.title || "",
+      assignee: ticket.assignee || ""
     }));
 
     setMergedUsers(mapped);
@@ -227,9 +228,8 @@ export default function MergeDraftToNew() {
               <label className="font-semibold block mb-2">Assignee</label>
 
               <select
-                value={assignee}
+                value={assignees.find(a => a._id === assignee)?.name || ""}
                 onChange={(e) => {
-                  console.log("Dropdown value:", e.target.value);
                   setAssignee(e.target.value);
                 }}
                 className="w-full h-10 border border-orange-400 rounded-full px-4"
@@ -238,7 +238,7 @@ export default function MergeDraftToNew() {
                 <option value="">Select Assignee</option>
 
                 {assignees.map(person => (
-                  <option key={person._id} value={person._id}>
+                  <option key={person._id} value={person.name}>
                     {person.name}
                   </option>
                 ))}

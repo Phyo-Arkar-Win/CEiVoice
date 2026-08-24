@@ -97,7 +97,11 @@ export default function Tickets() {
                                 ? "bg-sky-100 text-sky-800"
                                 : ticket.status === "Solved"
                                 ? "bg-green-100 text-green-800"
-                                : "bg-blue-100 text-blue-800"
+                                : ticket.status === "Draft"
+                                ? "bg-blue-100 text-blue-800"
+                                : ticket.status === "Failed"
+                                ? "bg-gray-100 text-red-800"
+                                : "bg-gray-100 text-blue-800"
                             }`}
                         >
                           {ticket.status}

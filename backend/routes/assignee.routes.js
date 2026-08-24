@@ -6,10 +6,11 @@ import { getDashboardData } from '../controllers/dashboard.controller.js';
 
 const router = Router();
 
-router.get('/dashboard', protect, getDashboardData);
-router.get('/history', getHistoryLogs);
+router.get('/dashboard', protect, restrictTo('assignee', 'admin'), getDashboardData);
+router.get('/history', protect, restrictTo('assignee'), getHistoryLogs);
 
-router.post('/update-ticket', updateTicket);
+router.post('/update-ticket', protect, restrictTo('assignee'), updateTicket);
+router.post('/saveTicket', protect, restrictTo('assignee'), updateTicket);
 
 // Moved to tickets route
 // router.get('/tickets/:id', getTicketDetails);
