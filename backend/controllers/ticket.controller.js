@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Ticket from '../models/ticket.js';
 import Comment from '../models/comment.js';
 import User from '../models/user.js';
@@ -190,9 +191,11 @@ export const createNewTicket = async (req, res) => {
         ticket.resolution_path = resolution_path;
 
         if (assignee) {
-            const assigneeUser = await User.findOne({
-                $or: [{ name: assignee }, { _id: assignee }],
-            });
+            const assigneeUser = await User.findOne(
+                mongoose.isValidObjectId(assignee)
+                    ? { $or: [{ name: assignee }, { _id: assignee }] }
+                    : { name: assignee }
+            );
             if (assigneeUser) {
                 ticket.assignees.push(assigneeUser._id);
             }
@@ -529,9 +532,11 @@ export const updateDraftTicket = async (req, res) => {
         ticket.category = category;
         ticket.resolution_path = resolution_path;
         if (assignee) {
-            const assigneeUser = await User.findOne({
-                $or: [{ name: assignee }, { _id: assignee }],
-            });
+            const assigneeUser = await User.findOne(
+                mongoose.isValidObjectId(assignee)
+                    ? { $or: [{ name: assignee }, { _id: assignee }] }
+                    : { name: assignee }
+            );
             ticket.assignees = assigneeUser ? [assigneeUser._id] : [];
         }
         ticket.deadline = deadline;
@@ -564,7 +569,7 @@ export const updateDraftTicket = async (req, res) => {
 
 export const updateTicket = async (req, res) => {
     const { ticketId, status, reassignedAssigneeId } = req.body;
-    const assigneeId = req.user.id
+    const assigneeId = req.user.id;
     try {
         const ticket = await Ticket.findById(ticketId);
         if (!ticket) {
