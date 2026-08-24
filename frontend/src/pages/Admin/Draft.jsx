@@ -13,6 +13,7 @@ export default function Draft() {
   const [recommendations, setRecommendations] = useState([]);
   const [recommendationsLoading, setRecommendationsLoading] = useState(true);
   const [recommendationsError, setRecommendationsError] = useState(false);
+  const [expandedRecommendationIds, setExpandedRecommendationIds] = useState([]);
 
 
   useEffect(() => {
@@ -109,9 +110,17 @@ export default function Draft() {
 
   // Toggle checkbox
   const toggleCheck = (index) => {
-    const updated = [...tickets];
-    updated[index].checked = !updated[index].checked;
-    setTickets(updated);
+    toggleTicketSelection(tickets[index]._id);
+  };
+
+  const toggleTicketSelection = (ticketId) => {
+    setTickets((currentTickets) =>
+      currentTickets.map((ticket) =>
+        ticket._id === ticketId
+          ? { ...ticket, checked: !ticket.checked }
+          : ticket
+      )
+    );
   };
 
   // Expand ticket
@@ -119,6 +128,14 @@ export default function Draft() {
     const updated = [...tickets];
     updated[index].expanded = !updated[index].expanded;
     setTickets(updated);
+  };
+
+  const toggleRecommendationExpand = (ticketId) => {
+    setExpandedRecommendationIds((currentIds) =>
+      currentIds.includes(ticketId)
+        ? currentIds.filter((id) => id !== ticketId)
+        : [...currentIds, ticketId]
+    );
   };
 
   // Handle form change
@@ -212,28 +229,126 @@ export default function Draft() {
 
           {!recommendationsLoading && !recommendationsError && recommendations.length > 0 && (
             <div className="space-y-3">
-              {recommendations.map(({ ticket, relatedTickets }) => (
+              {recommendations.map(({ ticket, relatedTickets, mergedTicket }) => {
+                const recommendedTickets = [ticket, ...relatedTickets];
+
+                return (
                 <div key={ticket._id} className="bg-white border border-orange-100 rounded-xl p-3 md:p-4">
-                  <p className="font-semibold text-gray-900 break-words">
-                    {ticket.title || "Untitled ticket"}
-                  </p>
-                  <div className="mt-2 space-y-2">
-                    {relatedTickets.map((relatedTicket) => (
-                      <div
-                        key={relatedTicket._id}
-                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm"
-                      >
-                        <span className="text-gray-700 break-words">
-                          Related: {relatedTicket.title || "Untitled ticket"}
-                        </span>
-                        <span className="text-orange-700 font-semibold whitespace-nowrap">
-                          {Math.round((relatedTicket.similarityScore || 0) * 100)}% match
-                        </span>
-                      </div>
-                    ))}
+                  <div className="space-y-3">
+                    {recommendedTickets.map((recommendedTicket, index) => {
+                      const recommendationId = String(recommendedTicket._id);
+                      const draftTicket = tickets.find(
+                        (currentTicket) => String(currentTicket._id) === recommendationId
+                      );
+                      const isExpanded = expandedRecommendationIds.includes(recommendationId);
+
+                      return (
+                        <div key={recommendationId} className="border-b border-orange-100 last:border-b-0 pb-3 last:pb-0">
+                          <div className="flex items-start gap-3">
+                            <input
+                              type="checkbox"
+                              checked={draftTicket?.checked || false}
+                              onChange={() => toggleTicketSelection(recommendedTicket._id)}
+                              className="w-5 h-5 flex-shrink-0 mt-1"
+                              aria-label={`Select ${recommendedTicket.title || "ticket"} for merging`}
+                            />
+                            <div className="min-w-0 flex-1">
+                              <button
+                                type="button"
+                                onClick={() => toggleRecommendationExpand(recommendationId)}
+                                className="font-semibold text-left text-gray-900 hover:text-orange-600 break-words"
+                              >
+                                {recommendedTicket.title || "Untitled ticket"}
+                              </button>
+                            </div>
+                            {index > 0 && (
+                              <span className="text-orange-700 font-semibold text-sm whitespace-nowrap">
+                                {Math.round((recommendedTicket.similarityScore || 0) * 100)}% match
+                              </span>
+                            )}
+                          </div>
+
+                          {isExpanded && (
+                            <div className="ml-8 mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                              <div className="md:col-span-2">
+                                <p className="font-semibold">Issue</p>
+                                <p className="mt-1 text-gray-700 whitespace-pre-wrap break-words">
+                                  {recommendedTicket.issue || "No issue provided"}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="font-semibold">Summary</p>
+                                <p className="mt-1 text-gray-700 whitespace-pre-wrap break-words">
+                                  {recommendedTicket.summary || "No summary provided"}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="font-semibold">Category</p>
+                                <p className="mt-1 text-gray-700 break-words">
+                                  {recommendedTicket.category || "No category provided"}
+                                </p>
+                              </div>
+                              <div className="md:col-span-2">
+                                <p className="font-semibold">Resolution Path</p>
+                                <p className="mt-1 text-gray-700 whitespace-pre-wrap break-words">
+                                  {Array.isArray(recommendedTicket.resolution_path)
+                                    ? recommendedTicket.resolution_path.join("\n")
+                                    : recommendedTicket.resolution_path || "No resolution path provided"}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="font-semibold">Email</p>
+                                <p className="mt-1 text-gray-700 break-words">
+                                  {recommendedTicket.email || "No email provided"}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="font-semibold">Deadline</p>
+                                <p className="mt-1 text-gray-700">
+                                  {recommendedTicket.deadline
+                                    ? new Date(recommendedTicket.deadline).toLocaleDateString()
+                                    : "No deadline provided"}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="font-semibold">Assignee</p>
+                                <p className="mt-1 text-gray-700 break-words">
+                                  {recommendedTicket.assignee || "No assignee provided"}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
+
+                  {mergedTicket && (
+                    <div className="mt-4 border-t border-orange-100 pt-3">
+                      <p className="text-xs font-bold uppercase tracking-wider text-orange-600">
+                        Suggested merged draft
+                      </p>
+                      <p className="mt-1 font-semibold text-gray-900 break-words">
+                        {mergedTicket.title || "Untitled recommendation"}
+                      </p>
+                      <p className="mt-2 text-sm text-gray-700 break-words">
+                        {mergedTicket.issue || "No issue summary provided"}
+                      </p>
+                      <p className="mt-2 text-sm text-gray-600 break-words">
+                        {mergedTicket.summary || "No summary provided"}
+                      </p>
+                      {Array.isArray(mergedTicket.resolution_path) && (
+                        <ul className="mt-2 list-disc pl-5 text-sm text-gray-700">
+                          {mergedTicket.resolution_path.map((step, index) => (
+                            <li key={index}>{step}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </section>
