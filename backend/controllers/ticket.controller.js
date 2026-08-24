@@ -578,7 +578,6 @@ export const updateTicket = async (req, res) => {
 
         const currentAssignee = await User.findById(assigneeId);
         const reassignedAssignee = await User.findById(reassignedAssigneeId);
-        const updateFields = {};
 
         if (status === "Solved") {
             const commented = await Comment.find({ ticket: ticketId, user: req.user.id });
@@ -594,7 +593,7 @@ export const updateTicket = async (req, res) => {
             });
         }
         if (status) {
-            updateFields.status = status;
+            ticket.status = status;
         }
 
         if (reassignedAssignee) {
