@@ -107,7 +107,7 @@ export const getMergeRecommendations = async (req, res) => {
         const assignees = await User.find({ role: 'assignee' }).populate('scopes');
         const assigneeList = assignees.map(assignee =>
                 `Name: ${assignee.name}
-                Scopes: ${assignee.scopes.map(scope => scope.name).join(', ')}`
+                Scopes: ${(assignee.scopes || []).map(scope => scope.name).join(', ')}`
             ).join('\n');
 
         const recommendations = [];
@@ -122,7 +122,11 @@ export const getMergeRecommendations = async (req, res) => {
             const refreshedTicket = await Ticket.findById(draftTicket._id)
                 .populate({
                     path: 'relatedTickets.ticketId',
-                    select: 'title category summary issue resolution_path status createdAt',
+                    select: 'title category summary issue resolution_path email deadline suggested_assignee assignees status createdAt',
+                })
+                .populate({
+                    path: 'assignees',
+                    select: 'name',
                 })
                 .lean();
 
@@ -162,7 +166,12 @@ export const getMergeRecommendations = async (req, res) => {
                             Resolution Path: ${ticket.resolution_path}
                         `)
                     .join('\n');
-                const mergedTicket = await mergeDraftTicketsAI(scopeList, ticketList, assigneeList);
+                let mergedTicket = null;
+                try {
+                    mergedTicket = await mergeDraftTicketsAI(scopeList, ticketList, assigneeList);
+                } catch (error) {
+                    console.error(`[Recommendations] AI merge failed for ${draftTicketId}:`, error.message);
+                }
 
                 groupTicketIds.forEach(ticketId => processedTicketIds.add(ticketId));
                 recommendations.push({
@@ -172,6 +181,9 @@ export const getMergeRecommendations = async (req, res) => {
                         issue: refreshedTicket.issue,
                         summary: refreshedTicket.summary,
                         category: refreshedTicket.category,
+                        email: refreshedTicket.email,
+                        deadline: refreshedTicket.deadline,
+                        assignee: refreshedTicket.assignees?.[0]?.name || refreshedTicket.suggested_assignee,
                         status: refreshedTicket.status,
                         createdAt: refreshedTicket.createdAt,
                     },
