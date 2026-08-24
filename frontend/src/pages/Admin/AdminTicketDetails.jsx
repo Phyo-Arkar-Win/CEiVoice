@@ -163,9 +163,9 @@ export default function AdminTicketDetails() {
         ...response.data.comment,
         user: {
           email: userEmail,
-          name: response.data.name || user?.name,
+          name: response.data?.name || user?.name,
         },
-        role: response.data.role || user?.role || "admin",
+        role: response.data?.role || user?.role || "admin",
         visibility: commentType,
       };
 

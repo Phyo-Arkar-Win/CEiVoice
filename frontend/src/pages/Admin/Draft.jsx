@@ -52,8 +52,8 @@ export default function Draft() {
         resolution_path: ticket.resolution_path,
         deadline: ticket.deadline,
 
-        assignee: ticket.assignee
-        ? ticket.assignee
+        assignee: ticket.assignee 
+        ? ticket.assignee 
         : undefined,
       };
 
@@ -62,7 +62,7 @@ export default function Draft() {
         (key) => updates[key] === undefined && delete updates[key]
       );
 
-      await api.patch(`/tickets/${encodeURIComponent(ticket._id)}`, updates);
+      await api.patch(`/tickets/${ticket._id}`, updates);
 
       alert("Draft updated successfully");
       fetchDraftTickets(); // refresh list
