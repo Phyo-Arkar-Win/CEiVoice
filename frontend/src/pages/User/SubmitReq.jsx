@@ -55,26 +55,26 @@ export default function SubmitReq() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <UserNavbar />
+  <div className="h-screen overflow-hidden bg-background flex flex-col">
+    <UserNavbar />
 
-      {/* Content Wrapper */}
-      <div className="flex justify-center px-4 pt-12 pb-16 mt-4">
-        <div
-          className="
-            w-[90%]
-            md:w-[80%]
-            mx-auto
-            bg-white
-            rounded-2xl
-            shadow-xl
-            p-6
-            sm:p-8
-            md:p-10
-            flex
-            flex-col
-          "
-        >
+    <div className="flex-1 flex justify-center px-4 py-6 overflow-hidden">
+      <div
+        className="
+          w-[90%]
+          md:w-[80%]
+          mx-auto
+          bg-white
+          rounded-2xl
+          shadow-xl
+          p-6
+          sm:p-8
+          md:p-10
+          flex
+          flex-col
+          overflow-hidden
+        "
+      >
           <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8">
             Submit a Request
           </h2>
@@ -118,7 +118,7 @@ export default function SubmitReq() {
             </p>
           )}
 
-          <div className="flex justify-end mt-8">
+          <div className="flex justify-end mt-4 mb-4">
             <button
               onClick={handleSubmit}
               disabled={loading}
